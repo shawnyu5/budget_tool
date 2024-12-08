@@ -183,7 +183,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "common-axum"
 version = "0.1.0"
-source = "git+https://github.com/shawnyu5/common-axum?rev=v1.0.0#96c6e73bb025fbd34ea3cc80eeb383bf2d056101"
+source = "git+https://github.com/shawnyu5/common-axum?rev=v1.0.1#7a9d232f68bee34f49546b91b00b50faca69ee8d"
 dependencies = [
  "anyhow",
  "axum",

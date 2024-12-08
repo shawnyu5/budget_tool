@@ -4,7 +4,7 @@ mod routes;
 use anyhow::Result;
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
 use routes::app;
-use tokio::{net::TcpListener, signal};
+use tokio::net::TcpListener;
 use tracing::info;
 
 #[tokio::main]

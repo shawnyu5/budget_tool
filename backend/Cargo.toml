@@ -20,4 +20,4 @@ tracing-subscriber = { version = "0.3.19", features = [
    "fmt",
 ] }
 utoipa = "5.2.0"
-common-axum = { git = "https://github.com/shawnyu5/common-axum", rev = "v1.0.0" }
+common-axum = { git = "https://github.com/shawnyu5/common-axum", rev = "v1.0.1" }
