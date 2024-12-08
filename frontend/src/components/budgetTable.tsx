@@ -51,7 +51,7 @@ export default function () {
         <thead>
           <tr>
             <th width="150">Amount ($)</th>
-            <th width="100">Date</th>
+            <th width="150">Date</th>
             <th>Description</th>
             <th>Notes</th>
             {
