@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <main>
       <Title>Budget tool</Title>
-      <MonthsDropDown value={month} setValue={setMonth} />
+      <MonthsDropDown />
       <MonthlySpending />
       <button style="background: red">Split</button>
       <br />

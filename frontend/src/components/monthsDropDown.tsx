@@ -1,30 +1,52 @@
-import { Accessor, Setter } from "solid-js";
+import { Accessor, createSignal, For, Setter } from "solid-js";
 import "./monthsDropDown.css";
+import { useSearchParams } from "@solidjs/router";
+import { monthNumberToName } from "~/utils";
 
 /**
- * A dropdown menu that contains the selected month
+ * A dropdown menu that contains the selected month.
  *
+ * Puts the selected month in the query param, in the `month` param
  */
-export default function (props: {
-  value: Accessor<string>;
-  setValue: Setter<string>;
-}) {
-  // TODO: put all the months in
+export default function () {
+  const [searchParam, setSearchParam] = useSearchParams();
+  if (!searchParam.month) {
+    const date = new Date();
+    setSearchParam({ month: monthNumberToName(date.getMonth()) });
+  }
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
   return (
     <div id="select-month">
-      <select name="date" id="date" value="2">
-        <option value="1" selected={props.value() === "1"}>
-          January
-        </option>
-        <option value="2" selected={props.value() === "2"}>
-          February
-        </option>
-        <option value="3" selected={props.value() === "3"}>
-          March
-        </option>
-        <option value="4" selected={props.value() === "4"}>
-          April
-        </option>
+      <select
+        name="date"
+        id="date"
+        onChange={(e) => {
+          const selectedMonth = e.target.value;
+          setSearchParam({ month: selectedMonth });
+        }}
+      >
+        <For each={months}>
+          {(month) => (
+            <option value={month} selected={searchParam.month == month}>
+              {month}
+            </option>
+          )}
+        </For>
       </select>
     </div>
   );
