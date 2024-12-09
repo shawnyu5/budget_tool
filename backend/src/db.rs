@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use chrono::{Datelike, Utc};
 use mongodb::{bson::doc, Client, Collection, Database};
 use serde::{Deserialize, Serialize};
@@ -10,14 +10,20 @@ use crate::config::Config;
 /// Interface for database operations
 pub struct DB {
     /// The DB client
-    pub client: Client,
+    client: Client,
     /// The current collection of the current year to operate on
     pub collection: Collection<MonthlySpending>,
 }
 
 impl DB {
     /// Creates a new db connection
-    pub async fn new() -> Result<Self> {
+    ///
+    /// * `year`: the year to get budget of
+    pub async fn new(year: String) -> Result<Self> {
+        if year.len() != 4 {
+            return Err(anyhow!("Invalid year"));
+        }
+
         let client = Client::with_uri_str(Config::load().db_connection_string).await?;
         debug!("Attempting to ping db after initializing connection");
         client
@@ -27,10 +33,9 @@ impl DB {
             .context("Failed to ping db")?;
         debug!("Pinging successful");
 
-        let year = Utc::now().year();
         let collection = client
             .database("budget_tool")
-            .collection::<MonthlySpending>(year.to_string().as_str());
+            .collection::<MonthlySpending>(&year);
         debug!("Setting collection to db budget_tool, in collection {year}");
 
         return Ok(Self { client, collection });

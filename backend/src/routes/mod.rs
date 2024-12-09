@@ -17,7 +17,7 @@ use crate::{
 pub fn app() -> Router {
     let router = Router::new()
         .route("/", get(app_version))
-        .route("/budget/:month", get(get_month_budget_handler));
+        .route("/budget/:year/:month", get(get_month_budget_handler));
     return attach_tracing_cors_middleware(router);
 }
 
@@ -28,18 +28,27 @@ pub struct APIDoc;
 /// Get the budget information for a specific month
 #[utoipa::path(
     get,
-    path = "/budget/{month}",
+    path = "/budget/{year}/{month}",
     responses(
         (status = 200, description = "The requested month's budget", body = MonthlySpending),
         (status = 404, description = "The requested month does not have any budget recoreded", body = String),
         (status = 500, description = "Failed to get the requested month's budget", body = String),
     ),
     params(
+        ("year" = String, description = "The year which to get the budget of"),
         ("month" = String, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
     )
 )]
-async fn get_month_budget_handler(Path(month): Path<Month>) -> Result<impl IntoResponse, AppError> {
-    let db = DB::new().await.context("Failed to connect to database")?;
+async fn get_month_budget_handler(
+    Path((year, month)): Path<(String, Month)>,
+) -> Result<impl IntoResponse, AppError> {
+    if year.len() != 4 {
+        return Err(AppError(StatusCode::BAD_REQUEST, anyhow!("Invalid year")));
+    }
+    let db = DB::new(year)
+        .await
+        .context("Failed to connect to database")?;
+
     match db
         .collection
         .find_one(doc! {
@@ -56,5 +65,4 @@ async fn get_month_budget_handler(Path(month): Path<Month>) -> Result<impl IntoR
             ))
         }
     }
-    // return Ok(monthly_spending);
 }

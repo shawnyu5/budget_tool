@@ -37,12 +37,21 @@
         }
       }
     },
-    "/budget/{month}": {
+    "/budget/{year}/{month}": {
       "get": {
         "tags": [],
         "summary": "Get the budget information for a specific month",
         "operationId": "get_month_budget_handler",
         "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "description": "The year which to get the budget of",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "month",
             "in": "path",
