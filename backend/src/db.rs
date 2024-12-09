@@ -76,5 +76,5 @@ pub struct Spending {
     pub amount: i64,
     pub date: String,
     pub description: String,
-    pub notes: String,
+    pub notes: Option<String>,
 }

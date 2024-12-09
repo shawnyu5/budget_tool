@@ -12,17 +12,6 @@ export default function () {
   const [searchParam, setSearchParam] = useSearchParams();
   const date = new Date();
 
-  // If year is not in the query param, set it to the current year
-  if (!searchParam.year) {
-    setSearchParam({ year: date.getFullYear() });
-  }
-
-  // If month is not in the query param, set it to the current month
-  if (!searchParam.month) {
-    setSearchParam({ month: monthNumberToName(date.getMonth()) });
-  }
-
-
   const months = [
     "January",
     "February",
@@ -53,7 +42,7 @@ export default function () {
       >
         <For each={years}>
           {(year) => (
-            <option value={year} selected={searchParam.year  == year.toString()}>
+            <option value={year} selected={searchParam.year == year.toString()}>
               {year}
             </option>
           )}

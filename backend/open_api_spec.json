@@ -160,8 +160,7 @@
         "required": [
           "amount",
           "date",
-          "description",
-          "notes"
+          "description"
         ],
         "properties": {
           "amount": {
@@ -175,7 +174,10 @@
             "type": "string"
           },
           "notes": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }

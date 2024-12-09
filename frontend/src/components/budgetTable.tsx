@@ -1,4 +1,13 @@
-import { createSignal, For } from "solid-js";
+import { useSearchParams } from "@solidjs/router";
+import type { paths } from "~/backend_schema";
+import axios, { AxiosResponse } from "axios";
+import { createResource, createSignal, For } from "solid-js";
+import { loadConfig } from "~/config";
+import { getMonthlyBudget } from "~/monthlyBudget";
+
+// The budget for a month
+type monthlyBudget =
+  paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"];
 
 export default function () {
   const [data, setData] = createSignal([
@@ -17,6 +26,16 @@ export default function () {
     },
   ]);
 
+  const [searchParam, _setSearchParam] = useSearchParams();
+  const [monthlySpending] = createResource(async () => {
+    return (
+      await getMonthlyBudget(
+        searchParam.year as string,
+        searchParam.month as string,
+      )
+    ).spending;
+  });
+
   // Track edit mode (all rows are editable when true)
   const [isEditing, setIsEditing] = createSignal(false);
 
@@ -26,7 +45,7 @@ export default function () {
   };
 
   // Handler for saving data
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsEditing(false); // Exit edit mode and save changes
   };
 
@@ -60,20 +79,24 @@ export default function () {
           </tr>
         </thead>
         <tbody>
-          <For each={data()}>
+          <For each={monthlySpending()}>
             {(entry, index) => (
               <tr>
                 <td>
+                  <span>$</span>
+                  {
+                    // TODO: refactor these text boxes into a component rather than copy pasting
+                  }
                   {isEditing() ? (
                     <input
                       type="text"
-                      value={entry.price}
+                      value={entry.amount}
                       onInput={(e) =>
                         handleChange(index(), "price", e.target.value)
                       }
                     />
                   ) : (
-                    entry.price
+                    entry.amount
                   )}
                 </td>
                 <td>

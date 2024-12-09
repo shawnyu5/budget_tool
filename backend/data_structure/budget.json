@@ -12,6 +12,12 @@
          "date": "2024/10/21",
          "description": "Airbnb",
          "notes": "Some notes"
+      },
+      {
+         "amount": 201,
+         "date": "2024/10/21",
+         "description": "Airbnb",
+         "notes": "Some notes"
       }
    ]
 }
