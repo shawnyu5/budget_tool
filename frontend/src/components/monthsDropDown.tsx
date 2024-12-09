@@ -10,10 +10,18 @@ import { monthNumberToName } from "~/utils";
  */
 export default function () {
   const [searchParam, setSearchParam] = useSearchParams();
+  const date = new Date();
+
+  // If year is not in the query param, set it to the current year
+  if (!searchParam.year) {
+    setSearchParam({ year: date.getFullYear() });
+  }
+
+  // If month is not in the query param, set it to the current month
   if (!searchParam.month) {
-    const date = new Date();
     setSearchParam({ month: monthNumberToName(date.getMonth()) });
   }
+
 
   const months = [
     "January",
@@ -30,11 +38,30 @@ export default function () {
     "December",
   ];
 
+  // Support the current and previous year
+  const years = [date.getFullYear(), date.getFullYear() - 1];
+
   return (
-    <div id="select-month">
+    <div id="select-date">
       <select
-        name="date"
-        id="date"
+        name="year"
+        id="year"
+        onChange={(e) => {
+          const selectedYear = e.target.value;
+          setSearchParam({ year: selectedYear });
+        }}
+      >
+        <For each={years}>
+          {(year) => (
+            <option value={year} selected={searchParam.year  == year.toString()}>
+              {year}
+            </option>
+          )}
+        </For>
+      </select>
+      <select
+        name="month"
+        id="month"
         onChange={(e) => {
           const selectedMonth = e.target.value;
           setSearchParam({ month: selectedMonth });
