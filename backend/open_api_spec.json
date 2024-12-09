@@ -1,0 +1,175 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "backend",
+    "description": "",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [],
+        "operationId": "app_version",
+        "responses": {
+          "200": {
+            "description": "Version of the server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to get the vesion of the server",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/budget/{month}": {
+      "get": {
+        "tags": [],
+        "summary": "Get the budget information for a specific month",
+        "operationId": "get_month_budget_handler",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "path",
+            "description": "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested month's budget",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlySpending"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested month does not have any budget recoreded",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to get the requested month's budget",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Budget": {
+        "type": "object",
+        "required": [
+          "total",
+          "shawn_percentage_allocation",
+          "maggie_percentage_allocation"
+        ],
+        "properties": {
+          "maggie_percentage_allocation": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "shawn_percentage_allocation": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "HomeResponse": {
+        "type": "object",
+        "required": [
+          "version"
+        ],
+        "properties": {
+          "version": {
+            "type": "string"
+          }
+        }
+      },
+      "MonthlySpending": {
+        "type": "object",
+        "description": "Budgeting details for a month, including:\n- The allocated budget, and the percentage split\n- The monthly spending",
+        "required": [
+          "month",
+          "budget",
+          "spending"
+        ],
+        "properties": {
+          "budget": {
+            "$ref": "#/components/schemas/Budget"
+          },
+          "month": {
+            "type": "string"
+          },
+          "spending": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Spending"
+            }
+          }
+        }
+      },
+      "Spending": {
+        "type": "object",
+        "required": [
+          "amount",
+          "date",
+          "description",
+          "notes"
+        ],
+        "properties": {
+          "amount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "date": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

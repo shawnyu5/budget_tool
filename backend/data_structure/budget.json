@@ -1,0 +1,34 @@
+// Having multiple documents like this makes querying easier
+{
+   "month": "January",
+   "budget": {
+      "total": 1000,
+      "shawn_percentage_allocation": 50,
+      "maggie_percentage_allocation": 50
+   },
+   "spending": [
+      {
+         "amount": 100,
+         "date": "2024/10/21",
+         "description": "Airbnb",
+         "notes": "Some notes"
+      }
+   ]
+}
+
+{
+   "month": "May",
+   "budget": {
+      "total": 1000,
+      "shawn_percentage_allocation": 50,
+      "maggie_percentage_allocation": 50
+   },
+   "spending": [
+      {
+         "amount": 100,
+         "date": "2024/10/21",
+         "description": "Airbnb",
+         "notes": "Some notes"
+      }
+   ]
+}

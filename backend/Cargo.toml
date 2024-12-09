@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.94"
-axum = "0.7.9"
+axum = { version = "0.7.9", features = ["macros"] }
 schemars = "0.8.21"
 serde = { version = "1.0.215", features = ["derive"] }
 simd-json = "0.14.3"
@@ -20,4 +20,8 @@ tracing-subscriber = { version = "0.3.19", features = [
    "fmt",
 ] }
 utoipa = "5.2.0"
-common-axum = { git = "https://github.com/shawnyu5/common-axum", rev = "v1.0.1" }
+common-axum = { path = "../../common-axum/" }
+# common-axum = { git = "https://github.com/shawnyu5/common-axum", rev = "v1.1.0" }
+mongodb = "3.1.0"
+dotenvy = "0.15.7"
+chrono = "0.4.38"
