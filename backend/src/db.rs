@@ -12,7 +12,7 @@ pub struct DB {
     /// The DB client
     client: Client,
     /// The current collection of the current year to operate on
-    pub collection: Collection<MonthlySpending>,
+    pub collection: Collection<MonthlyBudget>,
 }
 
 impl DB {
@@ -35,34 +35,36 @@ impl DB {
 
         let collection = client
             .database("budget_tool")
-            .collection::<MonthlySpending>(&year);
+            .collection::<MonthlyBudget>(&year);
         debug!("Setting collection to db budget_tool, in collection {year}");
 
         return Ok(Self { client, collection });
     }
 }
 
-/// The budget for an entire year, split into months
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct YearlyBudget {
-    pub months: Vec<MonthlySpending>,
-}
+// /// The budget for an entire year, split into months
+// #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+// #[serde(rename_all = "camelCase")]
+// pub struct YearlyBudget {
+//     pub months: Vec<MonthlySpending>,
+// }
 
-/// Budgeting details for a month, including:
-/// - The allocated budget, and the percentage split
-/// - The monthly spending
+/// Budget details for single month
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct MonthlySpending {
+pub struct MonthlyBudget {
+    /// The month
     pub month: String,
+    /// Budget details
     pub budget: Budget,
+    /// List of spent items
     pub spending: Vec<Spending>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Budget {
+    /// Total allocated budget
     pub total: i64,
     #[serde(rename = "shawn_percentage_allocation")]
     pub shawn_percentage_allocation: i64,
@@ -73,8 +75,14 @@ pub struct Budget {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Spending {
+    /// A unique identifier
+    pub id: String,
+    /// The dollar amount
     pub amount: i64,
+    /// The date
     pub date: String,
+    /// Description of the purchase
     pub description: String,
+    /// Additional notes
     pub notes: Option<String>,
 }

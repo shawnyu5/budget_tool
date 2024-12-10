@@ -30,7 +30,8 @@ export interface paths {
         /** Get the budget information for a specific month */
         get: operations["get_month_budget_handler"];
         put?: never;
-        post?: never;
+        /** Update the budget for a specific month in a specific year */
+        post: operations["update_budget_handler"];
         delete?: never;
         options?: never;
         head?: never;
@@ -46,25 +47,37 @@ export interface components {
             maggie_percentage_allocation: number;
             /** Format: int64 */
             shawn_percentage_allocation: number;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description Total allocated budget
+             */
             total: number;
         };
         HomeResponse: {
             version: string;
         };
-        /** @description Budgeting details for a month, including:
-         *     - The allocated budget, and the percentage split
-         *     - The monthly spending */
-        MonthlySpending: {
+        /** @description Budget details for single month */
+        MonthlyBudget: {
+            /** @description Budget details */
             budget: components["schemas"]["Budget"];
+            /** @description The month */
             month: string;
+            /** @description List of spent items */
             spending: components["schemas"]["Spending"][];
         };
         Spending: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description The dollar amount
+             */
             amount: number;
+            /** @description The date */
             date: string;
+            /** @description Description of the purchase */
             description: string;
+            /** @description A unique identifier */
+            id: string;
+            /** @description Additional notes */
             notes?: string | null;
         };
     };
@@ -125,7 +138,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MonthlySpending"];
+                    "application/json": components["schemas"]["MonthlyBudget"];
                 };
             };
             /** @description The requested month does not have any budget recoreded */
@@ -138,6 +151,44 @@ export interface operations {
                 };
             };
             /** @description Failed to get the requested month's budget */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_budget_handler: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The year which to get the budget of */
+                year: string;
+                /** @description The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January` */
+                month: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MonthlyBudget"];
+            };
+        };
+        responses: {
+            /** @description Successfully updated the month's budget */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlyBudget"];
+                };
+            };
+            /** @description Failed to update the month's budget */
             500: {
                 headers: {
                     [name: string]: unknown;

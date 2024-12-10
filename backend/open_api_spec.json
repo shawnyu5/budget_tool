@@ -68,7 +68,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MonthlySpending"
+                  "$ref": "#/components/schemas/MonthlyBudget"
                 }
               }
             }
@@ -85,6 +85,63 @@
           },
           "500": {
             "description": "Failed to get the requested month's budget",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [],
+        "summary": "Update the budget for a specific month in a specific year",
+        "operationId": "update_budget_handler",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "description": "The year which to get the budget of",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "description": "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonthlyBudget"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated the month's budget",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyBudget"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to update the month's budget",
             "content": {
               "text/plain": {
                 "schema": {
@@ -117,7 +174,8 @@
           },
           "total": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "Total allocated budget"
           }
         }
       },
@@ -132,9 +190,9 @@
           }
         }
       },
-      "MonthlySpending": {
+      "MonthlyBudget": {
         "type": "object",
-        "description": "Budgeting details for a month, including:\n- The allocated budget, and the percentage split\n- The monthly spending",
+        "description": "Budget details for single month",
         "required": [
           "month",
           "budget",
@@ -142,22 +200,26 @@
         ],
         "properties": {
           "budget": {
-            "$ref": "#/components/schemas/Budget"
+            "$ref": "#/components/schemas/Budget",
+            "description": "Budget details"
           },
           "month": {
-            "type": "string"
+            "type": "string",
+            "description": "The month"
           },
           "spending": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Spending"
-            }
+            },
+            "description": "List of spent items"
           }
         }
       },
       "Spending": {
         "type": "object",
         "required": [
+          "id",
           "amount",
           "date",
           "description"
@@ -165,19 +227,27 @@
         "properties": {
           "amount": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "description": "The dollar amount"
           },
           "date": {
-            "type": "string"
+            "type": "string",
+            "description": "The date"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Description of the purchase"
+          },
+          "id": {
+            "type": "string",
+            "description": "A unique identifier"
           },
           "notes": {
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "description": "Additional notes"
           }
         }
       }
