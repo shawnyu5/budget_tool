@@ -1,8 +1,19 @@
-use std::fmt;
+use std::{
+    fmt,
+    ops::{Add, Sub},
+};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
+use utoipa::ToSchema;
 
-#[derive(Debug, Deserialize)]
+#[derive(Error, Debug)]
+pub enum MonthError {
+    #[error("Invalid month")]
+    InvalidMonth,
+}
+
+#[derive(Debug, Deserialize, PartialEq, ToSchema, Clone, Serialize, Copy)]
 pub enum Month {
     January,
     February,
@@ -16,6 +27,28 @@ pub enum Month {
     October,
     November,
     December,
+}
+
+impl Add for Month {
+    type Output = Result<Self, MonthError>;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        match Month::from_number(self.to_number() + rhs.to_number()) {
+            Some(val) => return Ok(val),
+            None => return Err(MonthError::InvalidMonth),
+        };
+    }
+}
+
+impl Sub for Month {
+    type Output = Result<Self, MonthError>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        match Month::from_number(self.to_number() - rhs.to_number()) {
+            Some(val) => return Ok(val),
+            None => return Err(MonthError::InvalidMonth),
+        };
+    }
 }
 
 impl Month {

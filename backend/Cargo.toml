@@ -25,3 +25,4 @@ common-axum = { path = "../../common-axum/" }
 mongodb = "3.1.0"
 dotenvy = "0.15.7"
 chrono = "0.4.38"
+thiserror = "2.0.6"

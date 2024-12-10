@@ -5,6 +5,7 @@
       "dev": "vinxi dev",
       "build": "vinxi build",
       "start": "vinxi start",
+      "generate": "npx openapi-typescript ../backend/open_api_spec.json -o src/backend_schema.d.ts",
       "version": "vinxi version"
    },
    "dependencies": {

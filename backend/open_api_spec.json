@@ -64,7 +64,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The requested month's budget",
+            "description": "The requested month's budget. If the request month does not have any budget records, this route will iterate back till either no more months to check, a budget is encountered. The returned budget will have no spending, all the fields are correct, and matches the request",
             "content": {
               "application/json": {
                 "schema": {
@@ -74,7 +74,7 @@
             }
           },
           "404": {
-            "description": "The requested month does not have any budget recoreded",
+            "description": "All months, the requested month and before does not contain any monthly budget",
             "content": {
               "text/plain": {
                 "schema": {
@@ -190,6 +190,23 @@
           }
         }
       },
+      "Month": {
+        "type": "string",
+        "enum": [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December"
+        ]
+      },
       "MonthlyBudget": {
         "type": "object",
         "description": "Budget details for single month",
@@ -204,7 +221,7 @@
             "description": "Budget details"
           },
           "month": {
-            "type": "string",
+            "$ref": "#/components/schemas/Month",
             "description": "The month"
           },
           "spending": {
@@ -219,7 +236,6 @@
       "Spending": {
         "type": "object",
         "required": [
-          "id",
           "amount",
           "date",
           "description"

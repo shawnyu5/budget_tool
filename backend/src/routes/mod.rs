@@ -11,6 +11,7 @@ use mongodb::bson::doc;
 use tracing::info;
 use utoipa::OpenApi;
 
+use crate::db::DBError;
 use crate::{
     db::{MonthlyBudget, DB},
     month::Month,
@@ -33,8 +34,8 @@ pub struct APIDoc;
     get,
     path = "/budget/{year}/{month}",
     responses(
-        (status = 200, description = "The requested month's budget", body = MonthlyBudget),
-        (status = 404, description = "The requested month does not have any budget recoreded", body = String),
+        (status = 200, description = "The requested month's budget. If the request month does not have any budget records, this route will iterate back till either no more months to check, a budget is encountered. The returned budget will have no spending, all the fields are correct, and matches the request", body = MonthlyBudget),
+        (status = 404, description = "All months, the requested month and before does not contain any monthly budget", body = String),
         (status = 500, description = "Failed to get the requested month's budget", body = String),
     ),
     params(
@@ -45,26 +46,16 @@ pub struct APIDoc;
 async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
-    if year.len() != 4 {
-        return Err(AppError(StatusCode::BAD_REQUEST, anyhow!("Invalid year")));
-    }
     let db = DB::new(year)
         .await
         .context("Failed to connect to database")?;
 
-    match db
-        .collection
-        .find_one(doc! {
-            "month": month.to_string()
-        })
-        .await
-        .context("Failed to query database")?
-    {
-        Some(month_spending) => return Ok(Json(month_spending)),
-        None => {
+    match db.get_month_budget(month).await {
+        Ok(monthly_budget) => return Ok(Json(monthly_budget)),
+        Err(_) => {
             return Err(AppError(
                 StatusCode::NOT_FOUND,
-                anyhow!("Spending not found"),
+                DBError::BudgetNotFound.into(),
             ))
         }
     }
@@ -90,10 +81,10 @@ async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
-    // TODO: extract year validation into a middleware
-    if year.len() != 4 {
-        return Err(AppError(StatusCode::BAD_REQUEST, anyhow!("Invalid year")));
-    }
+    // // TODO: extract year validation into a middleware
+    // if year.len() != 4 {
+    //     return Err(AppError(StatusCode::BAD_REQUEST, anyhow!("Invalid year")));
+    // }
 
     let db = DB::new(year)
         .await
