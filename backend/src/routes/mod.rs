@@ -1,6 +1,6 @@
-use anyhow::anyhow;
 use anyhow::Context;
 use axum::http::StatusCode;
+use axum::middleware;
 use axum::response::IntoResponse;
 use axum::routing::post;
 use axum::{extract::Path, routing::get, Json, Router};
@@ -8,9 +8,11 @@ use common_axum::axum::{
     __path_app_version, app_version, attach_tracing_cors_middleware, AppError,
 };
 use mongodb::bson::doc;
+use tower::ServiceBuilder;
 use tracing::info;
 use utoipa::OpenApi;
 
+use crate::custom_middleware::check_valid_year;
 use crate::db::DBError;
 use crate::{
     db::{MonthlyBudget, DB},
@@ -21,7 +23,8 @@ pub fn app() -> Router {
     let router = Router::new()
         .route("/", get(app_version))
         .route("/budget/:year/:month", get(get_month_budget_handler))
-        .route("/budget/:year/:month", post(update_budget_handler));
+        .route("/budget/:year/:month", post(update_budget_handler))
+        .layer(ServiceBuilder::new().layer(middleware::from_fn(check_valid_year)));
     return attach_tracing_cors_middleware(router);
 }
 

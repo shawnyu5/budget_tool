@@ -56,12 +56,15 @@ export interface components {
         HomeResponse: {
             version: string;
         };
+        /** @enum {string} */
+        Month: "January" | "February" | "March" | "April" | "May" | "June" | "July" | "August" | "September" | "October" | "November" | "December";
         /** @description Budget details for single month */
         MonthlyBudget: {
             /** @description Budget details */
             budget: components["schemas"]["Budget"];
+            carriedOverFrom?: null | components["schemas"]["Month"];
             /** @description The month */
-            month: string;
+            month: components["schemas"]["Month"];
             /** @description List of spent items */
             spending: components["schemas"]["Spending"][];
         };
@@ -76,7 +79,7 @@ export interface components {
             /** @description Description of the purchase */
             description: string;
             /** @description A unique identifier */
-            id: string;
+            id?: string;
             /** @description Additional notes */
             notes?: string | null;
         };
@@ -132,7 +135,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description The requested month's budget */
+            /** @description The requested month's budget. If the request month does not have any budget records, this route will iterate back till either no more months to check, a budget is encountered. The returned budget will have no spending, all the fields are correct, and matches the request */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -141,7 +144,7 @@ export interface operations {
                     "application/json": components["schemas"]["MonthlyBudget"];
                 };
             };
-            /** @description The requested month does not have any budget recoreded */
+            /** @description All months, the requested month and before does not contain any monthly budget */
             404: {
                 headers: {
                     [name: string]: unknown;

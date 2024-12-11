@@ -1,6 +1,7 @@
-use anyhow::{anyhow, Context, Result};
-use chrono::{Datelike, Utc};
+use anyhow::{Context, Result};
+use chrono::{Date, Local, Utc};
 use mongodb::{bson::doc, Client, Collection, Database};
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::{debug, error, info};
@@ -29,6 +30,7 @@ pub enum DBError {
 /// Interface for database operations
 pub struct DB {
     /// The DB client
+    // TODO: consider removing this
     client: Client,
     /// The current collection of the current year to operate on
     pub collection: Collection<MonthlyBudget>,
@@ -53,7 +55,7 @@ impl DB {
         debug!("Pinging successful");
 
         let collection = client
-            .database("budget_tool")
+            .database(&Config::load().database_name)
             .collection::<MonthlyBudget>(&year);
         debug!("Setting collection to db budget_tool, in collection {year}");
 
@@ -71,38 +73,53 @@ impl DB {
     /// - connection to the DB fails
     /// - There are no budget found for the current month
     pub async fn get_month_budget(&self, month: Month) -> Result<MonthlyBudget, DBError> {
-        let mut mut_month = month;
+        let mut month_to_check = month;
+        let mut collection = self.collection.clone();
+
         // flag to determine if we are looking for budgeting records in previous months
         let mut trying_prev_months = false;
         loop {
-            match self
-                .collection
+            match collection
                 .find_one(doc! {
-                    "month": mut_month.to_string()
+                    "month": month_to_check.to_string()
                 })
                 .await?
             {
                 Some(mut month_spending) => {
-                    info!("Found budget information in month {mut_month}");
+                    info!("Found budget information in month {month_to_check}");
                     // If the found budget does not match the current month, then we need to clean up the spending history. Spending history must not be carried over. All other information should be carry over
                     if trying_prev_months {
                         month_spending.spending = vec![];
                         // Also correct the month to the one being queried
                         month_spending.month = month;
+                        month_spending.carried_over_from = Some(month_to_check);
                     }
+                    month_spending.populate_spending_id();
                     return Ok(month_spending);
                 }
                 None => {
-                    info!("No budget information in month {mut_month} found");
-                    match mut_month - Month::from_number(1).unwrap() {
+                    info!("No budget information in month {month_to_check} found");
+                    match month_to_check - Month::from_number(1).unwrap() {
                         Ok(prev_month) => {
-                            info!("Trying previous month {mut_month}");
-                            mut_month = prev_month;
+                            info!("Trying previous month {month_to_check}");
+                            month_to_check = prev_month;
                             trying_prev_months = true;
                         }
                         Err(MonthError::InvalidMonth) => {
-                            // There are no more months to check
-                            return Err(DBError::BudgetNotFound);
+                            // If there are no more months in the current year, start at the beginning of previous year
+                            let collection_year: i32 = collection
+                                .name()
+                                .parse()
+                                .context("Failed to parse collection into valid year")?;
+                            let prev_collection_year = collection_year - 1;
+                            info!("There are no more months in current year to check. Checking previous year: {prev_collection_year}");
+
+                            collection =
+                                self.client
+                                    .database(&Config::load().database_name)
+                                    .collection::<MonthlyBudget>(&prev_collection_year.to_string());
+
+                            month_to_check = Month::from_number(12).unwrap();
                         }
                     }
                 }
@@ -121,58 +138,19 @@ pub struct MonthlyBudget {
     pub budget: Budget,
     /// List of spent items
     pub spending: Vec<Spending>,
+    /// The month it was carried over from
+    /// If the setting are not carried over from a previous month, this value will be empty
+    pub carried_over_from: Option<Month>,
 }
 
 impl MonthlyBudget {
-    /// Get the budget for the previous month. Will continue to go back until a month with a budget is found
-    ///
-    /// * `year`: the year to get the budget of
-    pub async fn prev_month(&mut self, year: String) -> Option<Self> {
-        let db = match DB::new(year).await {
-            Ok(db) => db,
-            Err(e) => {
-                error!("Failed to initialize DB: {}", e);
-                return None;
+    /// Check all spending records. If they dont have an ID, create one for it
+    pub fn populate_spending_id(&mut self) {
+        self.spending.par_iter_mut().for_each(|spending| {
+            if spending.id.is_empty() {
+                spending.id = Local::now().to_string();
             }
-        };
-        loop {
-            match self.month - Month::from_number(1).unwrap() {
-                Ok(prev) => {
-                    let month_budget = db.get_month_budget(prev).await;
-
-                    match month_budget {
-                        Ok(month_budget) => return Some(month_budget),
-                        Err(DBError::BudgetNotFound) => {
-                            // If this month has no budget information, check previous month
-                            let month = match self.month - Month::from_number(1).unwrap() {
-                                Ok(month) => month,
-                                Err(e) => {
-                                    // If we cant subtract 1 from the current month anymore, that means we've ran out of months. There is no more budget left to check
-                                    error!(
-                                            "Failed to substract 1 from current month: {}. There are no more budget information left to check",
-                                            e.to_string()
-                                        );
-                                    return None;
-                                }
-                            };
-                            self.month = month;
-                        }
-                        Err(e) => {
-                            error!(
-                                "Failed to fetch budget for month {month}: {err}",
-                                month = self.month,
-                                err = e
-                            );
-                            return None;
-                        }
-                    }
-                }
-                Err(_) => {
-                    // No previous months
-                    return None;
-                }
-            };
-        }
+        });
     }
 }
 
@@ -187,7 +165,7 @@ pub struct Budget {
     pub maggie_percentage_allocation: i64,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Spending {
     /// A unique identifier
@@ -201,16 +179,4 @@ pub struct Spending {
     pub description: String,
     /// Additional notes
     pub notes: Option<String>,
-}
-
-impl Default for Spending {
-    fn default() -> Self {
-        Self {
-            id: Utc::now().to_string(),
-            amount: Default::default(),
-            date: Default::default(),
-            description: Default::default(),
-            notes: Default::default(),
-        }
-    }
 }

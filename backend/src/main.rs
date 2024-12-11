@@ -1,5 +1,6 @@
 #![allow(clippy::needless_return)]
 mod config;
+mod custom_middleware;
 mod db;
 mod month;
 mod routes;
@@ -7,14 +8,8 @@ mod routes;
 use anyhow::Result;
 use common_axum::axum::{axum_serve, generate_open_api_spec, init_tracing_subcriber};
 use routes::{app, APIDoc};
-use serde::Serialize;
 use tokio::net::TcpListener;
 use tracing::info;
-
-#[derive(Serialize)]
-struct Doc {
-    name: String,
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {

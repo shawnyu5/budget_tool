@@ -220,6 +220,17 @@
             "$ref": "#/components/schemas/Budget",
             "description": "Budget details"
           },
+          "carriedOverFrom": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Month",
+                "description": "The month it was carried over from\nIf the setting are not carried over from a previous month, this value will be empty"
+              }
+            ]
+          },
           "month": {
             "$ref": "#/components/schemas/Month",
             "description": "The month"
