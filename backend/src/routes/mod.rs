@@ -8,6 +8,7 @@ use common_axum::axum::{
     __path_app_version, app_version, attach_tracing_cors_middleware, AppError,
 };
 use mongodb::bson::doc;
+use mongodb::options::ReplaceOptions;
 use tower::ServiceBuilder;
 use tracing::info;
 use utoipa::OpenApi;
@@ -97,12 +98,14 @@ async fn update_budget_handler(
         "month": month.to_string()
     };
     dbg!(&body);
+    let options = ReplaceOptions::builder().upsert(true).build();
     let result = db
         .collection
         .replace_one(filter, body)
+        .with_options(options)
         .await
         .context("Failed to update monthly budget")?;
 
-    info!("Replaced {} documents", result.matched_count);
+    info!("Modified {} document(s)", result.modified_count);
     return Ok(());
 }
