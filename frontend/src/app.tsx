@@ -2,6 +2,8 @@ import { MetaProvider, Title } from "@solidjs/meta";
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
+import MonthsDropDown from "./components/monthsDropDown";
+import { MonthlyBudgetProvider } from "./monthlyBudgetProvider";
 
 export default function App() {
   return (
@@ -22,10 +24,15 @@ export default function App() {
             // <a href="/">Index</a>
             // <a href="/about">About</a>
           }
+          <MonthsDropDown />
           <Suspense>{props.children}</Suspense>
         </MetaProvider>
       )}
     >
+      {
+        // <MonthlyBudgetProvider>
+        // </MonthlyBudgetProvider>
+      }
       <FileRoutes />
     </Router>
   );

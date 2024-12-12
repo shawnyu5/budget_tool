@@ -75,6 +75,10 @@ impl DB {
     pub async fn get_month_budget(&self, month: Month) -> Result<MonthlyBudget, DBError> {
         let mut month_to_check = month;
         let mut collection = self.collection.clone();
+        info!(
+            "Checking month {month} {collection_year}",
+            collection_year = collection.name()
+        );
 
         // flag to determine if we are looking for budgeting records in previous months
         let mut trying_prev_months = false;

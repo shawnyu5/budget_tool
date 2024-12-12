@@ -21,8 +21,11 @@ export default function (props: {
   const saveButton = (
     <button
       class="submit success button"
-      onClick={() => props.setIsEditing(false)}
-      // type="submit"
+      // onClick={(e) => {
+      //   props.setIsEditing(false);
+      //   e.currentTarget?.form?.submit();
+      // }}
+      type="submit"
     >
       Save
     </button>

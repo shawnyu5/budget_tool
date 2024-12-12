@@ -1,17 +1,8 @@
 import "./monthlySpending.css";
-import { useSearchParams } from "@solidjs/router";
-import {
-  Accessor,
-  createEffect,
-  createResource,
-  createSignal,
-  Setter,
-} from "solid-js";
+import { Accessor, createEffect, createSignal, Setter } from "solid-js";
 import log from "~/logger";
-import {
-  MonthlyBudget as MonthlyBudget,
-  calculateTotalSpending,
-} from "~/monthlyBudget";
+import { MonthlyBudget, MonthlySpending } from "~/monthlyBudget";
+import { useMonthlyBudget } from "~/useMonthlyBudget";
 /**
  * Displays the monthly spending. Including:
  * - The total budget for the month
@@ -19,28 +10,24 @@ import {
  * - Amount left in budget
  */
 export default function (props: {
-  monthlyBudget: Accessor<MonthlyBudget | null>;
-  setMonthlyBudget: Setter<MonthlyBudget | null>;
+   monthlyBudget: Accessor<MonthlyBudget | null>,
+   setMonthlyBudget: Setter<MonthlyBudget | null>
 }) {
-  const [searchParam, _setSearchParam] = useSearchParams();
-  const [monthlySpending, setMonthlySpending] = createSignal(0);
+  // const [monthlyBudget] = useMonthlyBudget();
+  // Total amount spend in a month
+  const [totalMonthlySpending, setTotalMonthlySpending] = createSignal(0);
+  createEffect(() => {
+    log.info(`Calculating total monthly spending`);
+    if (!props.monthlyBudget()) {
+      return;
+    }
+    const totalSpending = calculateMonthlySpending(
+      props.monthlyBudget()?.spending as MonthlySpending,
+    );
+    log.info(`Calculating total monthly spending: ${totalSpending}`);
+    setTotalMonthlySpending(totalSpending);
+  });
 
-  createResource(
-    () => props.monthlyBudget(),
-    async () => {
-      log.info("Calculating monthly spending");
-      setMonthlySpending(
-        calculateTotalSpending(props.monthlyBudget() as MonthlyBudget),
-      );
-    },
-  );
-
-  // createEffect(() => {
-  //   log.info("Calculating total monthly spending");
-  //   setMonthlySpending(
-  //     calculateTotalSpending(monthlySpending() as MonthlyBudget),
-  //   );
-  // });
   return (
     <>
       <div class="container">
@@ -48,9 +35,19 @@ export default function (props: {
         {
           // TODO: color should be dynamic, based on the percentage of month left
         }
-        <h1 style="color: green">${monthlySpending()}</h1>
+        <h1 style="color: green">${totalMonthlySpending()}</h1>
         <h1>/${props.monthlyBudget()?.budget.total}</h1>
       </div>
     </>
   );
+}
+export function calculateMonthlySpending(
+  monthlySpending: MonthlySpending,
+): number {
+  if (!monthlySpending) return 0;
+  let total = 0;
+  for (const spending of monthlySpending) {
+    total += spending.amount;
+  }
+  return total;
 }

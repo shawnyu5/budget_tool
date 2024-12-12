@@ -1,4 +1,4 @@
-import { Accessor, createSignal, For, Setter } from "solid-js";
+import { Accessor, createEffect, createSignal, For, Setter } from "solid-js";
 import "./monthsDropDown.css";
 import { useSearchParams } from "@solidjs/router";
 import { monthNumberToName } from "~/utils";
@@ -11,6 +11,18 @@ import { monthNumberToName } from "~/utils";
 export default function () {
   const [searchParam, setSearchParam] = useSearchParams();
   const date = new Date();
+
+  createEffect(() => {
+    // If month is not in the query param, set it to the current month
+    if (!searchParam.month) {
+      setSearchParam({ month: monthNumberToName(date.getMonth()) });
+    }
+
+    // If year is not in the query param, set it to the current year
+    if (!searchParam.year) {
+      setSearchParam({ year: date.getFullYear() });
+    }
+  });
 
   const months = [
     "January",

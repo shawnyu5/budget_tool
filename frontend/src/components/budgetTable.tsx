@@ -1,96 +1,48 @@
-import { action, useSearchParams } from "@solidjs/router";
-import axios from "axios";
-import { Accessor, createSignal, For, Setter, Show } from "solid-js";
-import { loadConfig } from "~/config";
+import { action } from "@solidjs/router";
+import {
+  Accessor,
+  children,
+  createEffect,
+  createSignal,
+  For,
+  JSX,
+  on,
+  Setter,
+  Show,
+  useContext,
+} from "solid-js";
 import log from "~/logger";
 import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/monthlyBudget";
 import EditSaveButton from "./editSaveButton";
 import ErrorComponent from "./errorComponent";
-
-// // The budget for a month
-// type monthlyBudget =
-//   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"];
+import { MonthlyBudgetContext } from "~/monthlyBudgetProvider";
+import { useMonthlyBudget } from "~/useMonthlyBudget";
 
 export default function (props: {
   monthlyBudget: Accessor<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
-  const [searchParam, _setSearchParam] = useSearchParams();
   const [isEditing, setIsEditing] = createSignal(false);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
+  // const [monthlyBudget, setMonthlyBudget] = useMonthlyBudget();
+  // const context = useContext(MonthlyBudgetContext);
+  // if (!context) {
+  //   throw new Error(
+  //     "MonthlyBudgetContext is not provided. Make sure to wrap your component tree in MonthlyBudgetProvider.",
+  //   );
+  // }
 
-  /**
-   * Handker for saving data
-   **/
-  const handleSave = async () => {
-    setIsEditing(false); // Exit edit mode and save changes
+  // const [monthlyBudget, setMonthlyBudget] = context;
+
+  const [spendingItems, setSpendingItems] =
+    createSignal<MonthlySpending | null>();
+
+  createEffect(() => {
     log.info(
-      `Sending updated spending: ${JSON.stringify(props.monthlyBudget())}`,
+      "monthlyBudget has changed. Updating spending items in budget table",
     );
-    axios.post(
-      `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
-      props.monthlyBudget(),
-    );
-  };
-
-  /**
-   * Update data in state when any input field changes
-   * @param index - the index in the table that was changed
-   * @param field - the field that was updated
-   * @param value - the updated value
-   */
-  const handleChange = (
-    index: number,
-    field: keyof SpendingItem,
-    value: string,
-  ) => {
-    // TODO: this handler needs to handle the validation of input
-    log.info(
-      `Handling change for \`${field}\` at index \`${index}\` with value \`${value}\``,
-    );
-    setErrorMessage(null);
-
-    if (
-      (field == "amount" && isNaN(parseFloat(value))) ||
-      parseFloat(value) <= 0
-    ) {
-      log.warn("Invalid amount...");
-      setErrorMessage("Invalid amount");
-      return;
-    }
-
-    if ((field == "description" || field == "date") && value == "") {
-      log.warn(`No ${field} set`);
-      setErrorMessage(`All items must have a ${field}!`);
-      return;
-    }
-    setIsEditing(false);
-
-    // Update the spending data
-    props.setMonthlyBudget((prevBudget) => {
-      if (!prevBudget) return prevBudget; // Check if there's a valid budget
-
-      // Make a copy of the spending array to maintain reactivity
-      const updatedSpending = [...prevBudget.spending];
-
-      // Update the specific field of the spending entry
-      updatedSpending[index] = {
-        ...updatedSpending[index], // Clone the existing item
-        [field]: field === "amount" ? parseFloat(value) : value, // Ensure the amount is parsed as a number
-      };
-
-      // Return the updated monthly budget
-      return { ...prevBudget, spending: updatedSpending };
-    });
-
-    log.info(
-      `Sending updated spending: ${JSON.stringify(props.monthlyBudget())}`,
-    );
-    axios.post(
-      `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
-      props.monthlyBudget(),
-    );
-  };
+    setSpendingItems(props.monthlyBudget()?.spending);
+  });
 
   const addSpendingItem = () => {
     const date = new Date();
@@ -105,38 +57,43 @@ export default function (props: {
       newSpendingItem,
       ...(props.monthlyBudget()?.spending ?? []),
     ];
-    const updatedBudget: MonthlyBudget = {
-      budget: props.monthlyBudget()?.budget ?? {
-        // Default to an empty budget object if undefined
-        maggie_percentage_allocation: 0,
-        shawn_percentage_allocation: 0,
-        total: 0,
-      },
-      month: props.monthlyBudget()?.month ?? "January",
-      spending: updatedSpendingRecord,
-    };
-    props.setMonthlyBudget(updatedBudget);
+    setSpendingItems(updatedSpendingRecord);
   };
 
   const removeSpendingItem = (entry: SpendingItem) => {
-    log.info(`Removing ${entry.id}`);
+    log.info(`Removing spending entry ID ${entry.id}: ${entry.description}`);
     const monthlySpending = props.monthlyBudget()?.spending ?? [];
-    log.info(monthlySpending.length);
 
     const updatedMonthlySpending = monthlySpending.filter(
       (spending) => spending.id != entry.id,
     );
-    const updatedBudget: MonthlyBudget = {
-      budget: props.monthlyBudget()?.budget ?? {
-        // Default to an empty budget object if undefined
-        maggie_percentage_allocation: 0,
-        shawn_percentage_allocation: 0,
-        total: 0,
-      },
-      month: props.monthlyBudget()?.month ?? "January", // Default to an empty string if month is undefined
-      spending: updatedMonthlySpending,
-    };
-    props.setMonthlyBudget(updatedBudget);
+    setSpendingItems(updatedMonthlySpending);
+  };
+
+  const updateSpendingItem = (
+    id: string,
+    field: keyof SpendingItem,
+    value: any,
+  ) => {
+    setSpendingItems((prev) => {
+      if (!prev) return;
+      const updatedSpending = prev.map((item) => {
+        if (item.id === id) {
+          log.info(
+            `Updating spending items: ${field} for item ${item.description} to ${field}`,
+          );
+          // Only update the changed field in the specific item
+          return { ...item, [field]: value };
+        }
+        return item;
+      });
+      return updatedSpending; // Only change the modified spending item
+    });
+  };
+
+  // On blur or when the user finishes editing, update the parent signal
+  const handleBlur = (id: string, field: keyof SpendingItem, value: any) => {
+    updateSpendingItem(id, field, value); // Update parent signal only on blur
   };
 
   return (
@@ -149,108 +106,202 @@ export default function (props: {
           Add
         </button>
       </Show>
-      <EditSaveButton isEditing={isEditing} setIsEditing={setIsEditing} />
-      <table>
-        <thead>
-          <tr>
-            <Show when={isEditing()}>
+      <form
+        action={action(async (formData) => {
+          setIsEditing(false);
+          await onFormSubmit(formData, spendingItems() as MonthlySpending, props.setMonthlyBudget);
+        })}
+        method="post"
+      >
+        <EditSaveButton isEditing={isEditing} setIsEditing={setIsEditing} />
+        <table>
+          <thead>
+            <tr>
+              <Show when={isEditing()}>
+                {
+                  // Delete button column
+                }
+                <th id="delete-button-column"></th>
+              </Show>
+              {/* @ts-ignore */}
+              <th width="150">Amount ($)</th>
+              {/* @ts-ignore */}
+              <th width="150">Date</th>
+              <th>Description</th>
+              <th>Notes</th>
               {
-                // Delete button column
+                // <th width="150">Table Header</th>
               }
-              <th id="delete-button-column"></th>
-            </Show>
-            {/* @ts-ignore */}
-            <th width="150">Amount ($)</th>
-            {/* @ts-ignore */}
-            <th width="150">Date</th>
-            <th>Description</th>
-            <th>Notes</th>
-            {
-              // <th width="150">Table Header</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          <For each={props.monthlyBudget()?.spending}>
-            {(entry, index) => (
-              <tr>
-                <Show when={isEditing()}>
-                  <td>
-                    <button
-                      type="button"
-                      class="alert button"
-                      onClick={() => removeSpendingItem(entry)}
-                    >
-                      DELETE
-                    </button>
-                  </td>
-                </Show>
-                <td>
-                  <span>$</span>
-                  {
-                    // TODO: refactor these text boxes into a component rather than copy pasting
-                  }
-                  {isEditing() ? (
-                    <input
-                      type="number"
-                      id={entry.id}
-                      onChange={(e) => {
-                        handleChange(index(), "amount", e.target.value);
-                      }}
-                      value={entry.amount}
-                    />
-                  ) : (
-                    entry.amount
-                  )}
-                </td>
-                <td>
-                  {isEditing() ? (
-                    <input
-                      type="text"
-                      value={entry.date}
-                      id={entry.id}
-                      required
-                      onChange={(e) => {
-                        handleChange(index(), "date", e.target.value);
-                      }}
-                    />
-                  ) : (
-                    entry.date
-                  )}
-                </td>
-                <td>
-                  {isEditing() ? (
-                    <input
-                      id={entry.id}
-                      type="text"
-                      onChange={(e) => {
-                        handleChange(index(), "description", e.target.value);
-                      }}
-                      value={entry.description}
-                    />
-                  ) : (
-                    entry.description
-                  )}
-                </td>
-                <td>
-                  {isEditing() ? (
-                    <input
-                      id={entry.id}
-                      type="text"
-                      onChange={(e) => {
-                        handleChange(index(), "notes", e.target.value);
-                      }}
-                      value={entry.notes || ""}
-                    />
-                  ) : (
-                    entry.notes
-                  )}
-                </td>
-              </tr>
-            )}
-          </For>
-        </tbody>
-      </table>
+            </tr>
+          </thead>
+          <tbody>
+            <For each={spendingItems()}>
+              {(entry) => {
+                const [amount, setAmount] = createSignal(entry.amount);
+                const [date, setDate] = createSignal(entry.date);
+                const [description, setDescription] = createSignal(
+                  entry.description,
+                );
+                const [notes, setNotes] = createSignal(entry.notes || "");
+
+                return (
+                  <tr>
+                    <Show when={isEditing()}>
+                      <td>
+                        <button
+                          type="button"
+                          class="alert button"
+                          onClick={() => removeSpendingItem(entry)}
+                        >
+                          DELETE
+                        </button>
+                      </td>
+                    </Show>
+                    <td>
+                      <span>$</span>
+                      {
+                        // TODO: refactor these text boxes into a component rather than copy pasting
+                      }
+                      {isEditing() ? (
+                        <input
+                          name={`amount-${entry.id}`}
+                          type="number"
+                          required
+                          id={entry.id}
+                          value={amount()}
+                          onInput={(e: InputEvent) => {
+                            const input = e.target as HTMLInputElement;
+                            const amount = parseFloat(input.value);
+                            setAmount(amount);
+                          }}
+                          onBlur={() =>
+                            handleBlur(entry.id as string, "amount", amount())
+                          }
+                        />
+                      ) : (
+                        amount()
+                      )}
+                    </td>
+                    <td>
+                      {isEditing() ? (
+                        <input
+                          name={`date-${entry.id}`}
+                          required
+                          type="text"
+                          value={date()}
+                          id={entry.id}
+                          onInput={(e: InputEvent) => {
+                            const input = e.target as HTMLInputElement;
+                            log.info(
+                              `On input: setting date to ${input.value}`,
+                            );
+                            setDate(input.value);
+                          }}
+                          onBlur={() =>
+                            handleBlur(entry.id as string, "date", date())
+                          }
+                        />
+                      ) : (
+                        date()
+                      )}
+                    </td>
+                    <td>
+                      {isEditing() ? (
+                        <input
+                          name={`description-${entry.id}`}
+                          required
+                          id={entry.id}
+                          type="text"
+                          value={description()}
+                          onInput={(e: InputEvent) => {
+                            const input = e.target as HTMLInputElement;
+                            log.info(
+                              `On input: setting date to ${input.value}`,
+                            );
+                            setDescription(input.value);
+                          }}
+                          onBlur={() =>
+                            handleBlur(
+                              entry.id as string,
+                              "description",
+                              description(),
+                            )
+                          }
+                        />
+                      ) : (
+                        description()
+                      )}
+                    </td>
+                    <td>
+                      {isEditing() ? (
+                        <input
+                          id={entry.id}
+                          type="text"
+                          name={`notes-${entry.id}`}
+                          value={notes()}
+                          onInput={(e: InputEvent) => {
+                            const input = e.target as HTMLInputElement;
+                            log.info(
+                              `On input: setting date to ${input.value}`,
+                            );
+                            setNotes(input.value);
+                          }}
+                          onBlur={() =>
+                            handleBlur(entry.id as string, "notes", notes())
+                          }
+                        />
+                      ) : (
+                        entry.notes
+                      )}
+                    </td>
+                  </tr>
+                );
+              }}
+            </For>
+          </tbody>
+        </table>
+      </form>
     </>
   );
+}
+
+async function onFormSubmit(
+  data: FormData,
+  monthlySpending: MonthlySpending,
+  setMonthlyBudget: Setter<MonthlyBudget | null>,
+) {
+  setMonthlyBudget((prev) => {
+    const updated = { ...prev, spending: monthlySpending };
+    log.info(
+      `Form submitted. Updating monthly budget: ${JSON.stringify(updated, null, 3)}`,
+    );
+    return updated;
+  });
+}
+
+/**
+ * An table element that will become an input form if it is being edited
+ * @param isEditing - determines if the input form is being edited
+ * @param editableComponent - the component to show when it is being edited
+ * @param nonEditableComponent - the component to show when it is not being edited
+ */
+function EditableInputField(props: {
+  // TODO: finish this component
+  // Passing components in via props may not work the way im expecting...
+  isEditing: Accessor<boolean>;
+  editableComponent: JSX.Element;
+  nonEditableComponent: JSX.Element;
+}) {
+  const editableComponent = children(() => props.editableComponent);
+  const nonEditableComponent = children(() => props.nonEditableComponent);
+  return props.isEditing() ? editableComponent() : nonEditableComponent();
+  // <input
+  //   id={entry.id}
+  //   name={`description-${entry.id}`}
+  //   type="text"
+  //   // onChange={(e) => {
+  //   //   handleChange(index(), "description", e.target.value);
+  //   // }}
+  //   value={entry.description}
+  // />
 }
