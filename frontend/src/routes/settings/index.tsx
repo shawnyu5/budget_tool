@@ -1,16 +1,82 @@
-import { action } from "@solidjs/router";
+import { action, useSearchParams } from "@solidjs/router";
 import "./index.css";
-import MonthsDropDown from "~/components/monthsDropDown";
-import { createSignal } from "solid-js";
+import { createEffect, createResource, createSignal, onMount } from "solid-js";
+import { getMonthlyBudget, MonthlyBudget } from "~/monthlyBudget";
+import log from "~/logger";
+import axios from "axios";
+import { loadConfig } from "~/config";
+import EditSaveButton from "~/components/editSaveButton";
 
 export default function () {
-  const [settings, setSettings] = createSignal("");
+  const [searchParam, _setSearchParam] = useSearchParams();
+  const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
+  const [monthlyBudget, setMonthlyBudget] = createSignal<MonthlyBudget | null>(
+    null,
+  );
+  const [shawnContribution, setShawnContribution] = createSignal(0);
+  const [maggieContribution, setMaggieContribution] = createSignal(0);
+  const [totalBudget, setTotalBudget] = createSignal(0);
+
+  createEffect(() => {
+    setShawnContribution(
+      monthlyBudget()?.budget.shawn_percentage_allocation ?? 0,
+    );
+    setMaggieContribution(
+      monthlyBudget()?.budget.maggie_percentage_allocation ?? 0,
+    );
+    setTotalBudget(monthlyBudget()?.budget.total ?? 0);
+  });
+
+  createResource(
+    () => [searchParamSignal().year, searchParamSignal().month],
+    async () => {
+      log.info(`Fetching budget for month ${searchParamSignal().month}`);
+      setMonthlyBudget(
+        await getMonthlyBudget(
+          searchParamSignal().year as string,
+          searchParamSignal().month as string,
+        ),
+      );
+    },
+  );
+
+  createEffect(() => {
+    if (!monthlyBudget()) {
+      return;
+    }
+    log.info(
+      `Updating monthly budget in backend: ${JSON.stringify(monthlyBudget(), null, 3)}`,
+    );
+    axios.post(
+      `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
+      monthlyBudget(),
+    );
+  });
+
+  const handleSubmission = action(async (data: FormData) => {
+    log.info(`Form submitted`);
+    log.info(`Shawn contribution: ${shawnContribution()}`);
+    log.info(`maggie contribution: ${maggieContribution()}`);
+
+    setMonthlyBudget((prev) => {
+      if (!prev) return;
+      const updated = {
+        ...prev,
+        budget: {
+          ...prev.budget,
+          shawn_percentage_allocation: shawnContribution(),
+          maggie_percentage_allocation: maggieContribution(),
+        },
+      };
+      log.info(`Updating monthly budget: ${JSON.stringify(updated)}`);
+      return updated;
+    });
+    //   console.log(`submitted: ${data}`);
+    //   console.log(`shawn: ${data.get("shawn-contribution")}`);
+  }, "settings-form");
 
   return (
     <>
-      {
-        // <MonthsDropDown />
-      }
       <div id="settings-form">
         <h2>Budget allocation</h2>
         {
@@ -19,12 +85,16 @@ export default function () {
           // </Show>
         }
         <form action={handleSubmission} method="post">
+          {
+            // <EditSaveButton />
+          }
           <label for="month-budget">Month's budget($)</label>
           <input
             type="number"
             id="month-budget"
             name="month-budget"
             placeholder="1000"
+            value={totalBudget()}
             required
           />
           <label for="shawn-contribution">Shawn contribution(%):</label>
@@ -33,6 +103,12 @@ export default function () {
             id="shawn-contribution"
             name="shawn-contribution"
             placeholder="50"
+            value={shawnContribution()}
+            onInput={(e: InputEvent) => {
+              const input = e.target as HTMLInputElement;
+              const contribution = parseFloat(input.value);
+              setShawnContribution(contribution);
+            }}
             required
           />
 
@@ -42,17 +118,17 @@ export default function () {
             id="maggie-contribution"
             placeholder="50"
             name="maggie-contribution"
-            value={settings()}
+            value={maggieContribution()}
+            onInput={(e: InputEvent) => {
+              const input = e.target as HTMLInputElement;
+              const contribution = parseFloat(input.value);
+              setMaggieContribution(contribution);
+            }}
             required
           />
-          <button type="submit">Submit</button>
+          <button class="submit success button">Submit</button>
         </form>
       </div>
     </>
   );
 }
-
-const handleSubmission = action(async (data: FormData) => {
-  console.log(`submitted: ${data}`);
-  console.log(`shawn: ${data.get("shawn-contribution")}`);
-}, "settings-form");
