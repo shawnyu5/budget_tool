@@ -1,5 +1,5 @@
 import "./index.css";
-import { createEffect, createResource, createSignal } from "solid-js";
+import { createEffect, createResource, createSignal, Show } from "solid-js";
 import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
 import { useSearchParams } from "@solidjs/router";
@@ -7,6 +7,7 @@ import { getMonthlyBudget, MonthlyBudget } from "~/monthlyBudget";
 import log from "~/logger";
 import axios from "axios";
 import { loadConfig } from "~/config";
+import SplitSpending from "~/components/splitSpending";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -47,9 +48,10 @@ export default function Home() {
         monthlyBudget={monthlyBudget}
         setMonthlyBudget={setMonthlyBudget}
       />
-
-      <button style="background: red">Split</button>
-      <br />
+      <SplitSpending
+        monthlyBudget={monthlyBudget}
+        setMonthlyBudget={setMonthlyBudget}
+      />
       <br />
       <BudgetTable
         monthlyBudget={monthlyBudget}

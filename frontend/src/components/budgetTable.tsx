@@ -24,16 +24,6 @@ export default function (props: {
 }) {
   const [isEditing, setIsEditing] = createSignal(false);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
-  // const [monthlyBudget, setMonthlyBudget] = useMonthlyBudget();
-  // const context = useContext(MonthlyBudgetContext);
-  // if (!context) {
-  //   throw new Error(
-  //     "MonthlyBudgetContext is not provided. Make sure to wrap your component tree in MonthlyBudgetProvider.",
-  //   );
-  // }
-
-  // const [monthlyBudget, setMonthlyBudget] = context;
-
   const [spendingItems, setSpendingItems] =
     createSignal<MonthlySpending | null>();
 
