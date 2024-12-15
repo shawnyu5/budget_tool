@@ -1,5 +1,11 @@
 import "./index.css";
-import { createEffect, createResource, createSignal, Show } from "solid-js";
+import {
+  createEffect,
+  createResource,
+  createSignal,
+  Show,
+  Suspense,
+} from "solid-js";
 import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
 import { useSearchParams } from "@solidjs/router";

@@ -6,17 +6,13 @@ import {
   createSignal,
   For,
   JSX,
-  on,
   Setter,
   Show,
-  useContext,
+  Suspense,
 } from "solid-js";
 import log from "~/logger";
 import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/monthlyBudget";
-import EditSaveButton from "./editSaveButton";
 import ErrorComponent from "./errorComponent";
-import { MonthlyBudgetContext } from "~/monthlyBudgetProvider";
-import { useMonthlyBudget } from "~/useMonthlyBudget";
 
 export default function (props: {
   monthlyBudget: Accessor<MonthlyBudget | null>;
@@ -24,14 +20,12 @@ export default function (props: {
 }) {
   const [isEditing, setIsEditing] = createSignal(false);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
-  const [spendingItems, setSpendingItems] =
+  const [monthlySpending, setMonthlySpending] =
     createSignal<MonthlySpending | null>();
 
   createEffect(() => {
-    log.info(
-      "monthlyBudget has changed. Updating spending items in budget table",
-    );
-    setSpendingItems(props.monthlyBudget()?.spending);
+    log.info("monthly spending has changed. Updating table");
+    setMonthlySpending(props.monthlyBudget()?.spending);
   });
 
   const addSpendingItem = () => {
@@ -39,25 +33,40 @@ export default function (props: {
     const newSpendingItem: SpendingItem = {
       id: Date.now().toString(),
       amount: 0,
-      date: `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`,
+      date: `${date.getFullYear()}/${props.monthlyBudget()?.month}/${date.getDate()}`,
       description: "",
       notes: null,
     };
     const updatedSpendingRecord: MonthlySpending = [
-      newSpendingItem,
       ...(props.monthlyBudget()?.spending ?? []),
+      newSpendingItem,
     ];
-    setSpendingItems(updatedSpendingRecord);
+
+    // props.setMonthlyBudget((prev) => {
+    //   const updated = {
+    //     ...prev,
+    //     spending: updatedSpendingRecord,
+    //   };
+    //   return updated as MonthlyBudget;
+    // });
+    setMonthlySpending(updatedSpendingRecord);
   };
 
   const removeSpendingItem = (entry: SpendingItem) => {
     log.info(`Removing spending entry ID ${entry.id}: ${entry.description}`);
     const monthlySpending = props.monthlyBudget()?.spending ?? [];
 
-    const updatedMonthlySpending = monthlySpending.filter(
+    const updatedSpending = monthlySpending.filter(
       (spending) => spending.id != entry.id,
     );
-    setSpendingItems(updatedMonthlySpending);
+    // props.setMonthlyBudget((prev) => {
+    //   const updated = {
+    //     ...prev,
+    //     spending: updatedSpending,
+    //   };
+    //   return updated as MonthlyBudget;
+    // });
+    setMonthlySpending(updatedSpending);
   };
 
   const updateSpendingItem = (
@@ -65,7 +74,7 @@ export default function (props: {
     field: keyof SpendingItem,
     value: any,
   ) => {
-    setSpendingItems((prev) => {
+    setMonthlySpending((prev) => {
       if (!prev) return;
       const updatedSpending = prev.map((item) => {
         if (item.id === id) {
@@ -82,28 +91,125 @@ export default function (props: {
   };
 
   // On blur or when the user finishes editing, update the parent signal
-  const handleBlur = (id: string, field: keyof SpendingItem, value: any) => {
-    updateSpendingItem(id, field, value); // Update parent signal only on blur
-  };
+  // const handleBlur = (
+  //   idx: number,
+  //   field: keyof SpendingItem,
+  //   value: any,
+  // ) => {
+  //   setMonthlySpending((prev) => {
+  //     if (!prev) return;
+  //     log.info(`Updating ${String(field)} to ${value}`);
+  //     const updated = [...prev];
+  //     updated[idx][field] = value
+
+  //     return prev;
+  //   });
+  //   // updateSpendingItem(id, field, value); // Update parent signal only on blur
+  // };
 
   return (
     <>
       <Show when={errorMessage()}>
         <ErrorComponent message={errorMessage()} />
       </Show>
-      <Show when={isEditing()}>
-        <button class="button" onClick={addSpendingItem}>
-          Add
-        </button>
+      {
+        // <Show when={isEditing()}>
+        //   <button class="button" onClick={addSpendingItem}>
+        //     Add
+        //   </button>
+        // </Show>
+      }
+      <Show when={!isEditing()}>
+        <div id="edit-save-buttons">
+          <button
+            class="button"
+            onClick={() => {
+              setIsEditing(true);
+              setMonthlySpending((prev) => {
+                if (!prev) return;
+
+                const date = new Date();
+                const newSpendingItem: SpendingItem = {
+                  id: Date.now().toString(),
+                  amount: 0,
+                  date: `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`,
+                  description: "",
+                  notes: null,
+                };
+
+                const updatedSpending = [newSpendingItem, ...prev];
+                log.info(
+                  `Adding item to spend table: ${JSON.stringify(updatedSpending)}`,
+                );
+                return updatedSpending;
+              });
+              // props.setMonthlyBudget((prev) => {
+              //   const date = new Date();
+              //   const newSpendingItem: SpendingItem = {
+              //     id: Date.now().toString(),
+              //     amount: 0,
+              //     date: `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`,
+              //     description: "",
+              //     notes: null,
+              //   };
+              //   const updatedSpendingRecord: MonthlySpending = [
+              //     ...(props.monthlyBudget()?.spending ?? []),
+              //     newSpendingItem,
+              //   ];
+
+              //   const updated = {
+              //     ...prev,
+              //     spending: updatedSpendingRecord,
+              //   };
+              //   return updated as MonthlyBudget
+              // });
+            }}
+          >
+            Add
+          </button>
+          <p></p>
+          <button
+            class="button"
+            onClick={() => {
+              setIsEditing(true);
+            }}
+          >
+            Edit
+          </button>
+        </div>
       </Show>
       <form
-        action={action(async (formData) => {
+        action={action(async () => {
+          log.info("Submitting form");
+          if (errorMessage()) {
+            log.info(
+              "There is an error message on screen. Not submitting form...",
+            );
+            return;
+          }
+
+          log.info("Updating monthly budget");
           setIsEditing(false);
-          await onFormSubmit(formData, spendingItems() as MonthlySpending, props.setMonthlyBudget);
+
+          props.setMonthlyBudget((prev) => {
+            if (!prev) return null;
+            const updated = {
+              ...prev,
+              spending: monthlySpending() ?? [],
+            };
+            return updated;
+          });
         })}
         method="post"
       >
-        <EditSaveButton isEditing={isEditing} setIsEditing={setIsEditing} />
+        {
+          // <EditSaveButton isEditing={isEditing} setIsEditing={setIsEditing} />
+        }
+        <Show when={isEditing()}>
+          <button class="button" type="submit">
+            Save
+          </button>
+        </Show>
         <table>
           <thead>
             <tr>
@@ -125,8 +231,8 @@ export default function (props: {
             </tr>
           </thead>
           <tbody>
-            <For each={spendingItems()}>
-              {(entry) => {
+            <For each={monthlySpending()}>
+              {(entry, idx) => {
                 const [amount, setAmount] = createSignal(entry.amount);
                 const [date, setDate] = createSignal(entry.date);
                 const [description, setDescription] = createSignal(
@@ -162,10 +268,23 @@ export default function (props: {
                           onInput={(e: InputEvent) => {
                             const input = e.target as HTMLInputElement;
                             const amount = parseFloat(input.value);
+                            if (amount == 0) {
+                              setErrorMessage("Amount must be greater than 0!");
+                              return;
+                            }
+                            setErrorMessage("");
                             setAmount(amount);
                           }}
                           onBlur={() =>
-                            handleBlur(entry.id as string, "amount", amount())
+                            setMonthlySpending((prev) => {
+                              if (!prev) return;
+                              log.info(
+                                `Updating spending amount to ${amount()}`,
+                              );
+                              const updated = [...prev];
+                              updated[idx()].amount = amount();
+                              return prev;
+                            })
                           }
                         />
                       ) : (
@@ -182,13 +301,19 @@ export default function (props: {
                           id={entry.id}
                           onInput={(e: InputEvent) => {
                             const input = e.target as HTMLInputElement;
-                            log.info(
-                              `On input: setting date to ${input.value}`,
-                            );
-                            setDate(input.value);
+                            const date = input.value;
+                            setDate(date);
                           }}
-                          onBlur={() =>
-                            handleBlur(entry.id as string, "date", date())
+                          onBlur={
+                            () =>
+                              setMonthlySpending((prev) => {
+                                if (!prev) return;
+                                log.info(`Updating date to ${amount()}`);
+                                const updated = [...prev];
+                                updated[idx()].date = date();
+                                return prev;
+                              })
+                            // handleBlur(entry.id as string, "date", date())
                           }
                         />
                       ) : (
@@ -205,17 +330,25 @@ export default function (props: {
                           value={description()}
                           onInput={(e: InputEvent) => {
                             const input = e.target as HTMLInputElement;
-                            log.info(
-                              `On input: setting date to ${input.value}`,
-                            );
-                            setDescription(input.value);
+                            const date = input.value;
+                            setDescription(date);
                           }}
-                          onBlur={() =>
-                            handleBlur(
-                              entry.id as string,
-                              "description",
-                              description(),
-                            )
+                          onBlur={
+                            () =>
+                              setMonthlySpending((prev) => {
+                                if (!prev) return;
+                                log.info(
+                                  `Updating description to ${description()}`,
+                                );
+                                const updated = [...prev];
+                                updated[idx()].description = description();
+                                return prev;
+                              })
+                            // handleBlur(
+                            //   entry.id as string,
+                            //   "description",
+                            //   description(),
+                            // )
                           }
                         />
                       ) : (
@@ -231,17 +364,21 @@ export default function (props: {
                           value={notes()}
                           onInput={(e: InputEvent) => {
                             const input = e.target as HTMLInputElement;
-                            log.info(
-                              `On input: setting date to ${input.value}`,
-                            );
-                            setNotes(input.value);
+                            const notes = input.value;
+                            setNotes(notes);
                           }}
                           onBlur={() =>
-                            handleBlur(entry.id as string, "notes", notes())
+                            setMonthlySpending((prev) => {
+                              if (!prev) return;
+                              log.info(`Updating notes to ${notes()}`);
+                              const updated = [...prev];
+                              updated[idx()].notes = notes();
+                              return prev;
+                            })
                           }
                         />
                       ) : (
-                        entry.notes
+                        notes()
                       )}
                     </td>
                   </tr>
