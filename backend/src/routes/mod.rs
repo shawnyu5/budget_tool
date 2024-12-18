@@ -1,19 +1,31 @@
+use anyhow::anyhow;
 use anyhow::Context;
-use axum::http::StatusCode;
+use axum::http::{HeaderMap, StatusCode};
 use axum::middleware;
 use axum::response::IntoResponse;
 use axum::routing::post;
 use axum::{extract::Path, routing::get, Json, Router};
+use base64::prelude::BASE64_STANDARD;
+use base64::Engine;
+use chrono::{DateTime, Duration, Local, Utc};
 use common_axum::axum::{
     __path_app_version, app_version, attach_tracing_cors_middleware, AppError,
 };
+use hmac::digest::KeyInit;
+use hmac::Hmac;
+use jwt::{SignWithKey, VerifyWithKey};
 use mongodb::bson::doc;
 use mongodb::options::ReplaceOptions;
+use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
+use sha2::Sha256;
 use tower::ServiceBuilder;
 use tracing::info;
+use tracing::instrument;
 use utoipa::OpenApi;
 
-use crate::custom_middleware::check_valid_year;
+use crate::config::Config;
+use crate::custom_middleware::{check_auth_header, check_valid_year};
 use crate::db::DBError;
 use crate::{
     db::{MonthlyBudget, DB},
@@ -25,7 +37,12 @@ pub fn app() -> Router {
         .route("/", get(app_version))
         .route("/budget/:year/:month", get(get_month_budget_handler))
         .route("/budget/:year/:month", post(update_budget_handler))
-        .layer(ServiceBuilder::new().layer(middleware::from_fn(check_valid_year)));
+        .layer(
+            ServiceBuilder::new()
+                .layer(middleware::from_fn(check_auth_header))
+                .layer(middleware::from_fn(check_valid_year)),
+        )
+        .route("/login/basic", post(login_handler));
     return attach_tracing_cors_middleware(router);
 }
 
@@ -47,6 +64,7 @@ pub struct APIDoc;
         ("month" = String, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
     )
 )]
+#[instrument]
 async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -81,6 +99,7 @@ async fn get_month_budget_handler(
         ("month" = String, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
     )
 )]
+#[instrument(skip(body))]
 async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(body): Json<MonthlyBudget>,
@@ -97,7 +116,6 @@ async fn update_budget_handler(
     let filter = doc! {
         "month": month.to_string()
     };
-    dbg!(&body);
     let options = ReplaceOptions::builder().upsert(true).build();
     let result = db
         .collection
@@ -108,4 +126,69 @@ async fn update_budget_handler(
 
     info!("Modified {} document(s)", result.modified_count);
     return Ok(());
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JwtAccessToken {
+    pub user: String,
+    pub expire: DateTime<Utc>,
+}
+
+// TODO: implement an access / refresh token system later
+// struct RefreshToken {
+//     user: String,
+//     expire: DateTime<Utc>,
+//     token_id: String,
+// }
+
+#[utoipa::path(post, path = "/login/basic")]
+#[instrument(skip_all)]
+async fn login_handler(headers: HeaderMap) -> Result<String, AppError> {
+    let config = Config::load();
+    // The base64 decoded user
+    let user = match headers.get("authorization") {
+        Some(user) => {
+            let decoded_auth_header = BASE64_STANDARD
+                .decode(user)
+                .context("Failed to decode user from auth header")?;
+            let decoded_auth_header = String::from_utf8(decoded_auth_header)
+                .context("Failed to convert auth header to string")?;
+
+            let user: Vec<&String> = config
+                .basic_auth
+                .par_iter()
+                .filter(|s| *s == &decoded_auth_header)
+                .collect();
+            if user.is_empty() {
+                return Err(AppError(
+                    StatusCode::FORBIDDEN,
+                    anyhow!("User does not have access"),
+                ));
+            }
+            assert!(
+                user.len() == 1,
+                "There should be only one user that matched the authorizatio header. Something is wrong if there are multiple..."
+            );
+
+            user[0]
+        }
+        None => {
+            return Err(AppError(
+                StatusCode::FORBIDDEN,
+                anyhow!("Missing authorization headers"),
+            ))
+        }
+    };
+
+    let key: Hmac<Sha256> = Hmac::new_from_slice(&Config::load().private_key.into_bytes())?;
+    let claim = JwtAccessToken {
+        user: user.to_string(),
+        expire: (Local::now() + Duration::hours(24)).into(),
+    };
+    let token_str = claim.sign_with_key(&key)?;
+
+    // let claims: JwtAccessToken = token_str.verify_with_key(&key)?;
+    // dbg!(&claims);
+
+    return Ok(token_str);
 }
