@@ -6,17 +6,21 @@ mod month;
 mod routes;
 
 use anyhow::Result;
-use common_axum::axum::{axum_serve, generate_open_api_spec, init_tracing_subcriber};
-use routes::{app, APIDoc};
+use common_axum::axum::{axum_serve, init_tracing_subcriber};
+use config::Config;
+use routes::app;
 use tokio::net::TcpListener;
 use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     init_tracing_subcriber().expect("Failed to init tracing subscriber");
-    generate_open_api_spec::<APIDoc>("open_api_spec.json")
-        .expect("Failed to generate open API spec");
+    // generate_open_api_spec::<APIDoc>("open_api_spec.json")
+    //     .expect("Failed to generate open API spec");
     info!("Generated Open API spec");
+
+    // Attempt to load config. If it fails, dont bother starting the server
+    Config::load();
 
     let addr = "0.0.0.0:8000";
     let listener = TcpListener::bind(addr).await.unwrap();
