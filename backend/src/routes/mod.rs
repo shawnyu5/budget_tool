@@ -47,7 +47,12 @@ pub fn app() -> Router {
 }
 
 #[derive(OpenApi)]
-#[openapi(paths(app_version, get_month_budget_handler, update_budget_handler))]
+#[openapi(paths(
+    app_version,
+    get_month_budget_handler,
+    update_budget_handler,
+    login_handler
+))]
 pub struct APIDoc;
 
 /// Get the budget information for a specific month
@@ -148,16 +153,22 @@ async fn login_handler(headers: HeaderMap) -> Result<String, AppError> {
     // The base64 decoded user
     let user = match headers.get("authorization") {
         Some(user) => {
-            let decoded_auth_header = BASE64_STANDARD
-                .decode(user)
+            let auth_header_str = user
+                .to_str()
+                .context("Failed to convert auth header to string")?;
+            let auth_user = auth_header_str.replace("Basic ", "");
+            info!("base64 decoding user from auth header: {:?}", auth_user);
+
+            let decoded_auth_user = BASE64_STANDARD
+                .decode(auth_user)
                 .context("Failed to decode user from auth header")?;
-            let decoded_auth_header = String::from_utf8(decoded_auth_header)
+            let decoded_auth_user = String::from_utf8(decoded_auth_user)
                 .context("Failed to convert auth header to string")?;
 
             let user: Vec<&String> = config
                 .basic_auth
                 .par_iter()
-                .filter(|s| *s == &decoded_auth_header)
+                .filter(|s| *s == &decoded_auth_user)
                 .collect();
             if user.is_empty() {
                 return Err(AppError(

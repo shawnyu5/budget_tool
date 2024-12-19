@@ -30,7 +30,9 @@ impl Config {
                     .decode(s)
                     // Failing to decode user credentials is a fatal error
                     .expect("Failed to decode user from base64");
-                String::from_utf8(decoded).expect("Failed to convert decoded user to string")
+                String::from_utf8(decoded)
+                    .expect("Failed to convert decoded user to string")
+                    .replace("\n", "")
             })
             .collect();
         return Config {

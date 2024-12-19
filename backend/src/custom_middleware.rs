@@ -10,7 +10,7 @@ use common_axum::axum::AppError;
 use hmac::{digest::KeyInit, Hmac};
 use jwt::{SignWithKey, VerifyWithKey};
 use sha2::Sha256;
-use tracing::{info, instrument};
+use tracing::{error, info, instrument};
 
 use crate::{config::Config, month::Month, routes::JwtAccessToken};
 
@@ -33,7 +33,20 @@ pub async fn check_auth_header(
     next: Next,
 ) -> Result<impl IntoResponse, AppError> {
     let jwt_token = match header.get("authorization") {
-        Some(token) => token,
+        Some(auth_header) => {
+            info!("Auth header: {:?}", auth_header);
+            let auth_header_str = auth_header
+                .to_str()
+                .context("Failed to convert authorization header to string")?;
+
+            if !auth_header_str.contains("Bearer") {
+                return Err(AppError(
+                    StatusCode::FORBIDDEN,
+                    anyhow!("Missing bearer token"),
+                ));
+            }
+            auth_header_str.replace("Bearer ", "")
+        }
         None => {
             return Err(AppError(
                 StatusCode::FORBIDDEN,
@@ -41,18 +54,20 @@ pub async fn check_auth_header(
             ));
         }
     };
-    info!("Got authorization header");
-
+    info!("Got JWT token from authorization header: {jwt_token}");
     let key: Hmac<Sha256> = Hmac::new_from_slice(&Config::load().private_key.into_bytes())
         .context("Failed to parse private key")?;
 
     info!("Verifying JWT");
-    let claim: JwtAccessToken = jwt_token
-        .to_str()?
-        .to_string()
-        .verify_with_key(&key)
-        // TODO: failing to verify token should return FORBIDDEN
-        .context("Failed to verify JWT token")?;
+    let claim: JwtAccessToken = match jwt_token.to_string().verify_with_key(&key) {
+        Ok(e) => e,
+        Err(e) => {
+            error!("Failed to verify JWT token");
+            return Err(AppError(StatusCode::FORBIDDEN, e.into()));
+        }
+    };
+    // // TODO: failing to verify token should return FORBIDDEN
+    // .context("Failed to verify JWT token")?;
     info!("JWT verified");
 
     info!("Checking JWT expiration");
@@ -63,6 +78,7 @@ pub async fn check_auth_header(
             anyhow!("JWT expired, please authenticate"),
         ));
     }
+    info!("JWT not expired");
 
     return Ok(next.run(request).await);
 }
