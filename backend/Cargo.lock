@@ -316,7 +316,7 @@ dependencies = [
 [[package]]
 name = "common-axum"
 version = "0.1.0"
-source = "git+https://github.com/shawnyu5/common-axum?rev=v1.2.1#c21e37e90bf4e9af82ea14f83cdf32d1070ab409"
+source = "git+https://github.com/shawnyu5/common-axum?rev=v1.2.2#6b08524bf586fa3cd0721e710af6e007dacd2e6a"
 dependencies = [
  "anyhow",
  "axum",
