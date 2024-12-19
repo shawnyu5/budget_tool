@@ -170,9 +170,10 @@ export default function (props: {
                         <button
                           type="button"
                           class="alert button"
+                          // style={{ width: "10%" }}
                           onClick={() => removeSpendingItem(entry)}
                         >
-                          DELETE
+                          ❎
                         </button>
                       </td>
                     </Show>
