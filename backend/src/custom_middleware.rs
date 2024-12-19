@@ -14,12 +14,15 @@ use tracing::{error, info, instrument};
 
 use crate::{config::Config, month::Month, routes::JwtAccessToken};
 
+#[instrument(skip_all)]
+/// Checks the year in the path. Returns 400 if the year is invalid
 pub async fn check_valid_year(
     Path((year, _month)): Path<(String, Month)>,
     request: Request,
     next: Next,
 ) -> Result<impl IntoResponse, StatusCode> {
     if year.len() != 4 {
+        error!("Invalid year");
         return Err(StatusCode::BAD_REQUEST);
     }
     return Ok(next.run(request).await);

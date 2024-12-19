@@ -3,12 +3,12 @@ use anyhow::Context;
 use axum::http::{HeaderMap, StatusCode};
 use axum::middleware;
 use axum::response::IntoResponse;
-use axum::routing::post;
-use axum::{extract::Path, routing::get, Json, Router};
+use axum::{extract::Path, Json, Router};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use chrono::{DateTime, Duration, Local, Utc};
 use common_axum::app_error_v2::AppError;
+use common_axum::axum::generate_open_api_spec_from_open_api;
 use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
 use hmac::digest::KeyInit;
 use hmac::Hmac;
@@ -18,10 +18,10 @@ use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
-use tower::ServiceBuilder;
 use tracing::info;
 use tracing::instrument;
-use utoipa::OpenApi;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_axum::routes;
 
 use crate::config::Config;
 use crate::custom_middleware::{check_auth_header, check_valid_year};
@@ -32,34 +32,72 @@ use crate::{
 };
 
 pub fn app() -> Router {
+    let (budget_router, budget_api) = OpenApiRouter::new()
+        .routes(routes!(get_month_budget_handler, update_budget_handler,))
+        .split_for_parts();
+    let budget_router = budget_router.layer(middleware::from_fn(check_valid_year));
+
+    let (general_router, general_api) = OpenApiRouter::new()
+        .routes(routes!(app_version))
+        .split_for_parts();
+    let general_router = general_router.layer(middleware::from_fn(check_auth_header));
+
+    let (auth_router, auth_api) = OpenApiRouter::new()
+        .routes(routes!(basic_auth_handler))
+        .split_for_parts();
+
     let router = Router::new()
-        .route("/", get(app_version))
-        .route("/budget/:year/:month", get(get_month_budget_handler))
-        .route("/budget/:year/:month", post(update_budget_handler))
-        .layer(
-            ServiceBuilder::new()
-                .layer(middleware::from_fn(check_auth_header))
-                .layer(middleware::from_fn(check_valid_year)),
-        )
-        .route("/login/basic", post(login_handler));
+        .merge(budget_router)
+        .merge(general_router)
+        .merge(auth_router);
+
+    let mut merged_api = general_api.merge_from(budget_api).merge_from(auth_api);
+    merged_api.info.title = "budget-tool backend".to_string();
+    merged_api.info.description = None;
+    merged_api.info.contact = None;
+    merged_api.info.license = None;
+
+    generate_open_api_spec_from_open_api(merged_api, "open_api_spec.json")
+        .expect("Failed to generate open API spec");
+
+    // TODO: think about how this will work...
+    // generate_open_api_spec("open_api_spec.json");
+
+    // let (router, api) = OpenApiRouter::new().routes(routes!(
+    //     get_month_budget_handler,
+    //     update_budget_handler,
+    //     app_version,
+    //     login_handler
+    // ));
+    // let router = Router::new()
+    //     .route("/budget/:year/:month", get(get_month_budget_handler))
+    //     .route("/budget/:year/:month", post(update_budget_handler))
+    //     .layer(middleware::from_fn(check_valid_year))
+    //     .route("/", get(app_version))
+    //     .layer(middleware::from_fn(check_auth_header))
+    //     .route("/login/basic", post(login_handler));
+
     return attach_tracing_cors_middleware(router);
 }
 
-#[derive(OpenApi)]
-#[openapi(paths(
-    app_version,
-    get_month_budget_handler,
-    update_budget_handler,
-    login_handler
-))]
-pub struct APIDoc;
+// #[derive(OpenApi)]
+// #[openapi(paths(
+//     app_version,
+//     get_month_budget_handler,
+//     update_budget_handler,
+//     login_handler
+// ))]
+// pub struct APIDoc;
 
 /// Get the budget information for a specific month
+#[instrument]
 #[utoipa::path(
     get,
     path = "/budget/{year}/{month}",
     responses(
         (status = 200, description = "The requested month's budget. If the request month does not have any budget records, this route will iterate back till either no more months to check, a budget is encountered. The returned budget will have no spending, all the fields are correct, and matches the request", body = MonthlyBudget),
+        (status = 401, description = "User does not have access", body = String),
+        (status = 403, description = "Authenication failed", body = String),
         (status = 404, description = "All months, the requested month and before does not contain any monthly budget", body = String),
         (status = 500, description = "Failed to get the requested month's budget", body = String),
     ),
@@ -68,7 +106,6 @@ pub struct APIDoc;
         ("month" = String, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
     )
 )]
-#[instrument]
 async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
@@ -88,6 +125,7 @@ async fn get_month_budget_handler(
 }
 
 /// Update the budget for a specific month in a specific year
+#[instrument(skip(body))]
 #[utoipa::path(
     post,
     request_body(
@@ -96,6 +134,8 @@ async fn get_month_budget_handler(
     path = "/budget/{year}/{month}",
     responses(
         (status = 200, description = "Successfully updated the month's budget", body = MonthlyBudget),
+        (status = 401, description = "User does not have access", body = String),
+        (status = 403, description = "Authenication failed", body = String),
         (status = 500, description = "Failed to update the month's budget", body = String),
     ),
     params(
@@ -103,7 +143,6 @@ async fn get_month_budget_handler(
         ("month" = String, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
     )
 )]
-#[instrument(skip(body))]
 async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(body): Json<MonthlyBudget>,
@@ -145,9 +184,16 @@ pub struct JwtAccessToken {
 //     token_id: String,
 // }
 
-#[utoipa::path(post, path = "/login/basic")]
 #[instrument(skip_all)]
-async fn login_handler(headers: HeaderMap) -> Result<String, AppError> {
+#[utoipa::path(post,
+    path = "/login/basic",
+    responses(
+        (status = 200, description = "Login successful. Returns a JWT token", body = String),
+        (status = 401, description = "User does not have access", body = String),
+        (status = 403, description = "Authenication failed", body = String),
+    )
+)]
+async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> {
     let config = Config::load();
     // The base64 decoded user
     let user = match headers.get("authorization") {
@@ -196,9 +242,6 @@ async fn login_handler(headers: HeaderMap) -> Result<String, AppError> {
         expire: (Local::now() + Duration::hours(24)).into(),
     };
     let token_str = claim.sign_with_key(&key)?;
-
-    // let claims: JwtAccessToken = token_str.verify_with_key(&key)?;
-    // dbg!(&claims);
 
     return Ok(token_str);
 }
