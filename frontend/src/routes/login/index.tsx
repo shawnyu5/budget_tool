@@ -1,6 +1,6 @@
-import { action, redirect } from "@solidjs/router";
+import { action, redirect, useNavigate } from "@solidjs/router";
 import axios from "axios";
-import { createSignal } from "solid-js";
+import { createSignal, onMount } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
 import { loadConfig } from "~/config";
 import log from "~/logger";
@@ -9,6 +9,26 @@ export default function () {
   const [userName, setUserName] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
+  const navigate = useNavigate();
+  onMount(async () => {
+    // TODO: extract this into utils function. This should be called on a few pages on load
+    log.info("Checking if there is a JWT token present");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      return;
+    }
+    log.info("Found JTW token. Checking if token is still valid");
+    const response = await axios.get(`${loadConfig().backendUrl}/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.status == 200) {
+      log.info("Token is valid. Redirecting to home page");
+      navigate("/", { replace: true });
+    }
+  });
+
   const onSubmit = action(async (_data: FormData) => {
     const base64Encoded = btoa(`${userName()}:${password()}`);
     try {
@@ -22,8 +42,8 @@ export default function () {
         },
       );
 
-      log.info("Storing token in local storage")
-      localStorage.setItem("token", response.data)
+      log.info("Storing token in local storage");
+      localStorage.setItem("token", response.data);
       return redirect("/");
     } catch (e) {
       log.error(`Failed to login: ${e}`);
@@ -31,7 +51,7 @@ export default function () {
         if (e.response?.status == 403) {
           setErrorMessage("User does not have access");
         } else {
-           setErrorMessage(e.message)
+          setErrorMessage(e.message);
         }
       }
     }
