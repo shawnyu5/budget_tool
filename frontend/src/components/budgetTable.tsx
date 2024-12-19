@@ -1,14 +1,11 @@
 import { action } from "@solidjs/router";
 import {
   Accessor,
-  children,
   createEffect,
   createSignal,
   For,
-  JSX,
   Setter,
   Show,
-  Suspense,
 } from "solid-js";
 import log from "~/logger";
 import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/monthlyBudget";
@@ -18,8 +15,11 @@ export default function (props: {
   monthlyBudget: Accessor<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
+  // If the table is being edited
   const [isEditing, setIsEditing] = createSignal(false);
+  // Any error currently on screen
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
+  // Spending for the current month
   const [monthlySpending, setMonthlySpending] =
     createSignal<MonthlySpending | null>();
 
@@ -28,143 +28,54 @@ export default function (props: {
     setMonthlySpending(props.monthlyBudget()?.spending);
   });
 
-  const addSpendingItem = () => {
-    const date = new Date();
-    const newSpendingItem: SpendingItem = {
-      id: Date.now().toString(),
-      amount: 0,
-      date: `${date.getFullYear()}/${props.monthlyBudget()?.month}/${date.getDate()}`,
-      description: "",
-      notes: null,
-    };
-    const updatedSpendingRecord: MonthlySpending = [
-      ...(props.monthlyBudget()?.spending ?? []),
-      newSpendingItem,
-    ];
-
-    // props.setMonthlyBudget((prev) => {
-    //   const updated = {
-    //     ...prev,
-    //     spending: updatedSpendingRecord,
-    //   };
-    //   return updated as MonthlyBudget;
-    // });
-    setMonthlySpending(updatedSpendingRecord);
-  };
-
+  /**
+   * Removes a spending item from the table
+   * @param entry - the spending entry to remove
+   */
   const removeSpendingItem = (entry: SpendingItem) => {
-    log.info(`Removing spending entry ID ${entry.id}: ${entry.description}`);
-    const monthlySpending = props.monthlyBudget()?.spending ?? [];
+    log.info(
+      `Removing spending entry ID ${entry.id}, description: ${entry.description}`,
+    );
 
-    const updatedSpending = monthlySpending.filter(
+    const updatedSpending = (monthlySpending() ?? []).filter(
       (spending) => spending.id != entry.id,
     );
-    // props.setMonthlyBudget((prev) => {
-    //   const updated = {
-    //     ...prev,
-    //     spending: updatedSpending,
-    //   };
-    //   return updated as MonthlyBudget;
-    // });
     setMonthlySpending(updatedSpending);
   };
 
-  const updateSpendingItem = (
-    id: string,
-    field: keyof SpendingItem,
-    value: any,
-  ) => {
+  /**
+   * Adds an empty spending item to the beginning of the list
+   */
+  const addSpendingItem = () => {
+    setIsEditing(true);
     setMonthlySpending((prev) => {
       if (!prev) return;
-      const updatedSpending = prev.map((item) => {
-        if (item.id === id) {
-          log.info(
-            `Updating spending items: ${field} for item ${item.description} to ${field}`,
-          );
-          // Only update the changed field in the specific item
-          return { ...item, [field]: value };
-        }
-        return item;
-      });
-      return updatedSpending; // Only change the modified spending item
+
+      const date = new Date();
+      const newSpendingItem: SpendingItem = {
+        id: Date.now().toString(),
+        amount: 0,
+        date: `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`,
+        description: "",
+        notes: null,
+      };
+
+      const updatedSpending = [newSpendingItem, ...prev];
+      log.info(
+        `Adding item to spend table: ${JSON.stringify(updatedSpending)}`,
+      );
+      return updatedSpending;
     });
   };
-
-  // On blur or when the user finishes editing, update the parent signal
-  // const handleBlur = (
-  //   idx: number,
-  //   field: keyof SpendingItem,
-  //   value: any,
-  // ) => {
-  //   setMonthlySpending((prev) => {
-  //     if (!prev) return;
-  //     log.info(`Updating ${String(field)} to ${value}`);
-  //     const updated = [...prev];
-  //     updated[idx][field] = value
-
-  //     return prev;
-  //   });
-  //   // updateSpendingItem(id, field, value); // Update parent signal only on blur
-  // };
 
   return (
     <>
       <Show when={errorMessage()}>
         <ErrorComponent message={errorMessage()} />
       </Show>
-      {
-        // <Show when={isEditing()}>
-        //   <button class="button" onClick={addSpendingItem}>
-        //     Add
-        //   </button>
-        // </Show>
-      }
       <Show when={!isEditing()}>
         <div id="edit-save-buttons">
-          <button
-            class="button"
-            onClick={() => {
-              setIsEditing(true);
-              setMonthlySpending((prev) => {
-                if (!prev) return;
-
-                const date = new Date();
-                const newSpendingItem: SpendingItem = {
-                  id: Date.now().toString(),
-                  amount: 0,
-                  date: `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`,
-                  description: "",
-                  notes: null,
-                };
-
-                const updatedSpending = [newSpendingItem, ...prev];
-                log.info(
-                  `Adding item to spend table: ${JSON.stringify(updatedSpending)}`,
-                );
-                return updatedSpending;
-              });
-              // props.setMonthlyBudget((prev) => {
-              //   const date = new Date();
-              //   const newSpendingItem: SpendingItem = {
-              //     id: Date.now().toString(),
-              //     amount: 0,
-              //     date: `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`,
-              //     description: "",
-              //     notes: null,
-              //   };
-              //   const updatedSpendingRecord: MonthlySpending = [
-              //     ...(props.monthlyBudget()?.spending ?? []),
-              //     newSpendingItem,
-              //   ];
-
-              //   const updated = {
-              //     ...prev,
-              //     spending: updatedSpendingRecord,
-              //   };
-              //   return updated as MonthlyBudget
-              // });
-            }}
-          >
+          <button class="button" onClick={addSpendingItem}>
             Add
           </button>
           <p></p>
@@ -209,6 +120,18 @@ export default function (props: {
           <button class="button" type="submit">
             Save
           </button>
+          {
+            // TODO: implement this cancel button
+            // <button
+            //   class="alert button"
+            //   onClick={() => {
+            //     setIsEditing(false);
+            //   }}
+            // >
+            //   Cancel
+            // </button>
+            // <p></p>
+          }
         </Show>
         <table>
           <thead>
@@ -333,22 +256,16 @@ export default function (props: {
                             const date = input.value;
                             setDescription(date);
                           }}
-                          onBlur={
-                            () =>
-                              setMonthlySpending((prev) => {
-                                if (!prev) return;
-                                log.info(
-                                  `Updating description to ${description()}`,
-                                );
-                                const updated = [...prev];
-                                updated[idx()].description = description();
-                                return prev;
-                              })
-                            // handleBlur(
-                            //   entry.id as string,
-                            //   "description",
-                            //   description(),
-                            // )
+                          onBlur={() =>
+                            setMonthlySpending((prev) => {
+                              if (!prev) return;
+                              log.info(
+                                `Updating description to ${description()}`,
+                              );
+                              const updated = [...prev];
+                              updated[idx()].description = description();
+                              return prev;
+                            })
                           }
                         />
                       ) : (
@@ -390,45 +307,4 @@ export default function (props: {
       </form>
     </>
   );
-}
-
-async function onFormSubmit(
-  data: FormData,
-  monthlySpending: MonthlySpending,
-  setMonthlyBudget: Setter<MonthlyBudget | null>,
-) {
-  setMonthlyBudget((prev) => {
-    const updated = { ...prev, spending: monthlySpending };
-    log.info(
-      `Form submitted. Updating monthly budget: ${JSON.stringify(updated, null, 3)}`,
-    );
-    return updated;
-  });
-}
-
-/**
- * An table element that will become an input form if it is being edited
- * @param isEditing - determines if the input form is being edited
- * @param editableComponent - the component to show when it is being edited
- * @param nonEditableComponent - the component to show when it is not being edited
- */
-function EditableInputField(props: {
-  // TODO: finish this component
-  // Passing components in via props may not work the way im expecting...
-  isEditing: Accessor<boolean>;
-  editableComponent: JSX.Element;
-  nonEditableComponent: JSX.Element;
-}) {
-  const editableComponent = children(() => props.editableComponent);
-  const nonEditableComponent = children(() => props.nonEditableComponent);
-  return props.isEditing() ? editableComponent() : nonEditableComponent();
-  // <input
-  //   id={entry.id}
-  //   name={`description-${entry.id}`}
-  //   type="text"
-  //   // onChange={(e) => {
-  //   //   handleChange(index(), "description", e.target.value);
-  //   // }}
-  //   value={entry.description}
-  // />
 }

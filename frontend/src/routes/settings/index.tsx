@@ -50,6 +50,11 @@ export default function () {
     axios.post(
       `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
       monthlyBudget(),
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      },
     );
   });
 

@@ -8,8 +8,8 @@ import {
 } from "solid-js";
 import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
-import { useSearchParams } from "@solidjs/router";
-import { getMonthlyBudget, MonthlyBudget } from "~/monthlyBudget";
+import { redirect, useNavigate, useSearchParams } from "@solidjs/router";
+import { Errors, getMonthlyBudget, MonthlyBudget } from "~/monthlyBudget";
 import log from "~/logger";
 import axios from "axios";
 import { loadConfig } from "~/config";
@@ -21,17 +21,24 @@ export default function Home() {
   const [monthlyBudget, setMonthlyBudget] = createSignal<MonthlyBudget | null>(
     null,
   );
+  const navigate = useNavigate();
 
   createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
-      setMonthlyBudget(
-        await getMonthlyBudget(
+      try {
+        const budget = await getMonthlyBudget(
           searchParamSignal().year as string,
           searchParamSignal().month as string,
-        ),
-      );
+        );
+
+        setMonthlyBudget(budget);
+      } catch (e) {
+        if (e == Errors.FORBIDDEN) {
+          navigate("/login", { replace: true });
+        }
+      }
     },
   );
 
@@ -45,6 +52,11 @@ export default function Home() {
     axios.post(
       `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
       monthlyBudget(),
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      },
     );
   });
 

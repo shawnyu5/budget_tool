@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { paths } from "./backend_schema";
 import { loadConfig } from "./config";
 import log from "./logger";
+import { redirect } from "@solidjs/router";
 
 export type SpendingItem =
   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
@@ -14,6 +15,17 @@ export type MonthlyBudget =
 export type MonthlySpending =
   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"];
 
+export enum Errors {
+  /**
+    Failed to fetch the budget for a particular month
+   **/
+  FAILED_TO_FETCH_BUDGET,
+  /**
+     Forbidden to fetch the budget
+  **/
+  FORBIDDEN
+}
+
 /**
  * Get the budget for a specific month in a specific year
  * @param year - the year
@@ -22,20 +34,28 @@ export type MonthlySpending =
 export async function getMonthlyBudget(
   year: string,
   month: string,
-): Promise<MonthlyBudget | null> {
-  const url = `${loadConfig().backendUrl}/budget/${year}/${month}`;
+): Promise<MonthlyBudget> {
   try {
-    let response: AxiosResponse<MonthlyBudget> = await axios.get(url);
+    let response: AxiosResponse<MonthlyBudget> = await axios.get(
+      `${loadConfig().backendUrl}/budget/${year}/${month}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      },
+    );
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
       if (e.response?.status == 404) {
         log.info("No budget recorded for this month");
-        return Promise.resolve(null);
+        return Promise.reject(Errors.FAILED_TO_FETCH_BUDGET)
+      } else if (e.response?.status == 403) {
+         return Promise.reject(Errors.FORBIDDEN)
       }
     }
     log.info(`Failed to get monthly budget`);
-    return Promise.reject("Failed to get monthly budget");
+    return Promise.reject(Errors.FAILED_TO_FETCH_BUDGET);
   }
 }
 

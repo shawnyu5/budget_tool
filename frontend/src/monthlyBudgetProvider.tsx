@@ -1,7 +1,6 @@
 import {
   createContext,
   createSignal,
-  useContext,
   Setter,
   Accessor,
   createEffect,
@@ -31,6 +30,10 @@ export const MonthlyBudgetProvider = (props: { children: any }) => {
     );
     const year = searchParamSignal().year as string;
     const month = searchParamSignal().month as string;
+    if (!year || !month) {
+      return;
+    }
+
     const fetchedBudget = await getMonthlyBudget(year, month);
     log.info(`Fetched budget: ${JSON.stringify(fetchedBudget, null, 3)}`);
     return fetchedBudget;
@@ -41,7 +44,7 @@ export const MonthlyBudgetProvider = (props: { children: any }) => {
     try {
       await axios.post(
         `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
-        budget
+        budget,
       );
     } catch (err) {
       log.error(`Failed to sync monthly budget with backend: ${err}`);
