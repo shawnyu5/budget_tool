@@ -30,6 +30,8 @@ export default function () {
       if (axios.isAxiosError(e)) {
         if (e.response?.status == 403) {
           setErrorMessage("User does not have access");
+        } else {
+           setErrorMessage(e.message)
         }
       }
     }
