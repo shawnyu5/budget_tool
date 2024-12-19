@@ -98,7 +98,7 @@ impl DB {
                         month_spending.month = month;
                         month_spending.carried_over_from = Some(month_to_check);
                     }
-                    month_spending.populate_spending_id();
+                    // month_spending.populate_spending_id();
                     return Ok(month_spending);
                 }
                 None => {

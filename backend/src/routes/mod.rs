@@ -60,9 +60,6 @@ pub fn app() -> Router {
     generate_open_api_spec_from_open_api(merged_api, "open_api_spec.json")
         .expect("Failed to generate open API spec");
 
-    // TODO: think about how this will work...
-    // generate_open_api_spec("open_api_spec.json");
-
     // let (router, api) = OpenApiRouter::new().routes(routes!(
     //     get_month_budget_handler,
     //     update_budget_handler,
@@ -147,10 +144,7 @@ async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
-    // // TODO: extract year validation into a middleware
-    // if year.len() != 4 {
-    //     return Err(AppError(StatusCode::BAD_REQUEST, anyhow!("Invalid year")));
-    // }
+    // body.populate_spending_id();
 
     let db = DB::new(year)
         .await
@@ -236,6 +230,7 @@ async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> {
         }
     };
 
+    // Create a JWT for user
     let key: Hmac<Sha256> = Hmac::new_from_slice(&Config::load().private_key.into_bytes())?;
     let claim = JwtAccessToken {
         user: user.to_string(),
