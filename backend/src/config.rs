@@ -1,11 +1,8 @@
 use std::env;
 
-use anyhow::Context;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use dotenvy::dotenv;
-use rayon::iter::IntoParallelRefIterator;
-use rayon::prelude::*;
 
 #[non_exhaustive]
 #[derive(Debug)]

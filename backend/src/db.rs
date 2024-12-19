@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
-use chrono::{Date, Local, Utc};
-use mongodb::{bson::doc, Client, Collection, Database};
+use chrono::Local;
+use mongodb::{bson::doc, Client, Collection};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;

@@ -8,12 +8,11 @@ use axum::{extract::Path, routing::get, Json, Router};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use chrono::{DateTime, Duration, Local, Utc};
-use common_axum::axum::{
-    __path_app_version, app_version, attach_tracing_cors_middleware, AppError,
-};
+use common_axum::app_error_v2::AppError;
+use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
 use hmac::digest::KeyInit;
 use hmac::Hmac;
-use jwt::{SignWithKey, VerifyWithKey};
+use jwt::SignWithKey;
 use mongodb::bson::doc;
 use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;

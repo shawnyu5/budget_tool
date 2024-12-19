@@ -6,9 +6,9 @@ use axum::{
     response::IntoResponse,
 };
 use chrono::Utc;
-use common_axum::axum::AppError;
+use common_axum::app_error_v2::AppError;
 use hmac::{digest::KeyInit, Hmac};
-use jwt::{SignWithKey, VerifyWithKey};
+use jwt::VerifyWithKey;
 use sha2::Sha256;
 use tracing::{error, info, instrument};
 
