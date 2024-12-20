@@ -1,12 +1,19 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import "./settings.css";
-import { createEffect, createResource, createSignal, onMount } from "solid-js";
+import {
+  createEffect,
+  createResource,
+  createSignal,
+  onMount,
+  Show,
+} from "solid-js";
 import { getMonthlyBudget, MonthlyBudget } from "~/monthlyBudget";
 import log from "~/logger";
 import axios from "axios";
 import { loadConfig } from "~/config";
 import MonthsDropDown from "~/components/monthsDropDown";
 import ErrorComponent from "~/components/errorComponent";
+import SuccessComponent from "~/components/successComponent";
 
 export default function () {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -15,6 +22,7 @@ export default function () {
     null,
   );
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
+  const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
   const [shawnContribution, setShawnContribution] = createSignal(0);
   const [maggieContribution, setMaggieContribution] = createSignal(0);
   const [totalBudget, setTotalBudget] = createSignal(0);
@@ -43,22 +51,27 @@ export default function () {
     },
   );
 
-  createEffect(() => {
+  createEffect(async () => {
     if (!monthlyBudget()) {
       return;
     }
     log.info(
       `Updating monthly budget in backend: ${JSON.stringify(monthlyBudget(), null, 3)}`,
     );
-    axios.post(
-      `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
-      monthlyBudget(),
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+    try {
+      await axios.post(
+        `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
+        monthlyBudget(),
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         },
-      },
-    );
+      );
+    } catch (e) {
+      log.error("Failed to update budget: ", e);
+      setErrorMessage("Failed to update settings... Please try again later...");
+    }
   });
 
   const handleSubmission = action(async () => {
@@ -68,7 +81,7 @@ export default function () {
     log.info(`maggie contribution: ${maggieContribution()}`);
 
     if (shawnContribution() + maggieContribution() != 100) {
-      setErrorMessage("Ah no, the contributions does not add up to 100%...");
+      setErrorMessage("Ah oh, the contributions does not add up to 100%...");
       return;
     }
 
@@ -85,8 +98,12 @@ export default function () {
       log.info(`Updating monthly budget: ${JSON.stringify(updated)}`);
       return updated;
     });
-    //   console.log(`submitted: ${data}`);
-    //   console.log(`shawn: ${data.get("shawn-contribution")}`);
+
+    setSuccessMessage("Settings updated successfully!");
+    // Make the success message disappear after a few seconds
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 3000);
   }, "settings-form");
 
   return (
@@ -110,6 +127,9 @@ export default function () {
           // </Show>
         }
         <ErrorComponent message={errorMessage()} />
+        <Show when={errorMessage() == null && successMessage()}>
+          <SuccessComponent message={successMessage()} />
+        </Show>
         <form action={handleSubmission} method="post">
           {
             // <EditSaveButton />
