@@ -136,7 +136,7 @@ async fn get_month_budget_handler(
 }
 
 /// Update the budget for a specific month in a specific year
-#[instrument(skip(body))]
+#[instrument(skip_all)]
 #[utoipa::path(
     post,
     request_body(
@@ -352,10 +352,12 @@ async fn update_spending_item(
         .context("Failed to get budget for month {month}")?;
 
     // TODO: look into doing this without cloning
+    info!("Looking for ID: {id}");
     let updated_monthly_spending: Vec<SpendingItem> = monthly_budget
         .spending
         .par_iter_mut()
         .map(|spending| {
+            info!("Iteration ID: {}", spending.id);
             if spending.id == id {
                 SpendingItem {
                     id: spending_item.id.clone(),
@@ -369,12 +371,10 @@ async fn update_spending_item(
             }
         })
         .collect();
-
     monthly_budget.spending = updated_monthly_spending;
     let filter = doc! {
         "month": month.to_string()
     };
-    // let options = ReplaceOptions::builder().upsert(true).build();
 
     let result = db
         .collection

@@ -85,7 +85,7 @@ export default function (props: {
           <button
             class="button"
             onClick={() => {
-              // TODO: this should redirect to a new page
+               navigate(`/spending-item/add/${searchParams.year}/${searchParams.month}`)
             }}
           >
             Add
@@ -181,7 +181,7 @@ export default function (props: {
                       }
                       log.info("Clicked on row. Redirecting");
                       navigate(
-                        `/edit/spending-item/${searchParams.year}/${searchParams.month}/${entry.id}`,
+                        `/spending-item/edit/${searchParams.year}/${searchParams.month}/${entry.id}`,
                         {
                           replace: true,
                         },

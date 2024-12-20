@@ -46,13 +46,13 @@ export default function () {
       id="spending-item"
       method="post"
       action={action(async () => {
-        log.info("Submitting form");
         if (errorMessage()) {
           log.info(
             "There is an error message on screen. Not submitting form...",
           );
           return;
         }
+        log.info("Submitting form");
 
         const spendingItem: SpendingItem = {
           id: id(),
@@ -61,6 +61,7 @@ export default function () {
           description: description(),
           notes: notes(),
         };
+        // TODO: error handling
         const response = axios.post(
           `${loadConfig().backendUrl}/spending-item/${year}/${month}/${id()}`,
           spendingItem,
@@ -82,7 +83,10 @@ export default function () {
         type="number"
         required
         value={amount()}
-        onInput={(e: InputEvent) => {}}
+        onInput={(e: InputEvent) => {
+          const input = (e.target as HTMLInputElement).value;
+          setAmount(parseFloat(input));
+        }}
       />
 
       <label>Date</label>
@@ -91,7 +95,10 @@ export default function () {
         type="text"
         required
         value={date()}
-        onInput={(e: InputEvent) => {}}
+        onInput={(e: InputEvent) => {
+          const input = (e.target as HTMLInputElement).value;
+          setDate(input);
+        }}
       />
 
       <label>Description</label>
@@ -100,7 +107,10 @@ export default function () {
         type="text"
         required
         value={description()}
-        onInput={(e: InputEvent) => {}}
+        onInput={(e: InputEvent) => {
+          const input = (e.target as HTMLInputElement).value;
+          setDescription(input);
+        }}
       />
 
       <label>Notes</label>
@@ -108,7 +118,10 @@ export default function () {
         name="notes"
         type="text"
         value={notes()}
-        onInput={(e: InputEvent) => {}}
+        onInput={(e: InputEvent) => {
+          const input = (e.target as HTMLInputElement).value;
+          setNotes(input);
+        }}
       />
 
       <button class="button success" type="submit">

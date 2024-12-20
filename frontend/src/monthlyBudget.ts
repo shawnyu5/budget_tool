@@ -18,7 +18,7 @@ export type MonthlySpending =
 /**
  * Errors that could happen when fetching the monthly budget
  */
-export enum GetMonthlyBudgetErrors {
+export enum MonthlyBudgetErrors {
   /**
    * Failed to fetch the budget for a particular month
    **/
@@ -37,6 +37,7 @@ export enum GetMonthlyBudgetErrors {
  * Get the budget for a specific month in a specific year
  * @param year - the year
  * @param month - the month to get the budget of
+ * @throws `MonthlyBudgetErrors` when fetching the budget fails
  */
 export async function getMonthlyBudget(
   year: string,
@@ -56,20 +57,59 @@ export async function getMonthlyBudget(
     if (axios.isAxiosError(e)) {
       if (e.response?.status == 404) {
         log.info("No budget recorded for this month");
-        return Promise.reject(GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+        return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
       } else if (e.response?.status == 403) {
         log.info("Access forbidden");
-        return Promise.reject(GetMonthlyBudgetErrors.FORBIDDEN);
+        return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
       } else if (e.response?.status == 401) {
-         log.info("Authenication token expired. Needs re authenication")
-         return Promise.reject(GetMonthlyBudgetErrors.RE_AUTH_NEEDED)
+        log.info("Authenication token expired. Needs re authenication");
+        return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
       }
     }
     log.info(`Failed to get monthly budget`);
-    return Promise.reject(GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+    return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
   }
 }
 
+/**
+ * Updates the monthly budget for a specific year and month with a new budget
+ * @param year - the year
+ * @param month - the month
+ * @param monthlyBudget - the updated monthly budget
+ * @throws `MonthlyBudgetErrors` when updating the budget fails
+ */
+export function updateMonthlyBudget(
+  year: string,
+  month: string,
+  monthlyBudget: MonthlyBudget,
+) {
+  try {
+    const response = axios.post(
+      `${loadConfig().backendUrl}/budget/${year}/${month}`,
+      monthlyBudget,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      },
+    );
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      if (e.response?.status == 404) {
+        log.info("No budget recorded for this month");
+        return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+      } else if (e.response?.status == 403) {
+        log.info("Access forbidden");
+        return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
+      } else if (e.response?.status == 401) {
+        log.info("Authenication token expired. Needs re authenication");
+        return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
+      }
+    }
+    log.info(`Failed to get monthly budget`);
+    return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+  }
+}
 /**
  * Calculates the total spending for a month
  * @param monthlyBudget - the month's budget to calculate the total of

@@ -9,7 +9,7 @@ import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
-  GetMonthlyBudgetErrors,
+  MonthlyBudgetErrors,
   getMonthlyBudget,
   MonthlyBudget,
 } from "~/monthlyBudget";
@@ -47,9 +47,9 @@ export default function Home() {
         setErrorMessage(null);
         return budget;
       } catch (e) {
-        if (e == GetMonthlyBudgetErrors.RE_AUTH_NEEDED) {
+        if (e == MonthlyBudgetErrors.RE_AUTH_NEEDED) {
           navigate("/login", { replace: true });
-        } else if (e == GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
+        } else if (e == MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
           setErrorMessage("Failed to fetch monthly budget...");
         }
       }
@@ -70,15 +70,32 @@ export default function Home() {
     log.info(
       `Updating monthly budget in backend: ${JSON.stringify(monthlyBudget(), null, 3)}`,
     );
-    axios.post(
-      `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
-      monthlyBudget(),
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+    try {
+      axios.post(
+        `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
+        monthlyBudget(),
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         },
-      },
-    );
+      );
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        if (e.response?.status == 404) {
+          log.info("No budget recorded for this month");
+          return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+        } else if (e.response?.status == 403) {
+          log.info("Access forbidden");
+          return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
+        } else if (e.response?.status == 401) {
+          log.info("Authenication token expired. Needs re authenication");
+          return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
+        }
+      }
+      log.info(`Failed to get monthly budget`);
+      return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+    }
   });
 
   return (
