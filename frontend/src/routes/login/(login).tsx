@@ -18,14 +18,18 @@ export default function () {
       return;
     }
     log.info("Found JTW token. Checking if token is still valid");
-    const response = await axios.get(`${loadConfig().backendUrl}/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (response.status == 200) {
-      log.info("Token is valid. Redirecting to home page");
-      navigate("/", { replace: true });
+    try {
+      const response = await axios.get(`${loadConfig().backendUrl}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status == 200) {
+        log.info("Token is valid. Redirecting to home page");
+        navigate("/", { replace: true });
+      }
+    } catch (e) {
+      log.info("Token is no longer valid");
     }
   });
 

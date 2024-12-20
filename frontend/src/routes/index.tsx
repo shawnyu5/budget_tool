@@ -1,5 +1,10 @@
 import "./index.css";
-import { createEffect, createResource, createSignal } from "solid-js";
+import {
+  createEffect,
+  createResource,
+  createSignal,
+  ErrorBoundary,
+} from "solid-js";
 import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
 import { useNavigate, useSearchParams } from "@solidjs/router";
@@ -24,9 +29,12 @@ export default function Home() {
   );
   const navigate = useNavigate();
 
-  createResource(
+  const [monthlyBudgetResource] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
+      if (!searchParamSignal().year || !searchParamSignal().month) {
+        return;
+      }
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
       try {
         const budget = await getMonthlyBudget(
@@ -34,11 +42,12 @@ export default function Home() {
           searchParamSignal().month as string,
         );
 
-        setMonthlyBudget(budget);
+        // setMonthlyBudget(budget);
         // If fetching is successful, make sure the error message is gone
         setErrorMessage(null);
+        return budget;
       } catch (e) {
-        if (e == GetMonthlyBudgetErrors.FORBIDDEN) {
+        if (e == GetMonthlyBudgetErrors.RE_AUTH_NEEDED) {
           navigate("/login", { replace: true });
         } else if (e == GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
           setErrorMessage("Failed to fetch monthly budget...");
@@ -46,6 +55,13 @@ export default function Home() {
       }
     },
   );
+
+  createEffect(() => {
+    if (!monthlyBudgetResource()) {
+      return;
+    }
+    setMonthlyBudget(monthlyBudgetResource() ?? null);
+  });
 
   createEffect(() => {
     if (!monthlyBudget()) {
@@ -67,31 +83,33 @@ export default function Home() {
 
   return (
     <main>
-      <span class="inline-flex-container">
-        <MonthsDropDown />
-        <button
-          class="button"
-          onClick={() => {
-            navigate("/settings", { replace: true });
-          }}
-        >
-          Settings
-        </button>
-      </span>
-      <ErrorComponent message={errorMessage()} />
-      <MonthlySpending
-        monthlyBudget={monthlyBudget}
-        setMonthlyBudget={setMonthlyBudget}
-      />
-      <SplitSpending
-        monthlyBudget={monthlyBudget}
-        setMonthlyBudget={setMonthlyBudget}
-      />
-      <br />
-      <BudgetTable
-        monthlyBudget={monthlyBudget}
-        setMonthlyBudget={setMonthlyBudget}
-      />
+      <ErrorBoundary fallback={<p>Failed to load budget</p>}>
+        <span class="inline-flex-container">
+          <MonthsDropDown />
+          <button
+            class="button"
+            onClick={() => {
+              navigate("/settings", { replace: true });
+            }}
+          >
+            Settings
+          </button>
+        </span>
+        <ErrorComponent message={errorMessage()} />
+        <MonthlySpending
+          monthlyBudget={monthlyBudget}
+          setMonthlyBudget={setMonthlyBudget}
+        />
+        <SplitSpending
+          monthlyBudget={monthlyBudget}
+          setMonthlyBudget={setMonthlyBudget}
+        />
+        <br />
+        <BudgetTable
+          monthlyBudget={monthlyBudget}
+          setMonthlyBudget={setMonthlyBudget}
+        />
+      </ErrorBoundary>
     </main>
   );
 }

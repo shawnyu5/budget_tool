@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tracing::info;
 use tracing::instrument;
+use tracing::warn;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
@@ -41,6 +42,7 @@ pub fn app() -> Router {
     let (spending_item_router, spending_item_api) = OpenApiRouter::new()
         .routes(routes! {
             get_spending_item,
+            update_spending_item
         })
         .split_for_parts();
     let spending_item_router = spending_item_router.layer(middleware::from_fn(check_valid_year));
@@ -99,13 +101,13 @@ pub fn app() -> Router {
 // pub struct APIDoc;
 
 /// Get the budget information for a specific month
-#[instrument]
+#[instrument(skip_all)]
 #[utoipa::path(
     get,
     path = "/budget/{year}/{month}",
     responses(
         (status = 200, description = "The requested month's budget. If the request month does not have any budget records, this route will iterate back till either no more months to check, a budget is encountered. The returned budget will have no spending, all the fields are correct, and matches the request", body = MonthlyBudget),
-        (status = 401, description = "User does not have access", body = String),
+        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
         (status = 403, description = "Authenication failed", body = String),
         (status = 404, description = "All months, the requested month and before does not contain any monthly budget", body = String),
         (status = 500, description = "Failed to get the requested month's budget", body = String),
@@ -143,7 +145,7 @@ async fn get_month_budget_handler(
     path = "/budget/{year}/{month}",
     responses(
         (status = 200, description = "Successfully updated the month's budget", body = MonthlyBudget),
-        (status = 401, description = "User does not have access", body = String),
+        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
         (status = 403, description = "Authenication failed", body = String),
         (status = 500, description = "Failed to update the month's budget", body = String),
     ),
@@ -195,7 +197,7 @@ pub struct JwtAccessToken {
     path = "/login/basic",
     responses(
         (status = 200, description = "Login successful. Returns a JWT token", body = String),
-        (status = 401, description = "User does not have access", body = String),
+        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
         (status = 403, description = "Authenication failed", body = String),
     )
 )]
@@ -260,7 +262,7 @@ async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> {
     path = "/spending-item/{year}/{month}/{id}",
     responses(
         (status = 200, description = "The request spending item", body = MonthlyBudget),
-        (status = 401, description = "User does not have access", body = String),
+        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
         (status = 403, description = "Authenication failed", body = String),
         (status = 500, description = "Failed to get the requested spending item", body = String),
     ),
@@ -293,17 +295,138 @@ async fn get_spending_item(
         .context("Failed to look for spending item")?;
 
     if let Some(monthly_budget) = found {
-        let spending_item: Vec<&SpendingItem> = monthly_budget
+        let spending_items: Vec<&SpendingItem> = monthly_budget
             .spending
             .par_iter()
             .filter(|spending| spending.id == id)
             .collect();
         debug_assert!(
-            spending_item.len() == 1,
+            spending_items.len() == 1,
             "More than 1 spending items found. This should never happen. We are searching by ID"
         );
-        return Ok(Json(Some(spending_item[0].clone())));
+
+        // TODO: this should not be needed
+        let mut spending_item = spending_items[0].clone();
+        if spending_item.id.is_empty() {
+            warn!("Spending item ID is empty, adding ID");
+            spending_item.id = Local::now().to_string()
+        }
+
+        return Ok(Json(Some(spending_items[0].clone())));
     }
     info!("Filter matched no spending records");
     return Ok(Json(None));
+}
+
+/// Update a single spending item by ID in a specific year and month
+#[instrument(skip_all)]
+#[utoipa::path(
+    post,
+    path = "/spending-item/{year}/{month}/{id}",
+    request_body(
+        content = MonthlyBudget, content_type = "application/json",
+    ),
+    params(
+        ("year" = String, description = "The year the spending item is in"),
+        ("month" = Month, description = "The month the spending item is in"),
+        ("id" = String, description = "The ID of the spending item to update"),
+    ),
+    responses(
+        (status = 200, description = "The request spending item was Successfully updated"),
+        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
+        (status = 403, description = "Authenication failed", body = String),
+        (status = 500, description = "Failed to get update spending item", body = String),
+    ),
+)]
+async fn update_spending_item(
+    Path((year, month, id)): Path<(String, Month, String)>,
+    Json(spending_item): Json<SpendingItem>,
+) -> Result<(), AppError> {
+    let db = DB::new(year)
+        .await
+        .context("Failed to connect to database")?;
+
+    let mut monthly_budget = db
+        .get_month_budget(month)
+        .await
+        .context("Failed to get budget for month {month}")?;
+
+    // TODO: look into doing this without cloning
+    let updated_monthly_spending: Vec<SpendingItem> = monthly_budget
+        .spending
+        .par_iter_mut()
+        .map(|spending| {
+            if spending.id == id {
+                SpendingItem {
+                    id: spending_item.id.clone(),
+                    date: spending_item.date.clone(),
+                    amount: spending_item.amount,
+                    description: spending_item.description.clone(),
+                    notes: spending_item.notes.clone(),
+                }
+            } else {
+                spending.clone()
+            }
+        })
+        .collect();
+
+    monthly_budget.spending = updated_monthly_spending;
+    let filter = doc! {
+        "month": month.to_string()
+    };
+    // let options = ReplaceOptions::builder().upsert(true).build();
+
+    let result = db
+        .collection
+        .replace_one(filter, monthly_budget)
+        // .with_options(options)
+        .await
+        .context("Failed to update monthly budget")?;
+
+    info!("Modified {} document(s)", result.modified_count);
+    debug_assert!(
+        result.modified_count == 1,
+        "Should always modify a single document"
+    );
+    return Ok(());
+
+    // let filter = doc! {
+    //     "month": month.to_string(),
+    //     "spending": {
+    //         "$elemMatch": {
+    //             "id": id.clone(),
+    //         }
+    //     }
+    // };
+
+    // // let updated_spending = SpendingItem {
+    // //     id,
+    // //     amount: spending_item.amount,
+    // //     date: spending_item.date,
+    // //     description: spending_item.description,
+    // //     notes: spending_item.notes,
+    // // };
+
+    // let update_query = doc! {
+    //     "$set": {
+    //         "spending.$[elem].amount": spending_item.amount,
+    //         "spending.$[elem].date": spending_item.date,
+    //         "spending.$[elem].description": spending_item.description,
+    //         "spending.$[elem].notes": spending_item.notes,
+    //     }
+    // };
+
+    // let arr_filter = vec![doc! {
+    //     "elem.id": spending_item.id
+    // }];
+
+    // let options = UpdateOptions::builder()
+    //     .array_filters(Some(arr_filter))
+    //     .build();
+
+    // TODO: idk how to update...
+    // let result = db
+    //     .collection
+    //     .update_one(filter, update_query, options)
+    //     .await;
 }

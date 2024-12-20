@@ -1,0 +1,119 @@
+import { action, useNavigate, useParams } from "@solidjs/router";
+import axios from "axios";
+import { createSignal, ErrorBoundary, onMount } from "solid-js";
+import ErrorComponent from "~/components/errorComponent";
+import { loadConfig } from "~/config";
+import log from "~/logger";
+import { SpendingItem } from "~/monthlyBudget";
+
+export default function () {
+  const params = useParams();
+  const year = params.year;
+  const month = params.month;
+  const navigate = useNavigate();
+
+  const [id, setID] = createSignal(params.id);
+  const [amount, setAmount] = createSignal(0);
+  const [date, setDate] = createSignal("");
+  const [description, setDescription] = createSignal("");
+  const [notes, setNotes] = createSignal("");
+  const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
+
+  onMount(async () => {
+    try {
+      const spendingItem = await axios.get<SpendingItem>(
+        `${loadConfig().backendUrl}/spending-item/${year}/${month}/${id()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      setID(spendingItem.data.id);
+      setAmount(spendingItem.data.amount);
+      setDate(spendingItem.data.date);
+      setDescription(spendingItem.data.description);
+      setNotes(spendingItem.data.notes ?? "");
+    } catch (e) {
+      log.error("Failed to get spending information: ", e);
+      setErrorMessage(`Failed to get spending information: ${e}`);
+    }
+  });
+
+  return (
+    <form
+      id="spending-item"
+      method="post"
+      action={action(async () => {
+        log.info("Submitting form");
+        if (errorMessage()) {
+          log.info(
+            "There is an error message on screen. Not submitting form...",
+          );
+          return;
+        }
+
+        const spendingItem: SpendingItem = {
+          id: id(),
+          amount: amount(),
+          date: date(),
+          description: description(),
+          notes: notes(),
+        };
+        const response = axios.post(
+          `${loadConfig().backendUrl}/spending-item/${year}/${month}/${id()}`,
+          spendingItem,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
+        );
+
+        navigate("/", { replace: true });
+      })}
+    >
+      <ErrorComponent message={errorMessage()} />
+
+      <label>Amount ($)</label>
+      <input
+        name="amount"
+        type="number"
+        required
+        value={amount()}
+        onInput={(e: InputEvent) => {}}
+      />
+
+      <label>Date</label>
+      <input
+        name="date"
+        type="text"
+        required
+        value={date()}
+        onInput={(e: InputEvent) => {}}
+      />
+
+      <label>Description</label>
+      <input
+        name="description"
+        type="text"
+        required
+        value={description()}
+        onInput={(e: InputEvent) => {}}
+      />
+
+      <label>Notes</label>
+      <input
+        name="notes"
+        type="text"
+        value={notes()}
+        onInput={(e: InputEvent) => {}}
+      />
+
+      <button class="button success" type="submit">
+        Save
+      </button>
+    </form>
+  );
+}

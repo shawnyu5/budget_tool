@@ -1,4 +1,9 @@
-import { action } from "@solidjs/router";
+import {
+  action,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "@solidjs/router";
 import {
   Accessor,
   createEffect,
@@ -22,6 +27,8 @@ export default function (props: {
   // Spending for the current month
   const [monthlySpending, setMonthlySpending] =
     createSignal<MonthlySpending | null>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   createEffect(() => {
     log.info("monthly spending has changed. Updating table");
@@ -75,7 +82,12 @@ export default function (props: {
       </Show>
       <Show when={!isEditing()}>
         <div id="edit-save-buttons">
-          <button class="button" onClick={addSpendingItem}>
+          <button
+            class="button"
+            onClick={() => {
+              // TODO: this should redirect to a new page
+            }}
+          >
             Add
           </button>
           <p></p>
@@ -85,7 +97,7 @@ export default function (props: {
               setIsEditing(true);
             }}
           >
-            Edit
+            Delete
           </button>
         </div>
       </Show>
@@ -153,18 +165,28 @@ export default function (props: {
           <tbody>
             <For each={monthlySpending()}>
               {(entry, idx) => {
-                const [amount, setAmount] = createSignal(entry.amount);
-                const [date, setDate] = createSignal(entry.date);
-                const [description, setDescription] = createSignal(
-                  entry.description,
-                );
-                const [notes, setNotes] = createSignal(entry.notes || "");
+                // const [amount, setAmount] = createSignal(entry.amount);
+                // const [date, setDate] = createSignal(entry.date);
+                // const [description, setDescription] = createSignal(
+                //   entry.description,
+                // );
+                // const [notes, setNotes] = createSignal(entry.notes || "");
 
                 return (
                   <tr
-                  // onClick={() => {
-                  //   log.info("HI FROM TR");
-                  // }}
+                    onClick={() => {
+                      if (isEditing()) {
+                        log.info("Deleting records. Not redirecting");
+                        return;
+                      }
+                      log.info("Clicked on row. Redirecting");
+                      navigate(
+                        `/edit/spending-item/${searchParams.year}/${searchParams.month}/${entry.id}`,
+                        {
+                          replace: true,
+                        },
+                      );
+                    }}
                   >
                     <Show when={isEditing()}>
                       <td>
@@ -180,126 +202,11 @@ export default function (props: {
                     </Show>
                     <td>
                       <span>$</span>
-                      {
-                        // TODO: refactor these text boxes into a component rather than copy pasting
-                      }
-                      {isEditing() ? (
-                        <input
-                          name={`amount-${entry.id}`}
-                          type="number"
-                          required
-                          id={entry.id}
-                          value={amount()}
-                          onInput={(e: InputEvent) => {
-                            const input = e.target as HTMLInputElement;
-                            const amount = parseFloat(input.value);
-                            if (amount == 0) {
-                              setErrorMessage("Amount must be greater than 0!");
-                              return;
-                            }
-                            setErrorMessage("");
-                            setAmount(amount);
-                          }}
-                          onBlur={() =>
-                            setMonthlySpending((prev) => {
-                              if (!prev) return;
-                              log.info(
-                                `Updating spending amount to ${amount()}`,
-                              );
-                              const updated = [...prev];
-                              updated[idx()].amount = amount();
-                              return prev;
-                            })
-                          }
-                        />
-                      ) : (
-                        amount()
-                      )}
+                      {entry.amount}
                     </td>
-                    <td>
-                      {isEditing() ? (
-                        <input
-                          name={`date-${entry.id}`}
-                          required
-                          type="text"
-                          value={date()}
-                          id={entry.id}
-                          onInput={(e: InputEvent) => {
-                            const input = e.target as HTMLInputElement;
-                            const date = input.value;
-                            setDate(date);
-                          }}
-                          onBlur={
-                            () =>
-                              setMonthlySpending((prev) => {
-                                if (!prev) return;
-                                log.info(`Updating date to ${amount()}`);
-                                const updated = [...prev];
-                                updated[idx()].date = date();
-                                return prev;
-                              })
-                            // handleBlur(entry.id as string, "date", date())
-                          }
-                        />
-                      ) : (
-                        date()
-                      )}
-                    </td>
-                    <td>
-                      {isEditing() ? (
-                        <input
-                          name={`description-${entry.id}`}
-                          required
-                          id={entry.id}
-                          type="text"
-                          value={description()}
-                          onInput={(e: InputEvent) => {
-                            const input = e.target as HTMLInputElement;
-                            const date = input.value;
-                            setDescription(date);
-                          }}
-                          onBlur={() =>
-                            setMonthlySpending((prev) => {
-                              if (!prev) return;
-                              log.info(
-                                `Updating description to ${description()}`,
-                              );
-                              const updated = [...prev];
-                              updated[idx()].description = description();
-                              return prev;
-                            })
-                          }
-                        />
-                      ) : (
-                        description()
-                      )}
-                    </td>
-                    <td>
-                      {isEditing() ? (
-                        <input
-                          id={entry.id}
-                          type="text"
-                          name={`notes-${entry.id}`}
-                          value={notes()}
-                          onInput={(e: InputEvent) => {
-                            const input = e.target as HTMLInputElement;
-                            const notes = input.value;
-                            setNotes(notes);
-                          }}
-                          onBlur={() =>
-                            setMonthlySpending((prev) => {
-                              if (!prev) return;
-                              log.info(`Updating notes to ${notes()}`);
-                              const updated = [...prev];
-                              updated[idx()].notes = notes();
-                              return prev;
-                            })
-                          }
-                        />
-                      ) : (
-                        notes()
-                      )}
-                    </td>
+                    <td>{entry.date}</td>
+                    <td>{entry.description}</td>
+                    <td>{entry.notes}</td>
                   </tr>
                 );
               }}

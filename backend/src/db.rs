@@ -1,7 +1,5 @@
 use anyhow::{Context, Result};
-use chrono::Local;
 use mongodb::{bson::doc, Client, Collection};
-use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::{debug, error, info};
@@ -66,12 +64,11 @@ impl DB {
     ///
     /// * `month`: the month to get budget for
     ///
-    /// If no budget information is found for current month, it will check the previous month. It will continue to go back in time until either a budget information for a month is found, or all months in a year has been traversed
+    /// If no budget information is found for current month, it will check the previous month. It will continue to go back in time until a budget information for a month is found
     ///
     /// # Errors
     /// This function will return an error if:
     /// - connection to the DB fails
-    /// - There are no budget found for the current month
     pub async fn get_month_budget(&self, month: Month) -> Result<MonthlyBudget, DBError> {
         let mut month_to_check = month;
         let mut collection = self.collection.clone();
@@ -105,9 +102,9 @@ impl DB {
                     info!("No budget information in month {month_to_check} found");
                     match month_to_check - Month::from_number(1).unwrap() {
                         Ok(prev_month) => {
-                            info!("Trying previous month {month_to_check}");
                             month_to_check = prev_month;
                             trying_prev_months = true;
+                            info!("Trying previous month {month_to_check}");
                         }
                         Err(MonthError::InvalidMonth) => {
                             // If there are no more months in the current year, start at the beginning of previous year
@@ -147,16 +144,16 @@ pub struct MonthlyBudget {
     pub carried_over_from: Option<Month>,
 }
 
-impl MonthlyBudget {
-    /// Check all spending records. If they dont have an ID, create one for it
-    pub fn populate_spending_id(&mut self) {
-        self.spending.par_iter_mut().for_each(|spending| {
-            if spending.id.is_empty() {
-                spending.id = Local::now().to_string();
-            }
-        });
-    }
-}
+// impl MonthlyBudget {
+//     /// Check all spending records. If they dont have an ID, create one for it
+//     pub fn populate_spending_id(&mut self) {
+//         self.spending.par_iter_mut().for_each(|spending| {
+//             if spending.id.is_empty() {
+//                 spending.id = Local::now().to_string();
+//             }
+//         });
+//     }
+// }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -174,7 +171,6 @@ pub struct Budget {
 #[serde(rename_all = "camelCase")]
 pub struct SpendingItem {
     /// A unique identifier
-    #[serde(default)]
     pub id: String,
     /// The dollar amount
     pub amount: i64,
