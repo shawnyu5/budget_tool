@@ -15,7 +15,10 @@ export type MonthlyBudget =
 export type MonthlySpending =
   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"];
 
-export enum Errors {
+/**
+ * Errors that could happen when fetching the monthly budget
+ */
+export enum GetMonthlyBudgetErrors {
   /**
     Failed to fetch the budget for a particular month
    **/
@@ -49,13 +52,13 @@ export async function getMonthlyBudget(
     if (axios.isAxiosError(e)) {
       if (e.response?.status == 404) {
         log.info("No budget recorded for this month");
-        return Promise.reject(Errors.FAILED_TO_FETCH_BUDGET)
+        return Promise.reject(GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET)
       } else if (e.response?.status == 403) {
-         return Promise.reject(Errors.FORBIDDEN)
+         return Promise.reject(GetMonthlyBudgetErrors.FORBIDDEN)
       }
     }
     log.info(`Failed to get monthly budget`);
-    return Promise.reject(Errors.FAILED_TO_FETCH_BUDGET);
+    return Promise.reject(GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
   }
 }
 

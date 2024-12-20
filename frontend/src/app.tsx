@@ -20,11 +20,6 @@ export default function App() {
             crossorigin="anonymous"
           ></script>
           <Title>Budget tool</Title>
-          {
-            // <a href="/">Index</a>
-            // <a href="/about">About</a>
-          }
-          <MonthsDropDown />
           <Suspense>{props.children}</Suspense>
         </MetaProvider>
       )}

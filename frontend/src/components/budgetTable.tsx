@@ -113,9 +113,6 @@ export default function (props: {
         })}
         method="post"
       >
-        {
-          // <EditSaveButton isEditing={isEditing} setIsEditing={setIsEditing} />
-        }
         <Show when={isEditing()}>
           <button class="button" type="submit">
             Save
@@ -164,7 +161,11 @@ export default function (props: {
                 const [notes, setNotes] = createSignal(entry.notes || "");
 
                 return (
-                  <tr>
+                  <tr
+                  // onClick={() => {
+                  //   log.info("HI FROM TR");
+                  // }}
+                  >
                     <Show when={isEditing()}>
                       <td>
                         <button

@@ -1,22 +1,23 @@
 import "./index.css";
-import {
-  createEffect,
-  createResource,
-  createSignal,
-  Show,
-  Suspense,
-} from "solid-js";
+import { createEffect, createResource, createSignal } from "solid-js";
 import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
-import { redirect, useNavigate, useSearchParams } from "@solidjs/router";
-import { Errors, getMonthlyBudget, MonthlyBudget } from "~/monthlyBudget";
+import { useNavigate, useSearchParams } from "@solidjs/router";
+import {
+  GetMonthlyBudgetErrors,
+  getMonthlyBudget,
+  MonthlyBudget,
+} from "~/monthlyBudget";
 import log from "~/logger";
 import axios from "axios";
 import { loadConfig } from "~/config";
 import SplitSpending from "~/components/splitSpending";
+import ErrorComponent from "~/components/errorComponent";
+import MonthsDropDown from "~/components/monthsDropDown";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
+  const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
   const [monthlyBudget, setMonthlyBudget] = createSignal<MonthlyBudget | null>(
     null,
@@ -34,9 +35,13 @@ export default function Home() {
         );
 
         setMonthlyBudget(budget);
+        // If fetching is successful, make sure the error message is gone
+        setErrorMessage(null)
       } catch (e) {
-        if (e == Errors.FORBIDDEN) {
+        if (e == GetMonthlyBudgetErrors.FORBIDDEN) {
           navigate("/login", { replace: true });
+        } else if (e == GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
+          setErrorMessage("Failed to fetch monthly budget...");
         }
       }
     },
@@ -62,6 +67,8 @@ export default function Home() {
 
   return (
     <main>
+      <MonthsDropDown />
+      <ErrorComponent message={errorMessage()} />
       <MonthlySpending
         monthlyBudget={monthlyBudget}
         setMonthlyBudget={setMonthlyBudget}
