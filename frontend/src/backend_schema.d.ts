@@ -54,6 +54,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/spending-item/{year}/{month}/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search for a spending item by time and ID */
+        get: operations["get_spending_item"];
+        put?: never;
+        /** Update a single spending item by ID in a specific year and month */
+        post: operations["update_spending_item"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -82,9 +100,10 @@ export interface components {
             /** @description The month */
             month: components["schemas"]["Month"];
             /** @description List of spent items */
-            spending: components["schemas"]["Spending"][];
+            spending: components["schemas"]["SpendingItem"][];
         };
-        Spending: {
+        /** @description A single transaction */
+        SpendingItem: {
             /**
              * Format: int64
              * @description The dollar amount
@@ -95,7 +114,7 @@ export interface components {
             /** @description Description of the purchase */
             description: string;
             /** @description A unique identifier */
-            id?: string;
+            id: string;
             /** @description Additional notes */
             notes?: string | null;
         };
@@ -145,7 +164,7 @@ export interface operations {
                 /** @description The year which to get the budget of */
                 year: string;
                 /** @description The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January` */
-                month: string;
+                month: components["schemas"]["Month"];
             };
             cookie?: never;
         };
@@ -160,7 +179,7 @@ export interface operations {
                     "application/json": components["schemas"]["MonthlyBudget"];
                 };
             };
-            /** @description User does not have access */
+            /** @description Authenication token expired. Please reauthenicate */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -206,7 +225,7 @@ export interface operations {
                 /** @description The year which to get the budget of */
                 year: string;
                 /** @description The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January` */
-                month: string;
+                month: components["schemas"]["Month"];
             };
             cookie?: never;
         };
@@ -225,7 +244,7 @@ export interface operations {
                     "application/json": components["schemas"]["MonthlyBudget"];
                 };
             };
-            /** @description User does not have access */
+            /** @description Authenication token expired. Please reauthenicate */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -272,7 +291,7 @@ export interface operations {
                     "text/plain": string;
                 };
             };
-            /** @description User does not have access */
+            /** @description Authenication token expired. Please reauthenicate */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -283,6 +302,116 @@ export interface operations {
             };
             /** @description Authenication failed */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    get_spending_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The year the spending item is in */
+                year: string;
+                /** @description The month the spending item is in */
+                month: components["schemas"]["Month"];
+                /** @description The ID of the spending item */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request spending item */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlyBudget"];
+                };
+            };
+            /** @description Authenication token expired. Please reauthenicate */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Authenication failed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Failed to get the requested spending item */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    update_spending_item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The year the spending item is in */
+                year: string;
+                /** @description The month the spending item is in */
+                month: components["schemas"]["Month"];
+                /** @description The ID of the spending item to update */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MonthlyBudget"];
+            };
+        };
+        responses: {
+            /** @description The request spending item was Successfully updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authenication token expired. Please reauthenicate */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Authenication failed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Failed to get update spending item */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -20,13 +20,17 @@ export type MonthlySpending =
  */
 export enum GetMonthlyBudgetErrors {
   /**
-    Failed to fetch the budget for a particular month
+   * Failed to fetch the budget for a particular month
    **/
   FAILED_TO_FETCH_BUDGET,
   /**
-     Forbidden to fetch the budget
-  **/
-  FORBIDDEN
+   * Forbidden to fetch the budget. User does not have the correct access
+   **/
+  FORBIDDEN,
+  /**
+   * Authentication token expired. Needs re authentication
+   */
+  RE_AUTH_NEEDED,
 }
 
 /**
@@ -52,9 +56,13 @@ export async function getMonthlyBudget(
     if (axios.isAxiosError(e)) {
       if (e.response?.status == 404) {
         log.info("No budget recorded for this month");
-        return Promise.reject(GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET)
+        return Promise.reject(GetMonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
       } else if (e.response?.status == 403) {
-         return Promise.reject(GetMonthlyBudgetErrors.FORBIDDEN)
+        log.info("Access forbidden");
+        return Promise.reject(GetMonthlyBudgetErrors.FORBIDDEN);
+      } else if (e.response?.status == 401) {
+         log.info("Authenication token expired. Needs re authenication")
+         return Promise.reject(GetMonthlyBudgetErrors.RE_AUTH_NEEDED)
       }
     }
     log.info(`Failed to get monthly budget`);

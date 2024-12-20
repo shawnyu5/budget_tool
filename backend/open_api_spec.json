@@ -68,7 +68,7 @@
             }
           },
           "401": {
-            "description": "User does not have access",
+            "description": "Authenication token expired. Please reauthenicate",
             "content": {
               "text/plain": {
                 "schema": {
@@ -154,7 +154,7 @@
             }
           },
           "401": {
-            "description": "User does not have access",
+            "description": "Authenication token expired. Please reauthenicate",
             "content": {
               "text/plain": {
                 "schema": {
@@ -201,7 +201,7 @@
             }
           },
           "401": {
-            "description": "User does not have access",
+            "description": "Authenication token expired. Please reauthenicate",
             "content": {
               "text/plain": {
                 "schema": {
@@ -268,7 +268,7 @@
             }
           },
           "401": {
-            "description": "User does not have access",
+            "description": "Authenication token expired. Please reauthenicate",
             "content": {
               "text/plain": {
                 "schema": {
@@ -289,6 +289,84 @@
           },
           "500": {
             "description": "Failed to get the requested spending item",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Update a single spending item by ID in a specific year and month",
+        "operationId": "update_spending_item",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "description": "The year the spending item is in",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "description": "The month the spending item is in",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Month"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the spending item to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MonthlyBudget"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The request spending item was Successfully updated"
+          },
+          "401": {
+            "description": "Authenication token expired. Please reauthenicate",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenication failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to get update spending item",
             "content": {
               "text/plain": {
                 "schema": {
@@ -395,6 +473,7 @@
         "type": "object",
         "description": "A single transaction",
         "required": [
+          "id",
           "amount",
           "date",
           "description"
