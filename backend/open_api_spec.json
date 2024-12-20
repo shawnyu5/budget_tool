@@ -52,7 +52,7 @@
             "description": "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/Month"
             }
           }
         ],
@@ -128,7 +128,7 @@
             "description": "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`",
             "required": true,
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/Month"
             }
           }
         ],
@@ -212,6 +212,83 @@
           },
           "403": {
             "description": "Authenication failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/spending-item/{year}/{month}/{id}": {
+      "get": {
+        "summary": "Search for a spending item by time and ID",
+        "operationId": "get_spending_item",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "description": "The year the spending item is in",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "description": "The month the spending item is in",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Month"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the spending item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The request spending item",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyBudget"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User does not have access",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenication failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to get the requested spending item",
             "content": {
               "text/plain": {
                 "schema": {
@@ -308,14 +385,15 @@
           "spending": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Spending"
+              "$ref": "#/components/schemas/SpendingItem"
             },
             "description": "List of spent items"
           }
         }
       },
-      "Spending": {
+      "SpendingItem": {
         "type": "object",
+        "description": "A single transaction",
         "required": [
           "amount",
           "date",

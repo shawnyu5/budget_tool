@@ -51,6 +51,7 @@ pub async fn check_auth_header(
             auth_header_str.replace("Bearer ", "")
         }
         None => {
+            error!("Missing auth header");
             return Err(AppError(
                 StatusCode::FORBIDDEN,
                 anyhow!("Missing authorization header"),
@@ -81,7 +82,7 @@ pub async fn check_auth_header(
             anyhow!("JWT expired, please authenticate"),
         ));
     }
-    info!("JWT not expired");
+    info!("JWT not expired. Expiration date on {}", claim.expire);
 
     return Ok(next.run(request).await);
 }

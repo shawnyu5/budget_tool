@@ -141,7 +141,7 @@ pub struct MonthlyBudget {
     /// Budget details
     pub budget: Budget,
     /// List of spent items
-    pub spending: Vec<Spending>,
+    pub spending: Vec<SpendingItem>,
     /// The month it was carried over from
     /// If the setting are not carried over from a previous month, this value will be empty
     pub carried_over_from: Option<Month>,
@@ -169,9 +169,10 @@ pub struct Budget {
     pub maggie_percentage_allocation: i64,
 }
 
+/// A single transaction
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct Spending {
+pub struct SpendingItem {
     /// A unique identifier
     #[serde(default)]
     pub id: String,

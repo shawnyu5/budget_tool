@@ -26,6 +26,7 @@ use utoipa_axum::routes;
 use crate::config::Config;
 use crate::custom_middleware::{check_auth_header, check_valid_year};
 use crate::db::DBError;
+use crate::db::SpendingItem;
 use crate::{
     db::{MonthlyBudget, DB},
     month::Month,
@@ -37,10 +38,16 @@ pub fn app() -> Router {
         .split_for_parts();
     let budget_router = budget_router.layer(middleware::from_fn(check_valid_year));
 
+    let (spending_item_router, spending_item_api) = OpenApiRouter::new()
+        .routes(routes! {
+            get_spending_item,
+        })
+        .split_for_parts();
+    let spending_item_router = spending_item_router.layer(middleware::from_fn(check_valid_year));
+
     let (general_router, general_api) = OpenApiRouter::new()
         .routes(routes!(app_version))
         .split_for_parts();
-    let general_router = general_router.layer(middleware::from_fn(check_auth_header));
 
     let (auth_router, auth_api) = OpenApiRouter::new()
         .routes(routes!(basic_auth_handler))
@@ -49,9 +56,14 @@ pub fn app() -> Router {
     let router = Router::new()
         .merge(budget_router)
         .merge(general_router)
+        .merge(spending_item_router)
+        .layer(middleware::from_fn(check_auth_header))
         .merge(auth_router);
 
-    let mut merged_api = general_api.merge_from(budget_api).merge_from(auth_api);
+    let mut merged_api = general_api
+        .merge_from(budget_api)
+        .merge_from(auth_api)
+        .merge_from(spending_item_api);
     merged_api.info.title = "budget-tool backend".to_string();
     merged_api.info.description = None;
     merged_api.info.contact = None;
@@ -100,7 +112,7 @@ pub fn app() -> Router {
     ),
     params(
         ("year" = String, description = "The year which to get the budget of"),
-        ("month" = String, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
+        ("month" = Month, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
     )
 )]
 async fn get_month_budget_handler(
@@ -137,7 +149,7 @@ async fn get_month_budget_handler(
     ),
     params(
         ("year" = String, description = "The year which to get the budget of"),
-        ("month" = String, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
+        ("month" = Month, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
     )
 )]
 async fn update_budget_handler(
@@ -239,4 +251,59 @@ async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> {
     let token_str = claim.sign_with_key(&key)?;
 
     return Ok(token_str);
+}
+
+/// Search for a spending item by time and ID
+#[instrument(skip_all)]
+#[utoipa::path(
+    get,
+    path = "/spending-item/{year}/{month}/{id}",
+    responses(
+        (status = 200, description = "The request spending item", body = MonthlyBudget),
+        (status = 401, description = "User does not have access", body = String),
+        (status = 403, description = "Authenication failed", body = String),
+        (status = 500, description = "Failed to get the requested spending item", body = String),
+    ),
+    params(
+        ("year" = String, description = "The year the spending item is in"),
+        ("month" = Month, description = "The month the spending item is in"),
+        ("id" = String, description = "The ID of the spending item"),
+    )
+)]
+async fn get_spending_item(
+    Path((year, month, id)): Path<(String, Month, String)>,
+) -> Result<Json<Option<SpendingItem>>, AppError> {
+    let db = DB::new(year)
+        .await
+        .context("Failed to connect to database")?;
+
+    let filter = doc! {
+        "month": month.to_string(),
+        "spending": {
+            "$elemMatch": {
+                "id": id.clone(),
+            }
+        }
+    };
+
+    let found = db
+        .collection
+        .find_one(filter)
+        .await
+        .context("Failed to look for spending item")?;
+
+    if let Some(monthly_budget) = found {
+        let spending_item: Vec<&SpendingItem> = monthly_budget
+            .spending
+            .par_iter()
+            .filter(|spending| spending.id == id)
+            .collect();
+        debug_assert!(
+            spending_item.len() == 1,
+            "More than 1 spending items found. This should never happen. We are searching by ID"
+        );
+        return Ok(Json(Some(spending_item[0].clone())));
+    }
+    info!("Filter matched no spending records");
+    return Ok(Json(None));
 }
