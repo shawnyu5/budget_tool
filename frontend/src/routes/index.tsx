@@ -36,7 +36,7 @@ export default function Home() {
 
         setMonthlyBudget(budget);
         // If fetching is successful, make sure the error message is gone
-        setErrorMessage(null)
+        setErrorMessage(null);
       } catch (e) {
         if (e == GetMonthlyBudgetErrors.FORBIDDEN) {
           navigate("/login", { replace: true });
@@ -67,7 +67,17 @@ export default function Home() {
 
   return (
     <main>
-      <MonthsDropDown />
+      <span class="inline-flex-container">
+        <MonthsDropDown />
+        <button
+          class="button"
+          onClick={() => {
+            navigate("/settings", { replace: true });
+          }}
+        >
+          Settings
+        </button>
+      </span>
       <ErrorComponent message={errorMessage()} />
       <MonthlySpending
         monthlyBudget={monthlyBudget}
