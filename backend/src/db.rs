@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use axum::http::StatusCode;
 use mongodb::{bson::doc, Client, Collection};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -16,14 +17,14 @@ pub enum DBError {
     #[error("Budget not found")]
     BudgetNotFound,
     /// DB related errors
-    #[error("Database related erorrs: {0}")]
-    DB(#[from] mongodb::error::Error),
+    // #[error("Database related erorrs: {0}")]
+    // DB(#[from] mongodb::error::Error),
     /// Input is an invalid year
     #[error("Invalid year")]
     InvalidYear,
     /// Generic error
-    #[error("A generic non recoverable error")]
-    Generic(#[from] anyhow::Error),
+    #[error("Database related error: {0}")]
+    DB(#[from] anyhow::Error),
 }
 /// Interface for database operations
 pub struct DB {
@@ -72,6 +73,8 @@ impl DB {
     pub async fn get_month_budget(&self, month: Month) -> Result<MonthlyBudget, DBError> {
         let mut month_to_check = month;
         let mut collection = self.collection.clone();
+        // Only go back 12 months. We can infinitely check backwards, gotta stop somewhere
+        let mut iteration = 0;
         info!(
             "Checking month {month} {collection_year}",
             collection_year = collection.name()
@@ -80,11 +83,13 @@ impl DB {
         // flag to determine if we are looking for budgeting records in previous months
         let mut trying_prev_months = false;
         loop {
+            debug!("Beginning of iteration {iteration}");
             match collection
                 .find_one(doc! {
                     "month": month_to_check.to_string()
                 })
-                .await?
+                .await
+                .context("Failed to perform db query")?
             {
                 Some(mut month_spending) => {
                     info!("Found budget information in month {month_to_check}");
@@ -95,7 +100,6 @@ impl DB {
                         month_spending.month = month;
                         month_spending.carried_over_from = Some(month_to_check);
                     }
-                    // month_spending.populate_spending_id();
                     return Ok(month_spending);
                 }
                 None => {
@@ -123,6 +127,12 @@ impl DB {
                             month_to_check = Month::from_number(12).unwrap();
                         }
                     }
+                    if iteration == 12 {
+                        error!("Checked 12 months before target month. Assuming no budget information will be found");
+                        return Err(DBError::BudgetNotFound);
+                    }
+
+                    iteration += 1;
                 }
             }
         }

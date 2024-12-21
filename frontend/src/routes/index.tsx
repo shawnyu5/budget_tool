@@ -27,6 +27,8 @@ export default function Home() {
   const [monthlyBudget, setMonthlyBudget] = createSignal<MonthlyBudget | null>(
     null,
   );
+  const [isInitialLoad, setIsInitialLoad] = createSignal(true);
+
   const navigate = useNavigate();
 
   const [monthlyBudgetResource] = createResource(
@@ -42,9 +44,9 @@ export default function Home() {
           searchParamSignal().month as string,
         );
 
-        // setMonthlyBudget(budget);
         // If fetching is successful, make sure the error message is gone
         setErrorMessage(null);
+        setIsInitialLoad(false);
         return budget;
       } catch (e) {
         if (e == MonthlyBudgetErrors.RE_AUTH_NEEDED) {
@@ -64,7 +66,8 @@ export default function Home() {
   });
 
   createEffect(() => {
-    if (!monthlyBudget()) {
+     // Only sync with backend if data changes. This also prevents making a round trip to the server on page load
+    if (!monthlyBudget() || monthlyBudget() == monthlyBudgetResource()) {
       return;
     }
     log.info(

@@ -18,6 +18,7 @@ use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
+use tracing::error;
 use tracing::info;
 use tracing::instrument;
 use tracing::warn;
@@ -126,11 +127,12 @@ async fn get_month_budget_handler(
 
     match db.get_month_budget(month).await {
         Ok(monthly_budget) => return Ok(Json(monthly_budget)),
-        Err(_) => {
+        Err(e) => {
+            error!("Error querying db: {:?}", e);
             return Err(AppError(
                 StatusCode::NOT_FOUND,
                 DBError::BudgetNotFound.into(),
-            ))
+            ));
         }
     }
 }
@@ -158,8 +160,6 @@ async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
-    // body.populate_spending_id();
-
     let db = DB::new(year)
         .await
         .context("Failed to connect to database")?;
@@ -175,6 +175,7 @@ async fn update_budget_handler(
         .await
         .context("Failed to update monthly budget")?;
 
+    info!("Matched {} document(s)", result.matched_count);
     info!("Modified {} document(s)", result.modified_count);
     return Ok(());
 }
