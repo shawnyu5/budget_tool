@@ -1,12 +1,6 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import "./settings.css";
-import {
-  createEffect,
-  createResource,
-  createSignal,
-  onMount,
-  Show,
-} from "solid-js";
+import { createEffect, createResource, createSignal, Show } from "solid-js";
 import { getMonthlyBudget, MonthlyBudget } from "~/monthlyBudget";
 import log from "~/logger";
 import axios from "axios";
@@ -38,21 +32,29 @@ export default function () {
     setTotalBudget(monthlyBudget()?.budget.total ?? 0);
   });
 
-  createResource(
+  const [monthlyBudgetResource] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
+      if (!searchParamSignal().year || !searchParamSignal().month) {
+        return;
+      }
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
-      setMonthlyBudget(
-        await getMonthlyBudget(
-          searchParamSignal().year as string,
-          searchParamSignal().month as string,
-        ),
+      return await getMonthlyBudget(
+        searchParamSignal().year as string,
+        searchParamSignal().month as string,
       );
     },
   );
 
+  createEffect(() => {
+    if (!monthlyBudgetResource()) {
+      return;
+    }
+    setMonthlyBudget(monthlyBudgetResource() ?? null);
+  });
+
   createEffect(async () => {
-    if (!monthlyBudget()) {
+    if (!monthlyBudget() || monthlyBudget() == monthlyBudgetResource()) {
       return;
     }
     log.info(
@@ -90,7 +92,7 @@ export default function () {
       const updated = {
         ...prev,
         budget: {
-          ...prev.budget,
+          total: totalBudget(),
           shawn_percentage_allocation: shawnContribution(),
           maggie_percentage_allocation: maggieContribution(),
         },
@@ -131,9 +133,6 @@ export default function () {
           <SuccessComponent message={successMessage()} />
         </Show>
         <form action={handleSubmission} method="post">
-          {
-            // <EditSaveButton />
-          }
           <label for="month-budget">Month's budget($)</label>
           <input
             type="number"
@@ -141,6 +140,10 @@ export default function () {
             name="month-budget"
             placeholder="1000"
             value={totalBudget()}
+            onInput={(e: InputEvent) => {
+              const input = (e.target as HTMLInputElement).value;
+              setTotalBudget(parseFloat(input));
+            }}
             required
           />
           <label for="shawn-contribution">Shawn contribution(%):</label>
