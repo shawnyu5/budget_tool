@@ -8,10 +8,15 @@ on:
 jobs:
   semantic_release:
     name: Semantic release
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Semantic release dry run
         id: dry_run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: codfish/semantic-release-action@v3
         with:
           dry-run: true
@@ -20,10 +25,44 @@ jobs:
             [
               {
                 "name": "ci/semantic_release",
-                prerelease: true
-              }
+                "prerelease": true
+              },
+              "master"
             ]
 
-      - name: Check output
+      - name: Next release version
         run: |
           echo ${{ steps.dry_run.outputs.release-version }}
+
+      - name: Update version in Cargo.toml
+        uses: sandstromviktor/toml-editor@2.0.0
+        with:
+          file: "backend/Cargo.toml"
+          key: "package.version"
+          value: "${{ steps.dry_run.outputs.release-version }}"
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "."
+          message: "chore: update application version [skip ci]"
+          push: true
+          pull: "--rebase --autostash"
+
+      - name: Git pull
+        run: git pull --rebase
+
+      - name: Semantic release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: codfish/semantic-release-action@v3
+        with:
+          tag-format: "v${version}"
+          branches: |
+            [
+              {
+                "name": "ci/semantic_release",
+                "prerelease": true
+              },
+              "master"
+            ]
