@@ -1,5 +1,5 @@
 import "./monthlySpending.css";
-import { Accessor, createEffect, createSignal, Setter } from "solid-js";
+import { Accessor, createEffect, createSignal, Resource, Setter } from "solid-js";
 import log from "~/logger";
 import { MonthlyBudget, MonthlySpending } from "~/monthlyBudget";
 /**
@@ -10,17 +10,17 @@ import { MonthlyBudget, MonthlySpending } from "~/monthlyBudget";
  * -  TODO: over budget amount if any
  */
 export default function (props: {
-  monthlyBudget: Accessor<MonthlyBudget | null>;
+  monthlyBudget: Resource<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
   // const [monthlyBudget] = useMonthlyBudget();
   // Total amount spend in a month
   const [totalMonthlySpending, setTotalMonthlySpending] = createSignal(0);
   createEffect(() => {
-    log.info(`Calculating total monthly spending`);
     if (!props.monthlyBudget()) {
       return;
     }
+    log.info(`Calculating total monthly spending`);
     const totalSpending = calculateMonthlySpending(
       props.monthlyBudget()?.spending as MonthlySpending,
     );

@@ -1,4 +1,4 @@
-import { Accessor, createEffect, createSignal, Setter, Show } from "solid-js";
+import { Accessor, createEffect, createSignal, Resource, Setter, Show } from "solid-js";
 import { MonthlyBudget, MonthlySpending } from "~/monthlyBudget";
 import { calculateMonthlySpending } from "./monthlySpending";
 
@@ -6,7 +6,7 @@ import { calculateMonthlySpending } from "./monthlySpending";
  * The amount each person is responsible to pay, based on the month's budget
  */
 export default function SplitBudget(props: {
-  monthlyBudget: Accessor<MonthlyBudget | null>;
+  monthlyBudget: Resource<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
   const [monthlySpending, setMonthlySpending] = createSignal(0);
@@ -27,7 +27,7 @@ export default function SplitBudget(props: {
           monthlySpending(),
           props.monthlyBudget()?.budget.shawn_percentage_allocation ?? 0,
         ) +
-          overBudgetAmount(props.monthlyBudget()) / 2}
+          overBudgetAmount(props.monthlyBudget() ?? null) / 2}
       </p>
 
       <p>

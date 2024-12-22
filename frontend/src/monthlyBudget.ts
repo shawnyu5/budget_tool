@@ -78,13 +78,13 @@ export async function getMonthlyBudget(
  * @param monthlyBudget - the updated monthly budget
  * @throws `MonthlyBudgetErrors` when updating the budget fails
  */
-export function updateMonthlyBudget(
+export async function updateMonthlyBudget(
   year: string,
   month: string,
   monthlyBudget: MonthlyBudget,
 ) {
   try {
-    const response = axios.post(
+    const response = await axios.post(
       `${loadConfig().backendUrl}/budget/${year}/${month}`,
       monthlyBudget,
       {

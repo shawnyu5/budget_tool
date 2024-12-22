@@ -62,7 +62,7 @@ export default function () {
           notes: notes(),
         };
         // TODO: error handling
-        const response = axios.post(
+        const response = await axios.post(
           `${loadConfig().backendUrl}/spending-item/${year}/${month}/${id()}`,
           spendingItem,
           {

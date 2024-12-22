@@ -27,15 +27,13 @@ export default function Home() {
   const [monthlyBudget, setMonthlyBudget] = createSignal<MonthlyBudget | null>(
     null,
   );
-  const [isInitialLoad, setIsInitialLoad] = createSignal(true);
-
   const navigate = useNavigate();
 
   const [monthlyBudgetResource] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
       if (!searchParamSignal().year || !searchParamSignal().month) {
-        return;
+        return null;
       }
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
       try {
@@ -46,7 +44,6 @@ export default function Home() {
 
         // If fetching is successful, make sure the error message is gone
         setErrorMessage(null);
-        setIsInitialLoad(false);
         return budget;
       } catch (e) {
         if (e == MonthlyBudgetErrors.RE_AUTH_NEEDED) {
@@ -55,18 +52,19 @@ export default function Home() {
           setErrorMessage("Failed to fetch monthly budget...");
         }
       }
+      return null;
     },
   );
 
-  createEffect(() => {
-    if (!monthlyBudgetResource()) {
-      return;
-    }
-    setMonthlyBudget(monthlyBudgetResource() ?? null);
-  });
+  // createEffect(() => {
+  //   if (!monthlyBudgetResource()) {
+  //     return;
+  //   }
+  //   setMonthlyBudget(monthlyBudgetResource() ?? null);
+  // });
 
-  createEffect(() => {
-     // Only sync with backend if data changes. This also prevents making a round trip to the server on page load
+  createEffect(async () => {
+    // Only sync with backend if data changes. This also prevents making a round trip to the server on page load
     if (!monthlyBudget() || monthlyBudget() == monthlyBudgetResource()) {
       return;
     }
@@ -74,7 +72,7 @@ export default function Home() {
       `Updating monthly budget in backend: ${JSON.stringify(monthlyBudget(), null, 3)}`,
     );
     try {
-      axios.post(
+      await axios.post(
         `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
         monthlyBudget(),
         {
@@ -87,17 +85,17 @@ export default function Home() {
       if (axios.isAxiosError(e)) {
         if (e.response?.status == 404) {
           log.info("No budget recorded for this month");
-          return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+          throw MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET;
         } else if (e.response?.status == 403) {
           log.info("Access forbidden");
-          return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
+          throw MonthlyBudgetErrors.FORBIDDEN;
         } else if (e.response?.status == 401) {
           log.info("Authenication token expired. Needs re authenication");
-          return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
+          throw MonthlyBudgetErrors.RE_AUTH_NEEDED;
         }
       }
       log.info(`Failed to get monthly budget`);
-      return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+      throw new Error("Failed to get monthly budget")
     }
   });
 
@@ -117,16 +115,16 @@ export default function Home() {
         </span>
         <ErrorComponent message={errorMessage()} />
         <MonthlySpending
-          monthlyBudget={monthlyBudget}
+          monthlyBudget={monthlyBudgetResource}
           setMonthlyBudget={setMonthlyBudget}
         />
         <SplitBudget
-          monthlyBudget={monthlyBudget}
+          monthlyBudget={monthlyBudgetResource}
           setMonthlyBudget={setMonthlyBudget}
         />
         <br />
         <BudgetTable
-          monthlyBudget={monthlyBudget}
+          monthlyBudget={monthlyBudgetResource}
           setMonthlyBudget={setMonthlyBudget}
         />
       </ErrorBoundary>

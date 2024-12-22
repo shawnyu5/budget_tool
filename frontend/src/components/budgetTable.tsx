@@ -9,6 +9,7 @@ import {
   createEffect,
   createSignal,
   For,
+  Resource,
   Setter,
   Show,
 } from "solid-js";
@@ -17,7 +18,7 @@ import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/monthlyBudget";
 import ErrorComponent from "./errorComponent";
 
 export default function (props: {
-  monthlyBudget: Accessor<MonthlyBudget | null>;
+  monthlyBudget: Resource<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
   // If the table is being edited
@@ -30,10 +31,10 @@ export default function (props: {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  createEffect(() => {
-    log.info("monthly spending has changed. Updating table");
-    setMonthlySpending(props.monthlyBudget()?.spending);
-  });
+  // createEffect(() => {
+  //   log.info("monthly spending has changed. Updating spending table");
+  //   setMonthlySpending(props.monthlyBudget()?.spending);
+  // });
 
   /**
    * Removes a spending item from the table
@@ -85,7 +86,9 @@ export default function (props: {
           <button
             class="button"
             onClick={() => {
-               navigate(`/spending-item/add/${searchParams.year}/${searchParams.month}`)
+              navigate(
+                `/spending-item/add/${searchParams.year}/${searchParams.month}`,
+              );
             }}
           >
             Add
@@ -163,8 +166,8 @@ export default function (props: {
             </tr>
           </thead>
           <tbody>
-            <For each={monthlySpending()}>
-              {(entry, idx) => {
+            <For each={props.monthlyBudget()?.spending}>
+              {(entry) => {
                 // const [amount, setAmount] = createSignal(entry.amount);
                 // const [date, setDate] = createSignal(entry.date);
                 // const [description, setDescription] = createSignal(
