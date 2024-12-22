@@ -15,15 +15,19 @@ export default function () {
     log.info("Checking if there is a JWT token present");
     const token = localStorage.getItem("token");
     if (!token) {
+      log.info("No JWT found...");
       return;
     }
     log.info("Found JTW token. Checking if token is still valid");
     try {
-      const response = await axios.get(`${loadConfig().backendUrl}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.get(
+        `${loadConfig().backendUrl}/auth/validate-token`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       if (response.status == 200) {
         log.info("Token is valid. Redirecting to home page");
         navigate("/", { replace: true });
@@ -46,7 +50,6 @@ export default function () {
         },
       );
 
-      log.info("Storing token in local storage");
       localStorage.setItem("token", response.data);
       return redirect("/");
     } catch (e) {

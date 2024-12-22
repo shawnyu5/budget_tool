@@ -32,6 +32,47 @@
         }
       }
     },
+    "/auth/validate-token": {
+      "get": {
+        "summary": "Validate the JWT token in the header.",
+        "operationId": "validate_token",
+        "responses": {
+          "200": {
+            "description": "The request spending item was Successfully updated"
+          },
+          "401": {
+            "description": "Authenication token expired. Please reauthenicate",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenication failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to get update spending item",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/budget/{year}/{month}": {
       "get": {
         "summary": "Get the budget information for a specific month",

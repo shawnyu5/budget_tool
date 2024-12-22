@@ -56,17 +56,24 @@ pub fn app() -> Router {
         .routes(routes!(basic_auth_handler))
         .split_for_parts();
 
+    let (auth_validate_router, auth_validate_api) = OpenApiRouter::new()
+        .routes(routes!(validate_token))
+        .split_for_parts();
+
     let router = Router::new()
         .merge(budget_router)
-        .merge(general_router)
         .merge(spending_item_router)
+        .merge(auth_validate_router)
         .layer(middleware::from_fn(check_auth_header))
+        .merge(general_router)
         .merge(auth_router);
 
     let mut merged_api = general_api
         .merge_from(budget_api)
         .merge_from(auth_api)
+        .merge_from(auth_validate_api)
         .merge_from(spending_item_api);
+
     merged_api.info.title = "budget-tool backend".to_string();
     merged_api.info.description = None;
     merged_api.info.contact = None;
@@ -430,4 +437,19 @@ async fn update_spending_item(
     //     .collection
     //     .update_one(filter, update_query, options)
     //     .await;
+}
+
+/// Validate the JWT token in the header.
+#[utoipa::path(
+    get,
+    path = "/auth/validate-token",
+    responses(
+        (status = 200, description = "The request spending item was Successfully updated"),
+        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
+        (status = 403, description = "Authenication failed", body = String),
+        (status = 500, description = "Failed to get update spending item", body = String),
+    ),
+)]
+async fn validate_token() -> &'static str {
+    return "success";
 }
