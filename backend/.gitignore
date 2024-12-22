@@ -1,2 +1,4 @@
 target/
 .env
+public.key
+private.key
