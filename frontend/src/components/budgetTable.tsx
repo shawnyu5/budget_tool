@@ -18,23 +18,23 @@ import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/server";
 import ErrorComponent from "./errorComponent";
 
 export default function (props: {
-  monthlyBudget: Resource<MonthlyBudget | null>;
+  monthlyBudget: Accessor<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
   // If the table is being edited
   const [isEditing, setIsEditing] = createSignal(false);
   // Any error currently on screen
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
-  // Spending for the current month
+  // Spending for the current month. We need something we can edit, so we can remove a specific spending item from the table
   const [monthlySpending, setMonthlySpending] =
     createSignal<MonthlySpending | null>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // createEffect(() => {
-  //   log.info("monthly spending has changed. Updating spending table");
-  //   setMonthlySpending(props.monthlyBudget()?.spending);
-  // });
+  createEffect(() => {
+    log.info("monthly spending has changed. Updating spending table");
+    setMonthlySpending(props.monthlyBudget()?.spending);
+  });
 
   /**
    * Removes a spending item from the table
@@ -46,34 +46,18 @@ export default function (props: {
     );
 
     const updatedSpending = (monthlySpending() ?? []).filter(
+      // const updatedSpending = (props.monthlyBudget()?.spending ?? []).filter(
       (spending) => spending.id != entry.id,
     );
+    // props.setMonthlyBudget((prev) => {
+    //   if (!prev) return null;
+    //   const updated: MonthlyBudget = {
+    //     ...prev,
+    //     spending: updatedSpending,
+    //   };
+    //   return updated;
+    // });
     setMonthlySpending(updatedSpending);
-  };
-
-  /**
-   * Adds an empty spending item to the beginning of the list
-   */
-  const addSpendingItem = () => {
-    setIsEditing(true);
-    setMonthlySpending((prev) => {
-      if (!prev) return;
-
-      const date = new Date();
-      const newSpendingItem: SpendingItem = {
-        id: Date.now().toString(),
-        amount: 0,
-        date: `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`,
-        description: "",
-        notes: null,
-      };
-
-      const updatedSpending = [newSpendingItem, ...prev];
-      log.info(
-        `Adding item to spend table: ${JSON.stringify(updatedSpending)}`,
-      );
-      return updatedSpending;
-    });
   };
 
   return (
@@ -114,15 +98,25 @@ export default function (props: {
             return;
           }
 
-          log.info("Updating monthly budget");
+          log.info("Updating month's spending items");
           setIsEditing(false);
 
           props.setMonthlyBudget((prev) => {
+            // __AUTO_GENERATED_PRINT_VAR_START__
+            console.log(
+              "custom print var (anon)#(anon) prev: %s",
+              JSON.stringify(prev),
+            ); // __AUTO_GENERATED_PRINT_VAR_END__
             if (!prev) return null;
             const updated = {
               ...prev,
               spending: monthlySpending() ?? [],
             };
+            // __AUTO_GENERATED_PRINT_VAR_START__
+            console.log(
+              "custom print var (anon)#(anon) updated: %s",
+              JSON.stringify(updated),
+            ); // __AUTO_GENERATED_PRINT_VAR_END__
             return updated;
           });
         })}
@@ -166,7 +160,7 @@ export default function (props: {
             </tr>
           </thead>
           <tbody>
-            <For each={props.monthlyBudget()?.spending}>
+            <For each={monthlySpending()}>
               {(entry) => {
                 // const [amount, setAmount] = createSignal(entry.amount);
                 // const [date, setDate] = createSignal(entry.date);

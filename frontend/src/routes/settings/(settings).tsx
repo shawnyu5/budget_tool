@@ -1,7 +1,7 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import "./settings.css";
 import { createEffect, createResource, createSignal, Show } from "solid-js";
-import { getMonthlyBudget, MonthlyBudget } from "~/server";
+import { getMonthlyBudget, MonthlyBudget, updateMonthlyBudget } from "~/server";
 import log from "~/logger";
 import axios from "axios";
 import { loadConfig } from "~/config";
@@ -54,22 +54,23 @@ export default function () {
   });
 
   createEffect(async () => {
-    if (!monthlyBudget() || monthlyBudget() == monthlyBudgetResource()) {
+    if (!monthlyBudget() && monthlyBudget() == monthlyBudgetResource()) {
       return;
     }
     log.info(
       `Updating monthly budget in backend: ${JSON.stringify(monthlyBudget(), null, 3)}`,
     );
     try {
-      await axios.post(
-        `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
-        monthlyBudget(),
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
+       await updateMonthlyBudget(searchParam.year as string, searchParam.month as string, monthlyBudget()!)
+      // await axios.post(
+      //   `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
+      //   monthlyBudget(),
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+      //     },
+      //   },
+      // );
     } catch (e) {
       log.error("Failed to update budget: ", e);
       setErrorMessage("Failed to update settings... Please try again later...");

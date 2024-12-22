@@ -6,7 +6,7 @@ import { calculateMonthlySpending } from "./monthlySpending";
  * The amount each person is responsible to pay, based on the month's budget
  */
 export default function SplitBudget(props: {
-  monthlyBudget: Resource<MonthlyBudget | null>;
+  monthlyBudget: Accessor<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
   const [monthlySpending, setMonthlySpending] = createSignal(0);

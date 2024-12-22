@@ -1,8 +1,12 @@
+/**
+ * Functions for communicating with the backend server
+ *
+ */
 import axios, { AxiosResponse } from "axios";
 import { paths } from "./backend_schema";
 import { loadConfig } from "./config";
 import log from "./logger";
-import { redirect } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 
 export type SpendingItem =
   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
@@ -43,8 +47,9 @@ export async function getMonthlyBudget(
   year: string,
   month: string,
 ): Promise<MonthlyBudget> {
+   const navigate = useNavigate()
   try {
-    let response: AxiosResponse<MonthlyBudget> = await axios.get(
+    const response: AxiosResponse<MonthlyBudget> = await axios.get(
       `${loadConfig().backendUrl}/budget/${year}/${month}`,
       {
         headers: {
@@ -60,6 +65,7 @@ export async function getMonthlyBudget(
         return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
       } else if (e.response?.status == 403) {
         log.info("Access forbidden");
+        navigate("/login")
         return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
       } else if (e.response?.status == 401) {
         log.info("Authenication token expired. Needs re authenication");

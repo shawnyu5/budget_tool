@@ -10,7 +10,7 @@ import { MonthlyBudget, MonthlySpending } from "~/server";
  * -  TODO: over budget amount if any
  */
 export default function (props: {
-  monthlyBudget: Resource<MonthlyBudget | null>;
+  monthlyBudget: Accessor<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
   // const [monthlyBudget] = useMonthlyBudget();
@@ -20,7 +20,7 @@ export default function (props: {
     if (!props.monthlyBudget()) {
       return;
     }
-    log.info(`Calculating total monthly spending`);
+    // log.info(`Calculating total monthly spending`);
     const totalSpending = calculateMonthlySpending(
       props.monthlyBudget()?.spending as MonthlySpending,
     );
