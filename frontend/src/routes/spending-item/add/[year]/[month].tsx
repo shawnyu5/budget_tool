@@ -40,15 +40,6 @@ export default function () {
           return;
         }
         log.info("Submitting form");
-
-        const spendingItem: SpendingItem = {
-          id: id(),
-          amount: amount(),
-          date: date(),
-          description: description(),
-          notes: notes(),
-        };
-
         try {
           const monthlyBudget = await getMonthlyBudget(year, month);
           const newSpendingItem: SpendingItem = {
@@ -79,7 +70,6 @@ export default function () {
         name="amount"
         type="number"
         required
-        value={amount()}
         onInput={(e: InputEvent) => {
           const input = (e.target as HTMLInputElement).value;
           setAmount(parseFloat(input));
