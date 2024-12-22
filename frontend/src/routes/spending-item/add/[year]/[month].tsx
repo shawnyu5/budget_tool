@@ -43,7 +43,7 @@ export default function () {
         try {
           const monthlyBudget = await getMonthlyBudget(year, month);
           const newSpendingItem: SpendingItem = {
-            id: new Date().toString(),
+            id: generateSpendingItemID(),
             amount: amount(),
             description: description(),
             date: date(),
@@ -116,4 +116,20 @@ export default function () {
       </button>
     </form>
   );
+}
+
+/**
+ * Generate an ID for a spending item
+ * @returns a unique ID for a spending item
+ */
+function generateSpendingItemID(): string {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+  const second = date.getSeconds();
+
+  return `${year}${month}${day}${hour}${minute}${second}`;
 }
