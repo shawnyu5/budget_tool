@@ -15,7 +15,7 @@ export default function () {
   createEffect(() => {
     // If month is not in the query param, set it to the current month
     if (!searchParam.month) {
-      setSearchParam({ month: monthNumberToName(date.getMonth()) });
+      setSearchParam({ month: monthNumberToName(date.getMonth() + 1) });
     }
 
     // If year is not in the query param, set it to the current year
