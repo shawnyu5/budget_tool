@@ -1,0 +1,33 @@
+name: Semantic release
+on:
+  push:
+    branches:
+      - "master"
+      - "ci/semantic_release"
+      - "**"
+jobs:
+  semantic_release:
+    name: Semantic release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Semantic release dry run
+        id: dry_run
+        uses: codfish/semantic-release-action@v3
+        with:
+          dry-run: true
+          tag-format: "v${version}"
+          branches: |
+            [
+              {
+                "name": "ci/semantic_release",
+                "prerelease": true
+              },
+              "master"
+            ]
+
+      - name: Check output
+        run: |
+          echo ${{ steps.dry_run.outputs.release-version }}
