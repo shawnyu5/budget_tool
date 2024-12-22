@@ -1,0 +1,9 @@
+{
+   "name": "budget_tool",
+   "private": true,
+   "release": {
+      "branches": [
+         "master"
+      ]
+   }
+}
