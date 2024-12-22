@@ -16,7 +16,7 @@ import {
 import log from "~/logger";
 import axios from "axios";
 import { loadConfig } from "~/config";
-import SplitSpending from "~/components/splitSpending";
+import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import MonthsDropDown from "~/components/monthsDropDown";
 
@@ -120,7 +120,7 @@ export default function Home() {
           monthlyBudget={monthlyBudget}
           setMonthlyBudget={setMonthlyBudget}
         />
-        <SplitSpending
+        <SplitBudget
           monthlyBudget={monthlyBudget}
           setMonthlyBudget={setMonthlyBudget}
         />

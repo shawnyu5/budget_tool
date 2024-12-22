@@ -2,16 +2,16 @@ import "./monthlySpending.css";
 import { Accessor, createEffect, createSignal, Setter } from "solid-js";
 import log from "~/logger";
 import { MonthlyBudget, MonthlySpending } from "~/monthlyBudget";
-import { useMonthlyBudget } from "~/useMonthlyBudget";
 /**
  * Displays the monthly spending. Including:
  * - The total budget for the month
  * - The total spending
  * - Amount left in budget
+ * -  TODO: over budget amount if any
  */
 export default function (props: {
-   monthlyBudget: Accessor<MonthlyBudget | null>,
-   setMonthlyBudget: Setter<MonthlyBudget | null>
+  monthlyBudget: Accessor<MonthlyBudget | null>;
+  setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
   // const [monthlyBudget] = useMonthlyBudget();
   // Total amount spend in a month
@@ -30,10 +30,10 @@ export default function (props: {
 
   return (
     <>
-      <div class="container">
+      <div id="monthly-spending" class="container">
         <p>Remaining:</p>
         {
-          // TODO: color should be dynamic, based on the percentage of month left
+          // TODO: color should be dynamic, based on if we are over budget or not
         }
         <h1 style="color: green">${totalMonthlySpending()}</h1>
         <h1>/${props.monthlyBudget()?.budget.total}</h1>
@@ -51,3 +51,4 @@ export function calculateMonthlySpending(
   }
   return total;
 }
+
