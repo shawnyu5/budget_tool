@@ -14,7 +14,7 @@ import {
   Show,
 } from "solid-js";
 import log from "~/logger";
-import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/monthlyBudget";
+import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/server";
 import ErrorComponent from "./errorComponent";
 
 export default function (props: {

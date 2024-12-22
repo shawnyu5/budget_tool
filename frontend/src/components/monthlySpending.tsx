@@ -1,7 +1,7 @@
 import "./monthlySpending.css";
 import { Accessor, createEffect, createSignal, Resource, Setter } from "solid-js";
 import log from "~/logger";
-import { MonthlyBudget, MonthlySpending } from "~/monthlyBudget";
+import { MonthlyBudget, MonthlySpending } from "~/server";
 /**
  * Displays the monthly spending. Including:
  * - The total budget for the month

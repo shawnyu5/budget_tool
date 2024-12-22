@@ -9,7 +9,7 @@ import {
   MonthlyBudget,
   SpendingItem,
   updateMonthlyBudget,
-} from "~/monthlyBudget";
+} from "~/server";
 
 export default function () {
   const params = useParams();

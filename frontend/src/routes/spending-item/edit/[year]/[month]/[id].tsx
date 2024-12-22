@@ -4,7 +4,7 @@ import { createSignal, ErrorBoundary, onMount } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
 import { loadConfig } from "~/config";
 import log from "~/logger";
-import { SpendingItem } from "~/monthlyBudget";
+import { SpendingItem } from "~/server";
 
 export default function () {
   const params = useParams();

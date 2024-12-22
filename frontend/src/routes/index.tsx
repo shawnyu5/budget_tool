@@ -12,7 +12,7 @@ import {
   MonthlyBudgetErrors,
   getMonthlyBudget,
   MonthlyBudget,
-} from "~/monthlyBudget";
+} from "~/server";
 import log from "~/logger";
 import axios from "axios";
 import { loadConfig } from "~/config";
@@ -55,13 +55,6 @@ export default function Home() {
       return null;
     },
   );
-
-  // createEffect(() => {
-  //   if (!monthlyBudgetResource()) {
-  //     return;
-  //   }
-  //   setMonthlyBudget(monthlyBudgetResource() ?? null);
-  // });
 
   createEffect(async () => {
     // Only sync with backend if data changes. This also prevents making a round trip to the server on page load

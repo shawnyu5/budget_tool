@@ -1,5 +1,5 @@
 import { Accessor, createEffect, createSignal, Resource, Setter, Show } from "solid-js";
-import { MonthlyBudget, MonthlySpending } from "~/monthlyBudget";
+import { MonthlyBudget, MonthlySpending } from "~/server";
 import { calculateMonthlySpending } from "./monthlySpending";
 
 /**

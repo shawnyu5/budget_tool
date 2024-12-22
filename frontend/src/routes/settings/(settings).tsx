@@ -1,7 +1,7 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import "./settings.css";
 import { createEffect, createResource, createSignal, Show } from "solid-js";
-import { getMonthlyBudget, MonthlyBudget } from "~/monthlyBudget";
+import { getMonthlyBudget, MonthlyBudget } from "~/server";
 import log from "~/logger";
 import axios from "axios";
 import { loadConfig } from "~/config";
