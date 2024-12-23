@@ -1,5 +1,4 @@
 use anyhow::{Context, Result};
-use axum::http::StatusCode;
 use mongodb::{bson::doc, Client, Collection};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -149,9 +148,11 @@ pub struct MonthlyBudget {
     /// Budget details
     pub budget: Budget,
     /// Total spending for the month
+    #[schema(required = true)]
     #[serde(default)]
     pub total_spending: i64,
     /// Amount over budget for the month. 0 means not over budget.
+    #[schema(required = true)]
     #[serde(default)]
     pub over_budget_amount: i64,
     /// List of spent items
