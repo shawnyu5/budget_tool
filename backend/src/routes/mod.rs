@@ -145,7 +145,7 @@ async fn get_month_budget_handler(
     }
 }
 
-/// Update the budget for a specific month in a specific year
+/// Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending` is up to date
 #[instrument(skip_all)]
 #[utoipa::path(
     post,

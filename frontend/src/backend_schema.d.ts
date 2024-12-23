@@ -47,7 +47,7 @@ export interface paths {
         /** Get the budget information for a specific month */
         get: operations["get_month_budget_handler"];
         put?: never;
-        /** Update the budget for a specific month in a specific year */
+        /** Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending` is up to date */
         post: operations["update_budget_handler"];
         delete?: never;
         options?: never;

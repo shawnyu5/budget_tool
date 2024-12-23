@@ -1,6 +1,12 @@
-import { Accessor, createEffect, createSignal, Resource, Setter, Show } from "solid-js";
-import { MonthlyBudget, MonthlySpending } from "~/server";
-import { calculateMonthlySpending } from "./monthlySpending";
+import {
+  Accessor,
+  createEffect,
+  createSignal,
+  Resource,
+  Setter,
+  Show,
+} from "solid-js";
+import { MonthlyBudget } from "~/server";
 
 /**
  * The amount each person is responsible to pay, based on the month's budget
@@ -9,14 +15,14 @@ export default function SplitBudget(props: {
   monthlyBudget: Accessor<MonthlyBudget | null>;
   setMonthlyBudget: Setter<MonthlyBudget | null>;
 }) {
-  const [monthlySpending, setMonthlySpending] = createSignal(0);
-  createEffect(() => {
-    setMonthlySpending(
-      calculateMonthlySpending(
-        props.monthlyBudget()?.spending as MonthlySpending,
-      ),
-    );
-  });
+  // const [monthlySpending, setMonthlySpending] = createSignal(0);
+  // createEffect(() => {
+  //   setMonthlySpending(
+  //     calculateMonthlySpending(
+  //       props.monthlyBudget()?.spending as MonthlySpending,
+  //     ),
+  //   );
+  // });
   return (
     <div id="split-budget">
       <p>
@@ -24,7 +30,7 @@ export default function SplitBudget(props: {
         {props.monthlyBudget()?.budget.shawn_percentage_allocation}
         %): $
         {calculatePercentage(
-          monthlySpending(),
+          props.monthlyBudget()?.totalSpending ?? 0,
           props.monthlyBudget()?.budget.shawn_percentage_allocation ?? 0,
         ) +
           overBudgetAmount(props.monthlyBudget() ?? null) / 2}
@@ -35,7 +41,7 @@ export default function SplitBudget(props: {
         {props.monthlyBudget()?.budget.maggie_percentage_allocation}
         %): $
         {calculatePercentage(
-          monthlySpending(),
+          props.monthlyBudget()?.totalSpending ?? 0,
           props.monthlyBudget()?.budget.maggie_percentage_allocation ?? 0,
         ) +
           overBudgetAmount(props.monthlyBudget()) / 2}

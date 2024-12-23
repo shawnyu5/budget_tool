@@ -76,6 +76,7 @@ export default function Home() {
         searchParam.month as string,
         monthlyBudget()!,
       );
+
     } catch (e) {
       // setErrorMessage("Failed to update monthly budget...");
       if (axios.isAxiosError(e)) {
