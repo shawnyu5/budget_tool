@@ -17,4 +17,5 @@ RUN cargo build --release --bin backend
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 COPY --from=builder /app/target/release/backend /usr/local/bin
+COPY ./Cargo.toml .
 ENTRYPOINT ["/usr/local/bin/backend"]

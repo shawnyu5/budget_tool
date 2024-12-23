@@ -1,4 +1,4 @@
-name: Semantic release
+name: Semantic release and deploy backend
 on:
   push:
     branches:
@@ -20,15 +20,6 @@ jobs:
         uses: codfish/semantic-release-action@v3
         with:
           dry-run: true
-          tag-format: "v${version}"
-          branches: |
-            [
-              {
-                "name": "ci/semantic_release",
-                "prerelease": true
-              },
-              "master"
-            ]
 
       - name: Next release version
         run: |
@@ -56,13 +47,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: codfish/semantic-release-action@v3
-        with:
-          tag-format: "v${version}"
-          branches: |
-            [
-              {
-                "name": "ci/semantic_release",
-                "prerelease": true
-              },
-              "master"
-            ]
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy backend
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          cd backend
+          flyctl deploy --remote-only --config fly.prod.toml
+
+
