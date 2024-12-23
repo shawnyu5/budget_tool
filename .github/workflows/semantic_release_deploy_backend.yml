@@ -3,8 +3,7 @@ on:
   push:
     branches:
       - "master"
-      - "ci/semantic_release"
-      - "**"
+
 jobs:
   release_deploy:
     name: Semantic release and deploy backend
