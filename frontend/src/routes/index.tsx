@@ -46,7 +46,10 @@ export default function Home() {
         setErrorMessage(null);
         return budget;
       } catch (e) {
-        if (e == MonthlyBudgetErrors.RE_AUTH_NEEDED) {
+        if (
+          e == MonthlyBudgetErrors.RE_AUTH_NEEDED ||
+          e == MonthlyBudgetErrors.FORBIDDEN
+        ) {
           navigate("/login", { replace: true });
         } else if (e == MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
           setErrorMessage("Failed to fetch monthly budget...");
@@ -76,7 +79,6 @@ export default function Home() {
         searchParam.month as string,
         monthlyBudget()!,
       );
-
     } catch (e) {
       // setErrorMessage("Failed to update monthly budget...");
       if (axios.isAxiosError(e)) {

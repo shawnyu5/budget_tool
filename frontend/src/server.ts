@@ -60,19 +60,13 @@ export async function getMonthlyBudget(
   } catch (e) {
     if (axios.isAxiosError(e)) {
       if (e.response?.status == 404) {
-        log.info("No budget recorded for this month");
         return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
       } else if (e.response?.status == 403) {
-        log.info("Access forbidden. Redirecting to login page");
         return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
       } else if (e.response?.status == 401) {
-        log.info(
-          "Authenication token expired. Needs re authenication. Redirecting to login page",
-        );
         return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
       }
     }
-    log.info(`Failed to get monthly budget`);
     return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
   }
 }

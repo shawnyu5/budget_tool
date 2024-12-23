@@ -77,7 +77,7 @@ function overBudgetAmount(monthlyBudget: MonthlyBudget | null): number {
   // TODO: we shouldnt need to do another calculation here once there is a `total_spending` field in the db
   // TODO: consider tracking this number in the db as well
   if (!monthlyBudget) return 0;
-  const monthlySpending = calculateMonthlySpending(monthlyBudget.spending);
+  const monthlySpending = monthlyBudget.totalSpending ?? 0;
   if (monthlySpending > monthlyBudget.budget.total) {
     return monthlySpending - monthlyBudget.budget.total;
   }
