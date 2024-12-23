@@ -145,7 +145,7 @@ async fn get_month_budget_handler(
     }
 }
 
-/// Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending` is up to date
+/// Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending`, and `overBudgetAmount` is up to date
 #[instrument(skip_all)]
 #[utoipa::path(
     post,
@@ -173,6 +173,8 @@ async fn update_budget_handler(
         .context("Failed to connect to database")?;
     body.total_spending = body.spending.par_iter().map(|spend| spend.amount).sum();
     debug!("Calculated total spending: {}", body.total_spending);
+
+    // TODO: update `overBudgetAmount` field
 
     let filter = doc! {
         "month": month.to_string()
@@ -329,7 +331,7 @@ async fn get_spending_item(
     return Ok(Json(None));
 }
 
-/// Update a single spending item by ID in a specific year and month
+/// Update a single spending item by ID in a specific year and month. As well as updating the `totalSpending`
 #[instrument(skip_all)]
 #[utoipa::path(
     post,
@@ -383,6 +385,17 @@ async fn update_spending_item(
         })
         .collect();
     monthly_budget.spending = updated_monthly_spending;
+    monthly_budget.total_spending = monthly_budget
+        .spending
+        .par_iter()
+        .map(|spend| spend.amount)
+        .sum();
+    debug!("Updated spending items: {:?}", monthly_budget.spending);
+    debug!(
+        "Calculated total spending: {}",
+        monthly_budget.total_spending
+    );
+
     let filter = doc! {
         "month": month.to_string()
     };

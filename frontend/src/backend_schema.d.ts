@@ -47,7 +47,7 @@ export interface paths {
         /** Get the budget information for a specific month */
         get: operations["get_month_budget_handler"];
         put?: never;
-        /** Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending` is up to date */
+        /** Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending`, and `overBudgetAmount` is up to date */
         post: operations["update_budget_handler"];
         delete?: never;
         options?: never;
@@ -81,7 +81,7 @@ export interface paths {
         /** Search for a spending item by time and ID */
         get: operations["get_spending_item"];
         put?: never;
-        /** Update a single spending item by ID in a specific year and month */
+        /** Update a single spending item by ID in a specific year and month. As well as updating the `totalSpending` */
         post: operations["update_spending_item"];
         delete?: never;
         options?: never;
@@ -120,14 +120,14 @@ export interface components {
              * Format: int64
              * @description Amount over budget for the month. 0 means not over budget.
              */
-            overBudgetAmount?: number;
+            overBudgetAmount: number;
             /** @description List of spent items */
             spending: components["schemas"]["SpendingItem"][];
             /**
              * Format: int64
              * @description Total spending for the month
              */
-            totalSpending?: number;
+            totalSpending: number;
         };
         /** @description A single transaction */
         SpendingItem: {

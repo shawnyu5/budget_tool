@@ -151,7 +151,7 @@
         }
       },
       "post": {
-        "summary": "Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending` is up to date",
+        "summary": "Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending`, and `overBudgetAmount` is up to date",
         "operationId": "update_budget_handler",
         "parameters": [
           {
@@ -341,7 +341,7 @@
         }
       },
       "post": {
-        "summary": "Update a single spending item by ID in a specific year and month",
+        "summary": "Update a single spending item by ID in a specific year and month. As well as updating the `totalSpending`",
         "operationId": "update_spending_item",
         "parameters": [
           {
@@ -479,6 +479,8 @@
         "required": [
           "month",
           "budget",
+          "totalSpending",
+          "overBudgetAmount",
           "spending"
         ],
         "properties": {
