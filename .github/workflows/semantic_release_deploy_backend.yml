@@ -6,8 +6,8 @@ on:
       - "ci/semantic_release"
       - "**"
 jobs:
-  semantic_release:
-    name: Semantic release
+  release_deploy:
+    name: Semantic release and deploy backend
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -31,6 +31,11 @@ jobs:
           file: "backend/Cargo.toml"
           key: "package.version"
           value: "${{ steps.dry_run.outputs.release-version }}"
+      - name: Setup rust toolling
+        uses: moonrepo/setup-rust@v1
+
+      - name: Re generate cargo lock file
+        run: cargo generate-lockfile
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
