@@ -122,6 +122,38 @@ export async function updateMonthlyBudget(
     return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
   }
 }
+
+/**
+ * Validate the JWT token with the server. If the token is invalid or expired, redirect to `/login`
+ */
+export async function validateJTWToken() {
+  log.info("Checking if there is a JWT token present");
+  const token = localStorage.getItem("token");
+  if (!token) {
+    log.info("No JWT found...");
+    return;
+  }
+
+  log.info("Found JTW token. Checking if token is still valid");
+  const navigate = useNavigate();
+  try {
+    const response = await axios.get(
+      `${loadConfig().backendUrl}/auth/validate-token`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.status == 200) {
+      log.info("Token is valid. Redirecting to home page");
+      navigate("/", { replace: true });
+    }
+  } catch (e) {
+    log.info("Token is no longer valid. Redirecting to login page");
+    navigate("/login", { replace: true });
+  }
+}
 /**
  * Calculates the total spending for a month
  * @param monthlyBudget - the month's budget to calculate the total of

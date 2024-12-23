@@ -1,40 +1,17 @@
-import { action, redirect, useNavigate } from "@solidjs/router";
+import { action, redirect } from "@solidjs/router";
 import axios from "axios";
 import { createSignal, onMount } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
 import { loadConfig } from "~/config";
 import log from "~/logger";
+import { validateJTWToken } from "~/server";
 
 export default function () {
   const [userName, setUserName] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
-  const navigate = useNavigate();
   onMount(async () => {
-    // TODO: extract this into utils function. This should be called on a few pages on load
-    log.info("Checking if there is a JWT token present");
-    const token = localStorage.getItem("token");
-    if (!token) {
-      log.info("No JWT found...");
-      return;
-    }
-    log.info("Found JTW token. Checking if token is still valid");
-    try {
-      const response = await axios.get(
-        `${loadConfig().backendUrl}/auth/validate-token`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-      if (response.status == 200) {
-        log.info("Token is valid. Redirecting to home page");
-        navigate("/", { replace: true });
-      }
-    } catch (e) {
-      log.info("Token is no longer valid");
-    }
+    await validateJTWToken();
   });
 
   const onSubmit = action(async (_data: FormData) => {
