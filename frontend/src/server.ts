@@ -154,6 +154,31 @@ export async function validateJTWToken() {
     navigate("/login", { replace: true });
   }
 }
+
+/**
+ * Performs basic auth. If authentication is successful, stores the resulting JWT token in local storage
+ * @throws if authentication fails
+ */
+export async function basicAuthLogin(userName: string, password: string) {
+  const base64Encoded = btoa(`${userName}:${password}`);
+  try {
+    const response = await axios.post(
+      `${loadConfig().backendUrl}/login/basic`,
+      {},
+      {
+        headers: {
+          Authorization: `Basic ${base64Encoded}`,
+        },
+      },
+    );
+
+    localStorage.setItem("token", response.data);
+  } catch (e) {
+    log.error(`Failed to login: ${e}`);
+    throw e;
+  }
+}
+
 /**
  * Calculates the total spending for a month
  * @param monthlyBudget - the month's budget to calculate the total of

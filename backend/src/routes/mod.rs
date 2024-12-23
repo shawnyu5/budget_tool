@@ -18,6 +18,7 @@ use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
+use tracing::debug;
 use tracing::error;
 use tracing::info;
 use tracing::instrument;
@@ -165,11 +166,13 @@ async fn get_month_budget_handler(
 )]
 async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
-    Json(body): Json<MonthlyBudget>,
+    Json(mut body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
     let db = DB::new(year)
         .await
         .context("Failed to connect to database")?;
+    body.total_spending = body.spending.par_iter().map(|spend| spend.amount).sum();
+    debug!("Calculated total spending: {}", body.total_spending);
 
     let filter = doc! {
         "month": month.to_string()

@@ -501,12 +501,22 @@
             "$ref": "#/components/schemas/Month",
             "description": "The month"
           },
+          "overBudgetAmount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Amount over budget for the month. 0 means not over budget."
+          },
           "spending": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SpendingItem"
             },
             "description": "List of spent items"
+          },
+          "totalSpending": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total spending for the month"
           }
         }
       },

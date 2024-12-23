@@ -20,6 +20,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/validate-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Validate the JWT token in the header. */
+        get: operations["validate_token"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/budget/{year}/{month}": {
         parameters: {
             query?: never;
@@ -99,8 +116,18 @@ export interface components {
             carriedOverFrom?: null | components["schemas"]["Month"];
             /** @description The month */
             month: components["schemas"]["Month"];
+            /**
+             * Format: int64
+             * @description Amount over budget for the month. 0 means not over budget.
+             */
+            overBudgetAmount?: number;
             /** @description List of spent items */
             spending: components["schemas"]["SpendingItem"][];
+            /**
+             * Format: int64
+             * @description Total spending for the month
+             */
+            totalSpending?: number;
         };
         /** @description A single transaction */
         SpendingItem: {
@@ -146,6 +173,51 @@ export interface operations {
                 };
             };
             /** @description Failed to get the vesion of the server */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    validate_token: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request spending item was Successfully updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authenication token expired. Please reauthenicate */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Authenication failed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Failed to get update spending item */
             500: {
                 headers: {
                     [name: string]: unknown;

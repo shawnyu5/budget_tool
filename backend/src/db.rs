@@ -100,6 +100,7 @@ impl DB {
                         month_spending.month = month;
                         month_spending.carried_over_from = Some(month_to_check);
                     }
+                    debug!("Budget information: {:?}", month_spending);
                     return Ok(month_spending);
                 }
                 None => {
@@ -147,6 +148,12 @@ pub struct MonthlyBudget {
     pub month: Month,
     /// Budget details
     pub budget: Budget,
+    /// Total spending for the month
+    #[serde(default)]
+    pub total_spending: i64,
+    /// Amount over budget for the month. 0 means not over budget.
+    #[serde(default)]
+    pub over_budget_amount: i64,
     /// List of spent items
     pub spending: Vec<SpendingItem>,
     /// The month it was carried over from

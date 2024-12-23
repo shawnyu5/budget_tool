@@ -4,7 +4,7 @@ import { createSignal, onMount } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
 import { loadConfig } from "~/config";
 import log from "~/logger";
-import { validateJTWToken } from "~/server";
+import { basicAuthLogin, validateJTWToken } from "~/server";
 
 export default function () {
   const [userName, setUserName] = createSignal("");
@@ -15,19 +15,8 @@ export default function () {
   });
 
   const onSubmit = action(async (_data: FormData) => {
-    const base64Encoded = btoa(`${userName()}:${password()}`);
     try {
-      const response = await axios.post(
-        `${loadConfig().backendUrl}/login/basic`,
-        {},
-        {
-          headers: {
-            Authorization: `Basic ${base64Encoded}`,
-          },
-        },
-      );
-
-      localStorage.setItem("token", response.data);
+       await basicAuthLogin(userName(), password())
       return redirect("/");
     } catch (e) {
       log.error(`Failed to login: ${e}`);
