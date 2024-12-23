@@ -7,6 +7,7 @@ import log from "~/logger";
 import {
   getMonthlyBudget,
   MonthlyBudget,
+  MonthlyBudgetErrors,
   SpendingItem,
   updateMonthlyBudget,
 } from "~/server";
@@ -57,6 +58,19 @@ export default function () {
 
           await updateMonthlyBudget(year, month, updatedBudget);
         } catch (e) {
+          if (axios.isAxiosError(e)) {
+            if (e.response?.status == 404) {
+              log.info("No budget recorded for this month");
+            } else if (e.response?.status == 403) {
+              log.info("Access forbidden. Redirecting to login page");
+              navigate("/login", { replace: true });
+            } else if (e.response?.status == 401) {
+              log.info(
+                "Authenication token expired. Needs re authenication. Redirecting to login page",
+              );
+              navigate("/login", { replace: true });
+            }
+          }
           log.error("Failed to update budget: ", e);
           setErrorMessage(`Failed to update budget: ${e}`);
         }

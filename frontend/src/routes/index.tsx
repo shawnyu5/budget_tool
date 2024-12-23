@@ -18,6 +18,7 @@ import log from "~/logger";
 import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import MonthsDropDown from "~/components/monthsDropDown";
+import axios from "axios";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -75,31 +76,22 @@ export default function Home() {
         searchParam.month as string,
         monthlyBudget()!,
       );
-      // await axios.post(
-      //   `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
-      //   monthlyBudget(),
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //   },
-      // );
     } catch (e) {
-      setErrorMessage("Failed to update monthly budget...");
-      // if (axios.isAxiosError(e)) {
-      //   if (e.response?.status == 404) {
-      //     log.info("No budget recorded for this month");
-      //     throw MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET;
-      //   } else if (e.response?.status == 403) {
-      //     log.info("Access forbidden");
-      //     throw MonthlyBudgetErrors.FORBIDDEN;
-      //   } else if (e.response?.status == 401) {
-      //     log.info("Authenication token expired. Needs re authenication");
-      //     throw MonthlyBudgetErrors.RE_AUTH_NEEDED;
-      //   }
-      // }
-      // log.info(`Failed to get monthly budget`);
-      // throw new Error("Failed to get monthly budget")
+      // setErrorMessage("Failed to update monthly budget...");
+      if (axios.isAxiosError(e)) {
+        if (e.response?.status == 404) {
+          log.info("No budget recorded for this month");
+          throw MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET;
+        } else if (e.response?.status == 403) {
+          log.info("Access forbidden");
+          throw MonthlyBudgetErrors.FORBIDDEN;
+        } else if (e.response?.status == 401) {
+          log.info("Authenication token expired. Needs re authenication");
+          throw MonthlyBudgetErrors.RE_AUTH_NEEDED;
+        }
+      }
+      log.info(`Failed to get monthly budget`);
+      throw new Error("Failed to get monthly budget");
     }
   });
 

@@ -47,7 +47,6 @@ export async function getMonthlyBudget(
   year: string,
   month: string,
 ): Promise<MonthlyBudget> {
-  const navigate = useNavigate();
   try {
     const response: AxiosResponse<MonthlyBudget> = await axios.get(
       `${loadConfig().backendUrl}/budget/${year}/${month}`,
@@ -65,13 +64,11 @@ export async function getMonthlyBudget(
         return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
       } else if (e.response?.status == 403) {
         log.info("Access forbidden. Redirecting to login page");
-        navigate("/login", { replace: true });
         return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
       } else if (e.response?.status == 401) {
         log.info(
           "Authenication token expired. Needs re authenication. Redirecting to login page",
         );
-        navigate("/login", { replace: true });
         return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
       }
     }
@@ -92,7 +89,6 @@ export async function updateMonthlyBudget(
   month: string,
   monthlyBudget: MonthlyBudget,
 ) {
-  const navigate = useNavigate();
   try {
     await axios.post(
       `${loadConfig().backendUrl}/budget/${year}/${month}`,
@@ -110,11 +106,9 @@ export async function updateMonthlyBudget(
         return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
       } else if (e.response?.status == 403) {
         log.info("Access forbidden");
-        navigate("/login", { replace: true });
         return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
       } else if (e.response?.status == 401) {
         log.info("Authenication token expired. Needs re authenication");
-        navigate("/login", { replace: true });
         return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
       }
     }
