@@ -159,6 +159,7 @@ export default function (props: {
 
                 return (
                   <tr
+                    style="cursor: pointer"
                     onClick={() => {
                       if (isEditing()) {
                         log.info("Deleting records. Not redirecting");
