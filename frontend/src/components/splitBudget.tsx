@@ -37,7 +37,7 @@ export default function SplitBudget(props: {
         <p style="color: red">
           Over budget by ${props.monthlyBudget()?.overBudgetAmount}. Splitting
           50/50 - <b>${(props.monthlyBudget()?.overBudgetAmount ?? 0) / 2}</b>{" "}
-          per person
+          per person (Total included in above calculation)
         </p>
       </Show>
     </div>
