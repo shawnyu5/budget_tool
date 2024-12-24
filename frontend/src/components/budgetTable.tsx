@@ -1,39 +1,32 @@
 import {
-  AccessorWithLatest,
   action,
   useNavigate,
-  useParams,
   useSearchParams,
 } from "@solidjs/router";
 import {
-  Accessor,
   createEffect,
   createSignal,
   For,
   Resource,
-  Setter,
   Show,
 } from "solid-js";
 import log from "~/logger";
 import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/server";
-import ErrorComponent from "./errorComponent";
 
 export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
   setMonthlyBudget: (monthlyBudget: MonthlyBudget) => Promise<void>;
 }) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   // If the table is being edited
   const [isEditing, setIsEditing] = createSignal(false);
-  // Any error currently on screen
-  const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   // Spending for the current month. We need something we can edit, so we can remove a specific spending item from the table
   const [monthlySpending, setMonthlySpending] =
     createSignal<MonthlySpending | null>();
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   createEffect(() => {
-    log.info("Monthly spending has changed. Updating spending table");
+    log.info("Monthly budget has changed. Updating spending table");
     setMonthlySpending(props.monthlyBudget()?.spending);
   });
 
@@ -47,25 +40,19 @@ export default function (props: {
     );
 
     const updatedSpending = (monthlySpending() ?? []).filter(
-      // const updatedSpending = (props.monthlyBudget()?.spending ?? []).filter(
       (spending) => spending.id != entry.id,
     );
-    // props.setMonthlyBudget((prev) => {
-    //   if (!prev) return null;
-    //   const updated: MonthlyBudget = {
-    //     ...prev,
-    //     spending: updatedSpending,
-    //   };
-    //   return updated;
-    // });
     setMonthlySpending(updatedSpending);
+    log.info("Spending entry removed");
   };
 
   return (
     <>
-      <Show when={errorMessage()}>
-        <ErrorComponent message={errorMessage()} />
-      </Show>
+      {
+        // <Show when={errorMessage()}>
+        //   <ErrorComponent message={errorMessage()} />
+        // </Show>
+      }
       <Show when={!isEditing()}>
         <div id="edit-save-buttons">
           <button
@@ -91,15 +78,9 @@ export default function (props: {
       </Show>
       <form
         action={action(async () => {
-          log.info("Submitting form");
-          if (errorMessage() && props.monthlyBudget()) {
-            log.info(
-              "There is an error message on screen. Not submitting form...",
-            );
-            return;
-          }
+          if (!props.monthlyBudget()) return;
 
-          log.info("Updating month's spending items");
+          log.info("Spending table modified. Updating month's budget");
           setIsEditing(false);
 
           const updated: MonthlyBudget = {
@@ -150,13 +131,6 @@ export default function (props: {
           <tbody>
             <For each={monthlySpending()}>
               {(entry) => {
-                // const [amount, setAmount] = createSignal(entry.amount);
-                // const [date, setDate] = createSignal(entry.date);
-                // const [description, setDescription] = createSignal(
-                //   entry.description,
-                // );
-                // const [notes, setNotes] = createSignal(entry.notes || "");
-
                 return (
                   <tr
                     style="cursor: pointer"

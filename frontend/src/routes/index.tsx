@@ -8,7 +8,7 @@ import {
 } from "solid-js";
 import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
-import { createAsync, useNavigate, useSearchParams } from "@solidjs/router";
+import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
   MonthlyBudgetErrors,
   getMonthlyBudget,
@@ -97,9 +97,6 @@ export default function Home() {
   // monthlyBudget signal needs to be kept up to date with the resource. This is to ensure update logic functions correctly
   createEffect(() => {
     if (!monthlyBudgetResource()) return null;
-    log.info(
-      `Syncing resource with signal: ${JSON.stringify(monthlyBudgetResource(), null, 3)}`,
-    );
     setMonthlyBudget(monthlyBudgetResource()!);
   });
 
