@@ -1,13 +1,13 @@
-import { AccessorWithLatest } from "@solidjs/router";
 import { Resource, Show } from "solid-js";
 import { MonthlyBudget } from "~/server";
 
 /**
- * The amount each person is responsible to pay, based on the month's budget
+ * The amount each person is responsible to pay, based on the month's budget. Including displaying any amount that is over budget
  */
 export default function SplitBudget(props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
+
   return (
     <div id="split-budget">
       <p>
@@ -18,7 +18,7 @@ export default function SplitBudget(props: {
           props.monthlyBudget()?.totalSpending ?? 0,
           props.monthlyBudget()?.budget.shawn_percentage_allocation ?? 0,
         ) +
-          overBudgetAmount(props.monthlyBudget() ?? null) / 2}
+          (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2}
       </p>
 
       <p>
@@ -29,14 +29,14 @@ export default function SplitBudget(props: {
           props.monthlyBudget()?.totalSpending ?? 0,
           props.monthlyBudget()?.budget.maggie_percentage_allocation ?? 0,
         ) +
-          overBudgetAmount(props.monthlyBudget()) / 2}
+          (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2}
       </p>
 
-      <Show when={overBudgetAmount(props.monthlyBudget()) != 0}>
+      <Show when={props.monthlyBudget()?.overBudgetAmount != 0}>
         <p style="color: red">
-          Over budget by ${overBudgetAmount(props.monthlyBudget())}. Splitting
-          50/50 - <b>${overBudgetAmount(props.monthlyBudget()) / 2}</b> per
-          person
+          Over budget by ${props.monthlyBudget()?.overBudgetAmount}. Splitting
+          50/50 - <b>${(props.monthlyBudget()?.overBudgetAmount ?? 0) / 2}</b>{" "}
+          per person
         </p>
       </Show>
     </div>
@@ -51,20 +51,4 @@ export default function SplitBudget(props: {
  */
 function calculatePercentage(total: number, percentage: number) {
   return total * (percentage / 100);
-}
-
-/**
- * Calculates amount spent over a month's budget
- * @param monthlyBudget - the budget for the month
- * @returns 0 if we are not over budget. Otherwise returns the amount over by
- */
-function overBudgetAmount(monthlyBudget: MonthlyBudget | null): number {
-  // TODO: we shouldnt need to do another calculation here once there is a `total_spending` field in the db
-  // TODO: consider tracking this number in the db as well
-  if (!monthlyBudget) return 0;
-  const monthlySpending = monthlyBudget.totalSpending ?? 0;
-  if (monthlySpending > monthlyBudget.budget.total) {
-    return monthlySpending - monthlyBudget.budget.total;
-  }
-  return 0;
 }

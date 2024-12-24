@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use mongodb::{bson::doc, Client, Collection};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::{debug, error, info};
@@ -160,6 +161,20 @@ pub struct MonthlyBudget {
     /// The month it was carried over from
     /// If the setting are not carried over from a previous month, this value will be empty
     pub carried_over_from: Option<Month>,
+}
+
+impl MonthlyBudget {
+    /// Calculates the total spending for the month. Populates `self.total_spending`
+    pub fn calculate_total_spending(&mut self) {
+        self.total_spending = self.spending.par_iter().map(|spend| spend.amount).sum();
+    }
+
+    /// Calculates the amount over budget. Populates `self.over_budget_amount`
+    pub fn calculate_over_budget_amount(&mut self) {
+        if self.budget.total < self.total_spending {
+            self.over_budget_amount = self.total_spending - self.budget.total;
+        }
+    }
 }
 
 // impl MonthlyBudget {

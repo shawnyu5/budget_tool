@@ -171,10 +171,14 @@ async fn update_budget_handler(
     let db = DB::new(year)
         .await
         .context("Failed to connect to database")?;
-    body.total_spending = body.spending.par_iter().map(|spend| spend.amount).sum();
-    debug!("Calculated total spending: {}", body.total_spending);
-
-    // TODO: update `overBudgetAmount` field
+    body.calculate_total_spending();
+    // body.total_spending = body.spending.par_iter().map(|spend| spend.amount).sum();
+    info!("Calculated total spending: {}", body.total_spending);
+    body.calculate_over_budget_amount();
+    // if body.budget.total < body.total_spending {
+    //     body.over_budget_amount = body.total_spending - body.budget.total;
+    // }
+    info!("Calculated over budget amount: {}", body.over_budget_amount);
 
     let filter = doc! {
         "month": month.to_string()
@@ -385,11 +389,16 @@ async fn update_spending_item(
         })
         .collect();
     monthly_budget.spending = updated_monthly_spending;
-    monthly_budget.total_spending = monthly_budget
-        .spending
-        .par_iter()
-        .map(|spend| spend.amount)
-        .sum();
+    monthly_budget.calculate_total_spending();
+    info!(
+        "Calculated total spending: {}",
+        monthly_budget.total_spending
+    );
+    monthly_budget.calculate_over_budget_amount();
+    info!(
+        "Calculated over budget amount: {}",
+        monthly_budget.over_budget_amount
+    );
     debug!("Updated spending items: {:?}", monthly_budget.spending);
     debug!(
         "Calculated total spending: {}",
