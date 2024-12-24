@@ -7,7 +7,6 @@ import { MonthlyBudget } from "~/server";
 export default function SplitBudget(props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
-
   return (
     <div id="split-budget">
       <p>
@@ -15,7 +14,8 @@ export default function SplitBudget(props: {
         {props.monthlyBudget()?.budget.shawn_percentage_allocation}
         %): $
         {calculatePercentage(
-          props.monthlyBudget()?.totalSpending ?? 0,
+          (props.monthlyBudget()?.totalSpending ?? 0) -
+            (props.monthlyBudget()?.overBudgetAmount ?? 0),
           props.monthlyBudget()?.budget.shawn_percentage_allocation ?? 0,
         ) +
           (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2}
@@ -26,7 +26,8 @@ export default function SplitBudget(props: {
         {props.monthlyBudget()?.budget.maggie_percentage_allocation}
         %): $
         {calculatePercentage(
-          props.monthlyBudget()?.totalSpending ?? 0,
+          (props.monthlyBudget()?.totalSpending ?? 0) -
+            (props.monthlyBudget()?.overBudgetAmount ?? 0),
           props.monthlyBudget()?.budget.maggie_percentage_allocation ?? 0,
         ) +
           (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2}
