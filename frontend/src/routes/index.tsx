@@ -4,10 +4,11 @@ import {
   createResource,
   createSignal,
   ErrorBoundary,
+  Suspense,
 } from "solid-js";
 import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
-import { useNavigate, useSearchParams } from "@solidjs/router";
+import { createAsync, useNavigate, useSearchParams } from "@solidjs/router";
 import {
   MonthlyBudgetErrors,
   getMonthlyBudget,
@@ -29,7 +30,38 @@ export default function Home() {
   );
   const navigate = useNavigate();
 
-  const [monthlyBudgetResource] = createResource(
+  // const monthlyBudgetAsync = createAsync(
+  //   async () => {
+  //     if (!searchParamSignal().year || !searchParamSignal().month) {
+  //       return null;
+  //     }
+  //     log.info("Month / year has changed. Triggering createAsync");
+  //     log.info(`Fetching budget for month ${searchParamSignal().month}`);
+  //     try {
+  //       const budget = await getMonthlyBudget(
+  //         searchParamSignal().year as string,
+  //         searchParamSignal().month as string,
+  //       );
+
+  //       // If fetching is successful, make sure the error message is gone
+  //       setErrorMessage(null);
+  //       return budget;
+  //     } catch (e) {
+  //       if (
+  //         e == MonthlyBudgetErrors.RE_AUTH_NEEDED ||
+  //         e == MonthlyBudgetErrors.FORBIDDEN
+  //       ) {
+  //         navigate("/login", { replace: true });
+  //       } else if (e == MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
+  //         setErrorMessage("Failed to fetch monthly budget...");
+  //       }
+  //     }
+  //     return null;
+  //   },
+  //   { initialValue: null },
+  // );
+
+  const [monthlyBudgetResource, { refetch }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
       if (!searchParamSignal().year || !searchParamSignal().month) {
@@ -57,11 +89,17 @@ export default function Home() {
       }
       return null;
     },
+    {
+      initialValue: null,
+    },
   );
 
-  // monthlyBudget signal needs to be kept up to date with the resource, since the signal is what we are passing down to components
+  // monthlyBudget signal needs to be kept up to date with the resource. This is to ensure update logic functions correctly
   createEffect(() => {
     if (!monthlyBudgetResource()) return null;
+    log.info(
+      `Syncing resource with signal: ${JSON.stringify(monthlyBudgetResource(), null, 3)}`,
+    );
     setMonthlyBudget(monthlyBudgetResource()!);
   });
 
@@ -98,34 +136,42 @@ export default function Home() {
     }
   });
 
+  /**
+   * Syncs monthly budget with the server, and updates the resource
+   * @param updateMonthlyBudget - updated monthly budget to sync with the server
+   */
+  const syncMonthlyBudgetWithServer = async (
+    updateMonthlyBudget: MonthlyBudget,
+  ) => {
+    setMonthlyBudget(updateMonthlyBudget);
+    await refetch();
+  };
+
+  // TODO: now the resource is being passed down to all components, wrap all individual components in suspense as well
   return (
     <main>
       <ErrorBoundary fallback={<p>Failed to load budget</p>}>
-        <span class="inline-flex-container">
-          <MonthsDropDown />
-          <button
-            class="button"
-            onClick={() => {
-              navigate("/settings", { replace: true });
-            }}
-          >
-            Settings
-          </button>
-        </span>
-        <ErrorComponent message={errorMessage()} />
-        <MonthlySpending
-          monthlyBudget={monthlyBudget}
-          setMonthlyBudget={setMonthlyBudget}
-        />
-        <SplitBudget
-          monthlyBudget={monthlyBudget}
-          setMonthlyBudget={setMonthlyBudget}
-        />
-        <br />
-        <BudgetTable
-          monthlyBudget={monthlyBudget}
-          setMonthlyBudget={setMonthlyBudget}
-        />
+        <Suspense fallback={<p>Loading...</p>}>
+          <span class="inline-flex-container">
+            <MonthsDropDown />
+            <button
+              class="button"
+              onClick={() => {
+                navigate("/settings", { replace: true });
+              }}
+            >
+              Settings
+            </button>
+          </span>
+          <ErrorComponent message={errorMessage()} />
+          <MonthlySpending monthlyBudget={monthlyBudgetResource} />
+          <SplitBudget monthlyBudget={monthlyBudgetResource} />
+          <br />
+          <BudgetTable
+            monthlyBudget={monthlyBudgetResource}
+            setMonthlyBudget={syncMonthlyBudgetWithServer}
+          />
+        </Suspense>
       </ErrorBoundary>
     </main>
   );

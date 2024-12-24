@@ -1,4 +1,5 @@
 import {
+  AccessorWithLatest,
   action,
   useNavigate,
   useParams,
@@ -18,8 +19,8 @@ import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/server";
 import ErrorComponent from "./errorComponent";
 
 export default function (props: {
-  monthlyBudget: Accessor<MonthlyBudget | null>;
-  setMonthlyBudget: Setter<MonthlyBudget | null>;
+  monthlyBudget: Resource<MonthlyBudget | null>;
+  setMonthlyBudget: (monthlyBudget: MonthlyBudget) => Promise<void>;
 }) {
   // If the table is being edited
   const [isEditing, setIsEditing] = createSignal(false);
@@ -32,7 +33,7 @@ export default function (props: {
   const [searchParams] = useSearchParams();
 
   createEffect(() => {
-    log.info("monthly spending has changed. Updating spending table");
+    log.info("Monthly spending has changed. Updating spending table");
     setMonthlySpending(props.monthlyBudget()?.spending);
   });
 
@@ -91,7 +92,7 @@ export default function (props: {
       <form
         action={action(async () => {
           log.info("Submitting form");
-          if (errorMessage()) {
+          if (errorMessage() && props.monthlyBudget()) {
             log.info(
               "There is an error message on screen. Not submitting form...",
             );
@@ -101,24 +102,11 @@ export default function (props: {
           log.info("Updating month's spending items");
           setIsEditing(false);
 
-          props.setMonthlyBudget((prev) => {
-            // __AUTO_GENERATED_PRINT_VAR_START__
-            console.log(
-              "custom print var (anon)#(anon) prev: %s",
-              JSON.stringify(prev),
-            ); // __AUTO_GENERATED_PRINT_VAR_END__
-            if (!prev) return null;
-            const updated = {
-              ...prev,
-              spending: monthlySpending() ?? [],
-            };
-            // __AUTO_GENERATED_PRINT_VAR_START__
-            console.log(
-              "custom print var (anon)#(anon) updated: %s",
-              JSON.stringify(updated),
-            ); // __AUTO_GENERATED_PRINT_VAR_END__
-            return updated;
-          });
+          const updated: MonthlyBudget = {
+            ...(props.monthlyBudget() as MonthlyBudget),
+            spending: monthlySpending() ?? [],
+          };
+          await props.setMonthlyBudget(updated);
         })}
         method="post"
       >

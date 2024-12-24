@@ -1,28 +1,13 @@
-import {
-  Accessor,
-  createEffect,
-  createSignal,
-  Resource,
-  Setter,
-  Show,
-} from "solid-js";
+import { AccessorWithLatest } from "@solidjs/router";
+import { Resource, Show } from "solid-js";
 import { MonthlyBudget } from "~/server";
 
 /**
  * The amount each person is responsible to pay, based on the month's budget
  */
 export default function SplitBudget(props: {
-  monthlyBudget: Accessor<MonthlyBudget | null>;
-  setMonthlyBudget: Setter<MonthlyBudget | null>;
+  monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
-  // const [monthlySpending, setMonthlySpending] = createSignal(0);
-  // createEffect(() => {
-  //   setMonthlySpending(
-  //     calculateMonthlySpending(
-  //       props.monthlyBudget()?.spending as MonthlySpending,
-  //     ),
-  //   );
-  // });
   return (
     <div id="split-budget">
       <p>

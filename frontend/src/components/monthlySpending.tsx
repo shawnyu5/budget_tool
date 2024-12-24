@@ -1,13 +1,8 @@
+import { AccessorWithLatest } from "@solidjs/router";
 import "./monthlySpending.css";
-import {
-  Accessor,
-  createEffect,
-  createSignal,
-  Resource,
-  Setter,
-} from "solid-js";
-import log from "~/logger";
-import { MonthlyBudget, MonthlySpending } from "~/server";
+import { Resource, Suspense } from "solid-js";
+import { MonthlyBudget } from "~/server";
+
 /**
  * Displays the monthly spending. Including:
  * - The total budget for the month
@@ -16,35 +11,16 @@ import { MonthlyBudget, MonthlySpending } from "~/server";
  * -  TODO: over budget amount if any
  */
 export default function (props: {
-  monthlyBudget: Accessor<MonthlyBudget | null>;
-  setMonthlyBudget: Setter<MonthlyBudget | null>;
+  monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
-  // const [monthlyBudget] = useMonthlyBudget();
-  // Total amount spend in a month
-  // const [totalMonthlySpending, setTotalMonthlySpending] = createSignal(0);
-  // createEffect(() => {
-  //   if (!props.monthlyBudget()) {
-  //     return;
-  //   }
-  //   // log.info(`Calculating total monthly spending`);
-  //   const totalSpending = props.monthlyBudget()?.totalSpending ?? 0;
-  //   // const totalSpending = calculateMonthlySpending(
-  //   //   props.monthlyBudget()?.spending as MonthlySpending,
-  //   // );
-  //   log.info(`Calculating total monthly spending: ${totalSpending}`);
-  //   setTotalMonthlySpending(totalSpending);
-  // });
-
   return (
-    <>
-      <div id="monthly-spending" class="container">
-        <p>Remaining:</p>
-        {
-          // TODO: color should be dynamic, based on if we are over budget or not
-        }
-        <h1 style="color: green">${props.monthlyBudget()?.totalSpending}</h1>
-        <h1>/${props.monthlyBudget()?.budget.total}</h1>
-      </div>
-    </>
+    <div id="monthly-spending" class="container">
+      <p>Remaining:</p>
+      {
+        // TODO: color should be dynamic, based on if we are over budget or not
+      }
+      <h1 style="color: green">${props.monthlyBudget()?.totalSpending}</h1>
+      <h1>/${props.monthlyBudget()?.budget.total}</h1>
+    </div>
   );
 }
