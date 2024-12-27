@@ -1,7 +1,7 @@
 import { createEffect, For, Show } from "solid-js";
 import "./monthsDropDown.css";
 import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
-import { monthNumberToName } from "~/utils";
+import { monthNumberToName, setLocalAuthToken } from "~/utils";
 
 /**
  * A dropdown menu that contains the selected month.
@@ -109,6 +109,16 @@ export default function NavBar() {
               </a>
             </li>
           </Show>
+          <li>
+            <a
+              onClick={() => {
+                setLocalAuthToken("");
+                navigate("/login");
+              }}
+            >
+              Logout
+            </a>
+          </li>
         </ul>
       </div>
     </div>
