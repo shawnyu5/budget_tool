@@ -44,6 +44,7 @@ jobs:
 
       - name: Commit changes
         if: steps.dry_run.outputs.new-release-published == 'true'
+        continue-on-error: true
         uses: EndBug/add-and-commit@v9
         with:
           add: "."
@@ -53,7 +54,8 @@ jobs:
 
       - name: Git pull
         if: steps.dry_run.outputs.new-release-published == 'true'
-        run: git pull --rebase
+        continue-on-error: true
+        run: git pull --rebase --autostash
 
       - name: Semantic release
         if: steps.dry_run.outputs.new-release-published == 'true'
