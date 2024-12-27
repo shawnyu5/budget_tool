@@ -21,3 +21,18 @@ export function monthNumberToName(monthNumber: number) {
 
   return months[monthNumber - 1] || "Invalid month";
 }
+
+/**
+ * Get the JWT token stored locally
+ */
+export function getLocalAuthToken(): string | null {
+  return localStorage.getItem("token");
+}
+
+/**
+ * Store the JWT token locally
+ * @param token - the JWT token to store
+ */
+export function setLocalAuthToken(token: string) {
+  localStorage.setItem("token", token);
+}

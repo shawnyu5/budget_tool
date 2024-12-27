@@ -7,6 +7,7 @@ import { paths } from "./backend_schema";
 import { loadConfig } from "./config";
 import log from "./logger";
 import { useNavigate } from "@solidjs/router";
+import { getLocalAuthToken, setLocalAuthToken } from "./utils";
 
 export type SpendingItem =
   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
@@ -52,7 +53,7 @@ export async function getMonthlyBudget(
       `${loadConfig().backendUrl}/budget/${year}/${month}`,
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getLocalAuthToken()}`,
         },
       },
     );
@@ -89,7 +90,7 @@ export async function updateMonthlyBudget(
       monthlyBudget,
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getLocalAuthToken()}`,
         },
       },
     );
@@ -116,7 +117,7 @@ export async function updateMonthlyBudget(
  */
 export async function validateJTWToken() {
   log.info("Checking if there is a JWT token present");
-  const token = localStorage.getItem("token");
+  const token = getLocalAuthToken();
   if (!token) {
     log.info("No JWT found...");
     return;
@@ -160,7 +161,7 @@ export async function basicAuthLogin(userName: string, password: string) {
       },
     );
 
-    localStorage.setItem("token", response.data);
+    setLocalAuthToken(response.data);
   } catch (e) {
     log.error(`Failed to login: ${e}`);
     throw e;
