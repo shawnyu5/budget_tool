@@ -45,7 +45,7 @@ export const handlers = [
             id: generateSpendingItemID(),
             date: `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`,
             amount: 100,
-            description: "Test description 2 ",
+            description: "Test description 2",
             notes: "Test notes 2",
           },
         ],

@@ -1,15 +1,5 @@
-import {
-  action,
-  useNavigate,
-  useSearchParams,
-} from "@solidjs/router";
-import {
-  createEffect,
-  createSignal,
-  For,
-  Resource,
-  Show,
-} from "solid-js";
+import { action, useNavigate, useSearchParams } from "@solidjs/router";
+import { createEffect, createSignal, For, Resource, Show } from "solid-js";
 import log from "~/logger";
 import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/server";
 
@@ -47,7 +37,7 @@ export default function (props: {
   };
 
   return (
-    <>
+    <div id="spending-table">
       {
         // <Show when={errorMessage()}>
         //   <ErrorComponent message={errorMessage()} />
@@ -174,6 +164,6 @@ export default function (props: {
           </tbody>
         </table>
       </form>
-    </>
+    </div>
   );
 }

@@ -1,16 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { monthNumberToName } from "~/utils";
 
-// test.beforeAll(() => {
-//   // worker.start();
-//   // server.listen();
-// });
-
-// test.afterAll(() => {
-//   // worker.stop();
-//   // server.close();
-// });
-
 const date = new Date();
 
 test("Login page has user name and password field", async ({ page }) => {
