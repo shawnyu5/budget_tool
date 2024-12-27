@@ -13,21 +13,7 @@ import axiosRetry from "axios-retry";
 axiosRetry(axios, {
   retries: 10,
   retryDelay: axiosRetry.exponentialDelay,
-  retryCondition: (response) => {
-    log.info("Determining if we should retry: true");
-    return true;
-    //   console.log(`response: ${JSON.stringify(response?.response?.status)}`);
-    //   return (
-    //     response?.response?.status == 202 ||
-    //     axiosRetry.isNetworkOrIdempotentRequestError(response)
-    //   );
-  },
-  onRetry: (retryCount, _error, _requestconfig) => {
-    console.log(`Retrying ${retryCount} time`);
-  },
 });
-
-// axiosRetry(axios, { retries: 6 });
 
 export type SpendingItem =
   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
