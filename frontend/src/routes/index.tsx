@@ -20,6 +20,7 @@ import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import MonthsDropDown from "~/components/monthsDropDown";
 import axios from "axios";
+import NavBar from "~/components/navBar";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -151,14 +152,6 @@ export default function Home() {
         <Suspense fallback={<p>Loading...</p>}>
           <span class="inline-flex-container">
             <MonthsDropDown />
-            <button
-              class="button"
-              onClick={() => {
-                navigate("/settings", { replace: true });
-              }}
-            >
-              Settings
-            </button>
           </span>
           <ErrorComponent message={errorMessage()} />
           <MonthlySpending monthlyBudget={monthlyBudgetResource} />

@@ -113,14 +113,6 @@ export default function () {
     <>
       <span class="inline-flex-container">
         <MonthsDropDown />
-        <button
-          class="button"
-          onClick={() => {
-            navigate("/", { replace: true });
-          }}
-        >
-          Home
-        </button>
       </span>
       <div id="settings-form">
         <h2>Budget allocation</h2>
