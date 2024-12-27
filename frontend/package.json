@@ -4,7 +4,7 @@
    "scripts": {
       "dev": "vinxi dev",
       "build": "vinxi build",
-      "postbuild": "rm -f dist/mockServiceWorker.js",
+      "postbuild": "rm -f .output/public/mockServiceWorker.js* && rm -f .vercel/output/static/mockServiceWorker.js*",
       "test": "playwright test",
       "test:ui": "playwright test --ui",
       "start": "vinxi start",
