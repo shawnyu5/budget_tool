@@ -14,7 +14,7 @@ export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
   return (
-    <div id="monthly-spending" class="container">
+    <div id="monthly-budget" class="container">
       <p>Remaining:</p>
       {
         // TODO: color should be dynamic, based on if we are over budget or not

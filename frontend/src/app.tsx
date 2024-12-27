@@ -4,15 +4,6 @@ import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 
 export default function App() {
-  if (
-    import.meta.env.MODE == "development" &&
-    import.meta.env.VITE_E2E == "true"
-  ) {
-    import("./mocks/browser").then(({ worker }) => {
-      worker.start();
-    });
-  }
-
   return (
     <Router
       root={(props) => (
@@ -31,10 +22,6 @@ export default function App() {
         </MetaProvider>
       )}
     >
-      {
-        // <MonthlyBudgetProvider>
-        // </MonthlyBudgetProvider>
-      }
       <FileRoutes />
     </Router>
   );

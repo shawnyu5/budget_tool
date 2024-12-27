@@ -18,6 +18,7 @@ export const handlers = [
   http.post(`${loadConfig().backendUrl}/login/basic`, () => {
     return HttpResponse.text("Authenicated");
   }),
+  // This route will return data that is on budget
   http.get(
     `${loadConfig().backendUrl}/budget/${date.getFullYear()}/${monthNumberToName(date.getMonth() + 1)}`,
     () => {
@@ -26,11 +27,11 @@ export const handlers = [
           date.getMonth(),
         ) as components["schemas"]["Month"],
         budget: {
-          total: 100,
+          total: 300,
           maggie_percentage_allocation: 40,
           shawn_percentage_allocation: 60,
         },
-        totalSpending: 10,
+        totalSpending: 200,
         overBudgetAmount: 0,
         spending: [
           {
@@ -40,12 +41,16 @@ export const handlers = [
             description: "Test description",
             notes: "Test notes",
           },
+          {
+            id: generateSpendingItemID(),
+            date: `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`,
+            amount: 100,
+            description: "Test description 2 ",
+            notes: "Test notes 2",
+          },
         ],
       };
       return HttpResponse.json(budget);
     },
   ),
 ];
-
-// export const server = setupServer(...handlers);
-// export const worker = setupWorker(...handlers);

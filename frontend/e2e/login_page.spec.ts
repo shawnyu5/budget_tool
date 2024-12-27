@@ -11,6 +11,8 @@ import { monthNumberToName } from "~/utils";
 //   // server.close();
 // });
 
+const date = new Date();
+
 test("Login page has user name and password field", async ({ page }) => {
   await page.goto("http://localhost:3000/login");
   const loginForm = page.locator("#login-form");
@@ -29,9 +31,10 @@ test("Can login using login page", async ({ page }) => {
 
   const loginButton = page.locator("button.submit");
   await loginButton.click();
-  const date = new Date();
 
   await expect(page).toHaveURL(
     `http://localhost:3000/?year=${date.getFullYear()}&month=${monthNumberToName(date.getMonth() + 1)}`,
   );
+  // TODO: need to validate this API request does not fail
 });
+

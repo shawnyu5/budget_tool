@@ -45,13 +45,13 @@ export default function NavBar() {
   const years = [date.getFullYear(), date.getFullYear() - 1];
 
   return (
-    <div class="top-bar">
+    <div id="nav-bar" class="top-bar">
       <div class="top-bar-left">
         <ul class="dropdown menu" data-dropdown-menu>
           <li>
             <select
               name="year"
-              id="year"
+              id="year-dropdown"
               onChange={(e) => {
                 const selectedYear = e.target.value;
                 setSearchParam({ year: selectedYear });
@@ -72,7 +72,7 @@ export default function NavBar() {
           <li>
             <select
               name="month"
-              id="month"
+              id="month-dropdown"
               onChange={(e) => {
                 const selectedMonth = e.target.value;
                 setSearchParam({ month: selectedMonth });
