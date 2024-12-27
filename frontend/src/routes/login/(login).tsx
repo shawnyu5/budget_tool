@@ -2,11 +2,10 @@ import { action, redirect } from "@solidjs/router";
 import axios from "axios";
 import { createSignal, onMount } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
-import { loadConfig } from "~/config";
 import log from "~/logger";
 import { basicAuthLogin, validateJTWToken } from "~/server";
 
-export default function () {
+export default function Login() {
   const [userName, setUserName] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
@@ -16,7 +15,7 @@ export default function () {
 
   const onSubmit = action(async (_data: FormData) => {
     try {
-       await basicAuthLogin(userName(), password())
+      await basicAuthLogin(userName(), password());
       return redirect("/");
     } catch (e) {
       log.error(`Failed to login: ${e}`);

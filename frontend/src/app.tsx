@@ -1,9 +1,14 @@
 import { MetaProvider, Title } from "@solidjs/meta";
-import { Router } from "@solidjs/router";
+import { createAsync, Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
+import { startMockWorker } from "./mocks/browser";
 
 export default function App() {
+  if (import.meta.env.VITE_E2E == "true") {
+    startMockWorker();
+  }
+
   return (
     <Router
       root={(props) => (

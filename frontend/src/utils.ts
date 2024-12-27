@@ -3,7 +3,7 @@
  * @param monthNumber - a numerical month representation
  * @returns the month representation in words
  */
-export function monthNumberToName(monthNumber: number) {
+export function monthNumberToName(monthNumber: number): string {
   const months = [
     "January",
     "February",
@@ -35,4 +35,20 @@ export function getLocalAuthToken(): string | null {
  */
 export function setLocalAuthToken(token: string) {
   localStorage.setItem("token", token);
+}
+
+/**
+ * Generate an ID for a spending item
+ * @returns a unique ID for a spending item
+ */
+export function generateSpendingItemID(): string {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = date.getHours();
+  const minute = date.getMinutes();
+  const second = date.getSeconds();
+
+  return `${year}${month}${day}${hour}${minute}${second}`;
 }

@@ -1,13 +1,18 @@
 interface Config {
-   backendUrl: string;
+  backendUrl: string;
 }
 
 /**
-   * Load configuration
+ * Load configuration
  */
 export function loadConfig(): Config {
-   return {
-      backendUrl: import.meta.env.VITE_BACKEND_URL,
-   }
+  if (import.meta.env) {
+    return {
+      backendUrl: import.meta.env.VITE_BACKEND_URL || "",
+    };
+  } else {
+    return {
+      backendUrl: "",
+    };
+  }
 }
-

@@ -11,6 +11,7 @@ import {
   SpendingItem,
   updateMonthlyBudget,
 } from "~/server";
+import { generateSpendingItemID } from "~/utils";
 
 export default function () {
   const params = useParams();
@@ -132,18 +133,3 @@ export default function () {
   );
 }
 
-/**
- * Generate an ID for a spending item
- * @returns a unique ID for a spending item
- */
-function generateSpendingItemID(): string {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hour = date.getHours();
-  const minute = date.getMinutes();
-  const second = date.getSeconds();
-
-  return `${year}${month}${day}${hour}${minute}${second}`;
-}
