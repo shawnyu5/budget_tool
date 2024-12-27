@@ -1,11 +1,4 @@
-import {
-  Accessor,
-  createEffect,
-  createSignal,
-  For,
-  Setter,
-  Show,
-} from "solid-js";
+import { createEffect, For, Show } from "solid-js";
 import "./monthsDropDown.css";
 import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
 import { monthNumberToName } from "~/utils";
@@ -15,7 +8,7 @@ import { monthNumberToName } from "~/utils";
  *
  * Puts the selected month in the query param, in the `month` param
  */
-export default function MonthsDropDown() {
+export default function NavBar() {
   const [searchParam, setSearchParam] = useSearchParams();
   const date = new Date();
   const navigate = useNavigate();

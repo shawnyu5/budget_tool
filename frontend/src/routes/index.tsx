@@ -18,9 +18,8 @@ import {
 import log from "~/logger";
 import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
-import MonthsDropDown from "~/components/monthsDropDown";
-import axios from "axios";
 import NavBar from "~/components/navBar";
+import axios from "axios";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -151,7 +150,7 @@ export default function Home() {
       <ErrorBoundary fallback={<p>Failed to load budget</p>}>
         <Suspense fallback={<p>Loading...</p>}>
           <span class="inline-flex-container">
-            <MonthsDropDown />
+            <NavBar />
           </span>
           <ErrorComponent message={errorMessage()} />
           <MonthlySpending monthlyBudget={monthlyBudgetResource} />

@@ -1,11 +1,9 @@
-import { action, useNavigate, useSearchParams } from "@solidjs/router";
+import { action, useSearchParams } from "@solidjs/router";
 import "./settings.css";
 import { createEffect, createResource, createSignal, Show } from "solid-js";
 import { getMonthlyBudget, MonthlyBudget, updateMonthlyBudget } from "~/server";
 import log from "~/logger";
-import axios from "axios";
-import { loadConfig } from "~/config";
-import MonthsDropDown from "~/components/monthsDropDown";
+import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
 import SuccessComponent from "~/components/successComponent";
 
@@ -20,7 +18,6 @@ export default function () {
   const [shawnContribution, setShawnContribution] = createSignal(0);
   const [maggieContribution, setMaggieContribution] = createSignal(0);
   const [totalBudget, setTotalBudget] = createSignal(0);
-  const navigate = useNavigate();
 
   createEffect(() => {
     setShawnContribution(
@@ -61,7 +58,11 @@ export default function () {
       `Updating monthly budget in backend: ${JSON.stringify(monthlyBudget(), null, 3)}`,
     );
     try {
-       await updateMonthlyBudget(searchParam.year as string, searchParam.month as string, monthlyBudget()!)
+      await updateMonthlyBudget(
+        searchParam.year as string,
+        searchParam.month as string,
+        monthlyBudget()!,
+      );
       // await axios.post(
       //   `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
       //   monthlyBudget(),
@@ -112,7 +113,7 @@ export default function () {
   return (
     <>
       <span class="inline-flex-container">
-        <MonthsDropDown />
+        <NavBar />
       </span>
       <div id="settings-form">
         <h2>Budget allocation</h2>
