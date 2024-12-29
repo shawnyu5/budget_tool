@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/export/{year}/{month}/csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gets the spending items in csv form. If converting budget information to CSV fails at any point, partial data will not be returned */
+        get: operations["export_csv_handler"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/basic": {
         parameters: {
             query?: never;
@@ -94,12 +111,12 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Budget: {
-            /** Format: int64 */
+            /** Format: double */
             maggie_percentage_allocation: number;
-            /** Format: int64 */
+            /** Format: double */
             shawn_percentage_allocation: number;
             /**
-             * Format: int64
+             * Format: double
              * @description Total allocated budget
              */
             total: number;
@@ -117,14 +134,14 @@ export interface components {
             /** @description The month */
             month: components["schemas"]["Month"];
             /**
-             * Format: int64
+             * Format: double
              * @description Amount over budget for the month. 0 means not over budget.
              */
             overBudgetAmount: number;
             /** @description List of spent items */
             spending: components["schemas"]["SpendingItem"][];
             /**
-             * Format: int64
+             * Format: double
              * @description Total spending for the month
              */
             totalSpending: number;
@@ -132,7 +149,7 @@ export interface components {
         /** @description A single transaction */
         SpendingItem: {
             /**
-             * Format: int64
+             * Format: double
              * @description The dollar amount
              */
             amount: number;
@@ -335,6 +352,53 @@ export interface operations {
                 };
             };
             /** @description Failed to update the month's budget */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    export_csv_handler: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Spending items in CSV format */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Authenication token expired. Please reauthenicate */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Authenication failed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description Failed to get update spending item */
             500: {
                 headers: {
                     [name: string]: unknown;

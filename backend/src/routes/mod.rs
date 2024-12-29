@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use anyhow::Context;
+use axum::body;
 use axum::http::{HeaderMap, StatusCode};
 use axum::middleware;
 use axum::response::IntoResponse;
@@ -18,6 +19,7 @@ use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
+use simd_json::from_slice;
 use tracing::debug;
 use tracing::error;
 use tracing::info;
@@ -37,7 +39,8 @@ use crate::{
 
 pub fn app() -> Router {
     let (budget_router, budget_api) = OpenApiRouter::new()
-        .routes(routes!(get_month_budget_handler, update_budget_handler,))
+        .routes(routes!(get_month_budget_handler, update_budget_handler))
+        // .routes(routes!(get_spending_item, update_spending_item))
         .split_for_parts();
     let budget_router = budget_router.layer(middleware::from_fn(check_valid_year));
 
@@ -61,10 +64,15 @@ pub fn app() -> Router {
         .routes(routes!(validate_token))
         .split_for_parts();
 
+    let (export_router, export_api) = OpenApiRouter::new()
+        .routes(routes!(export_csv_handler))
+        .split_for_parts();
+
     let router = Router::new()
         .merge(budget_router)
         .merge(spending_item_router)
         .merge(auth_validate_router)
+        .merge(export_router)
         .layer(middleware::from_fn(check_auth_header))
         .merge(general_router)
         .merge(auth_router);
@@ -73,6 +81,7 @@ pub fn app() -> Router {
         .merge_from(budget_api)
         .merge_from(auth_api)
         .merge_from(auth_validate_api)
+        .merge_from(export_api)
         .merge_from(spending_item_api);
 
     merged_api.info.title = "budget-tool backend".to_string();
@@ -422,46 +431,6 @@ async fn update_spending_item(
         "Should always modify a single document"
     );
     return Ok(());
-
-    // let filter = doc! {
-    //     "month": month.to_string(),
-    //     "spending": {
-    //         "$elemMatch": {
-    //             "id": id.clone(),
-    //         }
-    //     }
-    // };
-
-    // // let updated_spending = SpendingItem {
-    // //     id,
-    // //     amount: spending_item.amount,
-    // //     date: spending_item.date,
-    // //     description: spending_item.description,
-    // //     notes: spending_item.notes,
-    // // };
-
-    // let update_query = doc! {
-    //     "$set": {
-    //         "spending.$[elem].amount": spending_item.amount,
-    //         "spending.$[elem].date": spending_item.date,
-    //         "spending.$[elem].description": spending_item.description,
-    //         "spending.$[elem].notes": spending_item.notes,
-    //     }
-    // };
-
-    // let arr_filter = vec![doc! {
-    //     "elem.id": spending_item.id
-    // }];
-
-    // let options = UpdateOptions::builder()
-    //     .array_filters(Some(arr_filter))
-    //     .build();
-
-    // TODO: idk how to update...
-    // let result = db
-    //     .collection
-    //     .update_one(filter, update_query, options)
-    //     .await;
 }
 
 /// Validate the JWT token in the header.
@@ -477,4 +446,91 @@ async fn update_spending_item(
 )]
 async fn validate_token() -> &'static str {
     return "success";
+}
+
+/// Gets the spending items in csv form. If converting budget information to CSV fails at any point, partial data will not be returned
+#[instrument(skip_all)]
+#[utoipa::path(
+    get,
+    path = "/export/{year}/{month}/csv",
+    responses(
+        (status = 200, description = "Spending items in CSV format", body = String),
+        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
+        (status = 403, description = "Authenication failed", body = String),
+        (status = 500, description = "Failed to get update spending item", body = String),
+    ),
+)]
+async fn export_csv_handler(
+    Path((year, month)): Path<(String, Month)>,
+) -> Result<String, AppError> {
+    let monthly_budget = get_month_budget_handler(Path((year, month)))
+        .await?
+        .into_response();
+    let monthly_budget = body::to_bytes(monthly_budget.into_body(), usize::MAX)
+        .await
+        .context("Failed to get budget information")?;
+    let monthly_budget = from_slice::<MonthlyBudget>(&mut monthly_budget.to_vec())
+        .context("Failed to convert body to Json")?;
+    debug!("Monthly budget: {:#?}", monthly_budget);
+
+    let mut wtr = csv::Writer::from_writer(Vec::new());
+    wtr.write_record(["Amount", "Date", "Description", "Notes"])
+        .context("Failed to write header")?;
+
+    for spending in monthly_budget.spending {
+        // TODO: if a row fails to write, should we return partial data?
+        let record = [
+            spending.amount.to_string(),
+            spending.date,
+            spending.description,
+            spending.notes.unwrap_or_default(),
+        ];
+        debug!("Writing record {:#?}", record);
+        wtr.write_record(record).context("Failed to write row")?;
+    }
+
+    wtr.write_record([
+        "Total spending",
+        &monthly_budget.total_spending.to_string(),
+        "",
+        "",
+    ])
+    .context("Failed to write total spending to CSV")?;
+    wtr.write_record([
+        "Shawn contribution",
+        &calculate_percentage(
+            monthly_budget.budget.total,
+            monthly_budget.budget.shawn_percentage_allocation,
+        )
+        .to_string(),
+        "",
+        "",
+    ])
+    .context("Failed to write Shawn contribution to CSV")?;
+    wtr.write_record([
+        "Maggie contribution",
+        &calculate_percentage(
+            monthly_budget.budget.total,
+            monthly_budget.budget.maggie_percentage_allocation,
+        )
+        .to_string(),
+        "",
+        "",
+    ])
+    .context("Failed to write Maggie contribution to CSV")?;
+
+    wtr.flush().context("Failed to write CSV to buffer")?;
+    let csv = wtr.into_inner().context("Failed to get CSV data")?;
+    let csv = String::from_utf8(csv).context("Failed to convert csv into string")?;
+    debug!(csv);
+
+    return Ok(csv);
+}
+
+/// Calculated the percentage of a total number
+///
+/// * `total`: the total number
+/// * `percentage`: the percentage of the `total` to calculate
+fn calculate_percentage(total: f64, percentage: f64) -> f64 {
+    return total * (percentage / 100.0);
 }

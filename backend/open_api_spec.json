@@ -227,6 +227,54 @@
         }
       }
     },
+    "/export/{year}/{month}/csv": {
+      "get": {
+        "summary": "Gets the spending items in csv form. If converting budget information to CSV fails at any point, partial data will not be returned",
+        "operationId": "export_csv_handler",
+        "responses": {
+          "200": {
+            "description": "Spending items in CSV format",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authenication token expired. Please reauthenicate",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenication failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Failed to get update spending item",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/login/basic": {
       "post": {
         "operationId": "basic_auth_handler",
@@ -431,16 +479,16 @@
         ],
         "properties": {
           "maggie_percentage_allocation": {
-            "type": "integer",
-            "format": "int64"
+            "type": "number",
+            "format": "double"
           },
           "shawn_percentage_allocation": {
-            "type": "integer",
-            "format": "int64"
+            "type": "number",
+            "format": "double"
           },
           "total": {
-            "type": "integer",
-            "format": "int64",
+            "type": "number",
+            "format": "double",
             "description": "Total allocated budget"
           }
         }
@@ -504,8 +552,8 @@
             "description": "The month"
           },
           "overBudgetAmount": {
-            "type": "integer",
-            "format": "int64",
+            "type": "number",
+            "format": "double",
             "description": "Amount over budget for the month. 0 means not over budget."
           },
           "spending": {
@@ -516,8 +564,8 @@
             "description": "List of spent items"
           },
           "totalSpending": {
-            "type": "integer",
-            "format": "int64",
+            "type": "number",
+            "format": "double",
             "description": "Total spending for the month"
           }
         }
@@ -533,8 +581,8 @@
         ],
         "properties": {
           "amount": {
-            "type": "integer",
-            "format": "int64",
+            "type": "number",
+            "format": "double",
             "description": "The dollar amount"
           },
           "date": {

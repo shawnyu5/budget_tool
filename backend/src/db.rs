@@ -151,11 +151,11 @@ pub struct MonthlyBudget {
     /// Total spending for the month
     #[schema(required = true)]
     #[serde(default)]
-    pub total_spending: i64,
+    pub total_spending: f64,
     /// Amount over budget for the month. 0 means not over budget.
     #[schema(required = true)]
     #[serde(default)]
-    pub over_budget_amount: i64,
+    pub over_budget_amount: f64,
     /// List of spent items
     pub spending: Vec<SpendingItem>,
     /// The month it was carried over from
@@ -174,7 +174,7 @@ impl MonthlyBudget {
         if self.budget.total < self.total_spending {
             self.over_budget_amount = self.total_spending - self.budget.total;
         } else {
-            self.over_budget_amount = 0;
+            self.over_budget_amount = 0.0;
         }
     }
 }
@@ -194,11 +194,11 @@ impl MonthlyBudget {
 #[serde(rename_all = "camelCase")]
 pub struct Budget {
     /// Total allocated budget
-    pub total: i64,
+    pub total: f64,
     #[serde(rename = "shawn_percentage_allocation")]
-    pub shawn_percentage_allocation: i64,
+    pub shawn_percentage_allocation: f64,
     #[serde(rename = "maggie_percentage_allocation")]
-    pub maggie_percentage_allocation: i64,
+    pub maggie_percentage_allocation: f64,
 }
 
 /// A single transaction
@@ -208,7 +208,7 @@ pub struct SpendingItem {
     /// A unique identifier
     pub id: String,
     /// The dollar amount
-    pub amount: i64,
+    pub amount: f64,
     /// The date
     pub date: String,
     /// Description of the purchase

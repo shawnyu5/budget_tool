@@ -16,10 +16,7 @@ use tracing::info;
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
     init_tracing_subcriber().expect("Failed to init tracing subscriber");
-    // generate_open_api_spec::<APIDoc>("open_api_spec.json")
-    //     .expect("Failed to generate open API spec");
     info!("Generated Open API spec");
-
     // Attempt to load config. If it fails, dont bother starting the server
     Config::load();
 
