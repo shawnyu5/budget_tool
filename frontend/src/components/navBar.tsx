@@ -1,7 +1,16 @@
 import { createEffect, For, Show } from "solid-js";
 import "./monthsDropDown.css";
 import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
-import { monthNumberToName, setLocalAuthToken } from "~/utils";
+import {
+  getLocalAuthToken,
+  monthNumberToName,
+  setLocalAuthToken,
+} from "~/utils";
+// import { URL } from "url";
+import { loadConfig } from "~/config";
+import axios from "axios";
+import log from "~/logger";
+import { exportCSV } from "~/server";
 
 /**
  * A dropdown menu that contains the selected month.
@@ -109,6 +118,23 @@ export default function NavBar() {
               </a>
             </li>
           </Show>
+          <li>
+            <a
+              onClick={async () => {
+                const response = await exportCSV(searchParam.year as string, searchParam.month as string);
+                const blob = new Blob([response], { type: "text/plain" });
+                log.info(`blob: ${blob}`);
+
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `dating_budget_${searchParam.year}_${searchParam.month}.csv`; // Set the desired file name
+                link.click();
+                URL.revokeObjectURL(link.href);
+              }}
+            >
+              Export
+            </a>
+          </li>
           <li>
             <a
               onClick={() => {

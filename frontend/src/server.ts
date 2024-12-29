@@ -9,6 +9,7 @@ import log from "./logger";
 import { useNavigate } from "@solidjs/router";
 import { getLocalAuthToken, setLocalAuthToken } from "./utils";
 import axiosRetry from "axios-retry";
+import Month from "./routes/spending-item/add/[year]/[month]";
 
 axiosRetry(axios, {
   retries: 10,
@@ -187,4 +188,16 @@ export function calculateTotalSpending(monthlyBudget: MonthlyBudget): number {
     total += spending.amount;
   }
   return total;
+}
+
+export async function exportCSV(year: string, month: string): Promise<AxiosResponse<string, any>> {
+  const response = await axios.get(
+    `${loadConfig().backendUrl}/export/${year}/${month}/csv`,
+    {
+      headers: {
+        Authorization: `Bearer ${getLocalAuthToken()}`,
+      },
+    },
+  );
+  return response.data;
 }
