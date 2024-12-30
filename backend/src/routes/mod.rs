@@ -60,31 +60,8 @@ pub fn app() -> Router {
     generate_open_api_spec_from_open_api(api_spec, "open_api_spec.json")
         .expect("Failed to generate open API spec");
 
-    // let (router, api) = OpenApiRouter::new().routes(routes!(
-    //     get_month_budget_handler,
-    //     update_budget_handler,
-    //     app_version,
-    //     login_handler
-    // ));
-    // let router = Router::new()
-    //     .route("/budget/:year/:month", get(get_month_budget_handler))
-    //     .route("/budget/:year/:month", post(update_budget_handler))
-    //     .layer(middleware::from_fn(check_valid_year))
-    //     .route("/", get(app_version))
-    //     .layer(middleware::from_fn(check_auth_header))
-    //     .route("/login/basic", post(login_handler));
-
     return attach_tracing_cors_middleware(router);
 }
-
-// #[derive(OpenApi)]
-// #[openapi(paths(
-//     app_version,
-//     get_month_budget_handler,
-//     update_budget_handler,
-//     login_handler
-// ))]
-// pub struct APIDoc;
 
 /// Get the budget information for a specific month
 #[instrument(skip_all)]
