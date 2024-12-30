@@ -14,7 +14,6 @@ use tracing::{error, info, instrument};
 
 use crate::{config::Config, month::Month, routes::JwtAccessToken};
 
-#[instrument(skip_all)]
 /// Checks the year in the path. Returns 400 if the year is invalid
 pub async fn check_valid_year(
     Path((year, _month)): Path<(String, Month)>,
@@ -29,7 +28,6 @@ pub async fn check_valid_year(
 }
 
 /// checks for the JWT token in the authorization header, and ensures it is not expired. If it is, return 401 unauthorized
-#[instrument(skip_all)]
 pub async fn check_auth_header(
     header: HeaderMap,
     request: Request,
