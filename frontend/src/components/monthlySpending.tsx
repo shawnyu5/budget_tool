@@ -20,7 +20,7 @@ export default function (props: {
         // TODO: color should be dynamic, based on if we are over budget or not
       }
       <h1 style="color: green">${props.monthlyBudget()?.totalSpending}</h1>
-      <h1>/${props.monthlyBudget()?.budget.total}</h1>
+      <h1>/${props.monthlyBudget()?.budget.totalAllocation}</h1>
     </div>
   );
 }

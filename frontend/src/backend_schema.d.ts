@@ -119,7 +119,7 @@ export interface components {
              * Format: double
              * @description Total allocated budget
              */
-            total: number;
+            totalAllocation: number;
         };
         HomeResponse: {
             version: string;
@@ -142,7 +142,7 @@ export interface components {
             spending: components["schemas"]["SpendingItem"][];
             /**
              * Format: double
-             * @description Total spending for the month
+             * @description Total spending for the month. Including any over budget amount
              */
             totalSpending: number;
         };
