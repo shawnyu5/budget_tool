@@ -1,6 +1,4 @@
 import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
-import { setupWorker } from "msw/browser";
 import { loadConfig } from "../config";
 import { MonthlyBudget } from "~/server";
 import { generateSpendingItemID, monthNumberToName } from "~/utils";
