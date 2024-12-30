@@ -12,7 +12,7 @@ import axiosRetry from "axios-retry";
 import Month from "./routes/spending-item/add/[year]/[month]";
 
 axiosRetry(axios, {
-  retries: 10,
+  retries: 4,
   retryDelay: axiosRetry.exponentialDelay,
 });
 
