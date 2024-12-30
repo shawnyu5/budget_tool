@@ -38,58 +38,26 @@ use crate::{
 };
 
 pub fn app() -> Router {
-    let (budget_router, budget_api) = OpenApiRouter::new()
+    let (router, mut api_spec) = OpenApiRouter::new()
         .routes(routes!(get_month_budget_handler, update_budget_handler))
-        // .routes(routes!(get_spending_item, update_spending_item))
-        .split_for_parts();
-    let budget_router = budget_router.layer(middleware::from_fn(check_valid_year));
-
-    let (spending_item_router, spending_item_api) = OpenApiRouter::new()
         .routes(routes! {
             get_spending_item,
             update_spending_item
         })
-        .split_for_parts();
-    let spending_item_router = spending_item_router.layer(middleware::from_fn(check_valid_year));
-
-    let (general_router, general_api) = OpenApiRouter::new()
+        .layer(middleware::from_fn(check_valid_year))
+        .routes(routes!(validate_token))
+        .routes(routes!(export_csv_handler))
+        .layer(middleware::from_fn(check_auth_header))
+        .routes(routes!(basic_auth_handler))
         .routes(routes!(app_version))
         .split_for_parts();
 
-    let (auth_router, auth_api) = OpenApiRouter::new()
-        .routes(routes!(basic_auth_handler))
-        .split_for_parts();
+    api_spec.info.title = "budget-tool backend".to_string();
+    api_spec.info.description = None;
+    api_spec.info.contact = None;
+    api_spec.info.license = None;
 
-    let (auth_validate_router, auth_validate_api) = OpenApiRouter::new()
-        .routes(routes!(validate_token))
-        .split_for_parts();
-
-    let (export_router, export_api) = OpenApiRouter::new()
-        .routes(routes!(export_csv_handler))
-        .split_for_parts();
-
-    let router = Router::new()
-        .merge(budget_router)
-        .merge(spending_item_router)
-        .merge(auth_validate_router)
-        .merge(export_router)
-        .layer(middleware::from_fn(check_auth_header))
-        .merge(general_router)
-        .merge(auth_router);
-
-    let mut merged_api = general_api
-        .merge_from(budget_api)
-        .merge_from(auth_api)
-        .merge_from(auth_validate_api)
-        .merge_from(export_api)
-        .merge_from(spending_item_api);
-
-    merged_api.info.title = "budget-tool backend".to_string();
-    merged_api.info.description = None;
-    merged_api.info.contact = None;
-    merged_api.info.license = None;
-
-    generate_open_api_spec_from_open_api(merged_api, "open_api_spec.json")
+    generate_open_api_spec_from_open_api(api_spec, "open_api_spec.json")
         .expect("Failed to generate open API spec");
 
     // let (router, api) = OpenApiRouter::new().routes(routes!(
