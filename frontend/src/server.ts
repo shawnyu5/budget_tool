@@ -190,7 +190,7 @@ export function calculateTotalSpending(monthlyBudget: MonthlyBudget): number {
   return total;
 }
 
-export async function exportCSV(year: string, month: string): Promise<AxiosResponse<string, any>> {
+export async function exportCSV(year: string, month: string): Promise<string> {
   const response = await axios.get(
     `${loadConfig().backendUrl}/export/${year}/${month}/csv`,
     {

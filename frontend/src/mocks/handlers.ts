@@ -27,7 +27,7 @@ export const handlers = [
           date.getMonth(),
         ) as components["schemas"]["Month"],
         budget: {
-          total: 300,
+          totalAllocation: 300,
           maggie_percentage_allocation: 40,
           shawn_percentage_allocation: 60,
         },

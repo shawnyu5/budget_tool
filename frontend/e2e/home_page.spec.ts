@@ -43,7 +43,7 @@ test("Displays correct budget", async ({ page }) => {
   await expect(monthlyBudget, {
     message:
       "Monthly budget should show the correct total spending and total allocation",
-  }).toContainText(`$200/$300`);
+  }).toContainText(`Remaining:$200/$300`);
 });
 
 test("Displays correct spending item", async ({ page }) => {
