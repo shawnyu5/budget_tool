@@ -180,10 +180,9 @@ async fn update_budget_handler(
     let db = DB::new(year)
         .await
         .context("Failed to connect to database")?;
-    body.calculate_total_spending();
-    // body.total_spending = body.spending.par_iter().map(|spend| spend.amount).sum();
-    info!("Calculated total spending: {}", body.total_spending);
     body.calculate_over_budget_amount();
+    body.calculate_total_spending();
+    info!("Calculated total spending: {}", body.total_spending);
     // if body.budget.total < body.total_spending {
     //     body.over_budget_amount = body.total_spending - body.budget.total;
     // }
@@ -398,15 +397,15 @@ async fn update_spending_item(
         })
         .collect();
     monthly_budget.spending = updated_monthly_spending;
-    monthly_budget.calculate_total_spending();
-    info!(
-        "Calculated total spending: {}",
-        monthly_budget.total_spending
-    );
     monthly_budget.calculate_over_budget_amount();
     info!(
         "Calculated over budget amount: {}",
         monthly_budget.over_budget_amount
+    );
+    monthly_budget.calculate_total_spending();
+    info!(
+        "Calculated total spending: {}",
+        monthly_budget.total_spending
     );
     debug!("Updated spending items: {:?}", monthly_budget.spending);
     debug!(
@@ -497,9 +496,16 @@ async fn export_csv_handler(
     ])
     .context("Failed to write total spending to CSV")?;
     wtr.write_record([
+        "Total budget",
+        &monthly_budget.budget.total_allocation.to_string(),
+        "",
+        "",
+    ])
+    .context("Failed to write total allocated budget to CSV")?;
+    wtr.write_record([
         "Shawn contribution",
         &calculate_percentage(
-            monthly_budget.budget.total,
+            monthly_budget.total_spending,
             monthly_budget.budget.shawn_percentage_allocation,
         )
         .to_string(),
@@ -510,7 +516,7 @@ async fn export_csv_handler(
     wtr.write_record([
         "Maggie contribution",
         &calculate_percentage(
-            monthly_budget.budget.total,
+            monthly_budget.total_spending,
             monthly_budget.budget.maggie_percentage_allocation,
         )
         .to_string(),

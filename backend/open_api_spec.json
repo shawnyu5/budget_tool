@@ -473,7 +473,7 @@
       "Budget": {
         "type": "object",
         "required": [
-          "total",
+          "totalAllocation",
           "shawn_percentage_allocation",
           "maggie_percentage_allocation"
         ],
@@ -486,7 +486,7 @@
             "type": "number",
             "format": "double"
           },
-          "total": {
+          "totalAllocation": {
             "type": "number",
             "format": "double",
             "description": "Total allocated budget"
@@ -566,7 +566,7 @@
           "totalSpending": {
             "type": "number",
             "format": "double",
-            "description": "Total spending for the month"
+            "description": "Total spending for the month. Including any over budget amount"
           }
         }
       },

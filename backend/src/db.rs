@@ -148,7 +148,7 @@ pub struct MonthlyBudget {
     pub month: Month,
     /// Budget details
     pub budget: Budget,
-    /// Total spending for the month
+    /// Total spending for the month. Including any over budget amount
     #[schema(required = true)]
     #[serde(default)]
     pub total_spending: f64,
@@ -166,13 +166,17 @@ pub struct MonthlyBudget {
 impl MonthlyBudget {
     /// Calculates the total spending for the month. Populates `self.total_spending`
     pub fn calculate_total_spending(&mut self) {
-        self.total_spending = self.spending.par_iter().map(|spend| spend.amount).sum();
+        self.total_spending = self
+            .spending
+            .par_iter()
+            .map(|spend| spend.amount)
+            .sum::<f64>();
     }
 
     /// Calculates the amount over budget. Populates `self.over_budget_amount`
     pub fn calculate_over_budget_amount(&mut self) {
-        if self.budget.total < self.total_spending {
-            self.over_budget_amount = self.total_spending - self.budget.total;
+        if self.budget.total_allocation < self.total_spending {
+            self.over_budget_amount = self.total_spending - self.budget.total_allocation;
         } else {
             self.over_budget_amount = 0.0;
         }
@@ -194,7 +198,8 @@ impl MonthlyBudget {
 #[serde(rename_all = "camelCase")]
 pub struct Budget {
     /// Total allocated budget
-    pub total: f64,
+    #[serde(alias = "total")]
+    pub total_allocation: f64,
     #[serde(rename = "shawn_percentage_allocation")]
     pub shawn_percentage_allocation: f64,
     #[serde(rename = "maggie_percentage_allocation")]
