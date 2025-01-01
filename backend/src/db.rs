@@ -1,3 +1,5 @@
+//!
+
 use anyhow::{Context, Result};
 use mongodb::{bson::doc, Client, Collection};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -95,7 +97,10 @@ impl DB {
                     info!("Found budget information in month {month_to_check}");
                     // If the found budget does not match the current month, then we need to clean up the spending history. Spending history must not be carried over. All other information should be carry over
                     if trying_prev_months {
+                        debug!("Clearing out spending info");
                         month_spending.spending = vec![];
+                        month_spending.total_spending = 0.0;
+                        month_spending.over_budget_amount = 0.0;
                         // Also correct the month to the one being queried
                         month_spending.month = month;
                         month_spending.carried_over_from = Some(month_to_check);
@@ -118,6 +123,7 @@ impl DB {
                                 .parse()
                                 .context("Failed to parse collection into valid year")?;
                             let prev_collection_year = collection_year - 1;
+                            trying_prev_months = true;
                             info!("There are no more months in current year to check. Checking previous year: {prev_collection_year}");
 
                             collection =
