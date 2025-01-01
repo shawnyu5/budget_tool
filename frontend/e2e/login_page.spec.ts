@@ -27,4 +27,3 @@ test("Can login using login page", async ({ page }) => {
   );
   // TODO: need to validate this API request does not fail
 });
-
