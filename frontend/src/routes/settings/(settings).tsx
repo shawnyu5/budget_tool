@@ -26,7 +26,7 @@ export default function () {
     setMaggieContribution(
       monthlyBudget()?.budget.maggie_percentage_allocation ?? 0,
     );
-    setTotalBudget(monthlyBudget()?.budget.total ?? 0);
+    setTotalBudget(monthlyBudget()?.budget.totalAllocation ?? 0);
   });
 
   const [monthlyBudgetResource] = createResource(
