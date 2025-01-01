@@ -1,14 +1,7 @@
 import { createEffect, For, Show } from "solid-js";
 import "./monthsDropDown.css";
 import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
-import {
-  getLocalAuthToken,
-  monthNumberToName,
-  setLocalAuthToken,
-} from "~/utils";
-// import { URL } from "url";
-import { loadConfig } from "~/config";
-import axios from "axios";
+import { monthNumberToName, setLocalAuthToken } from "~/utils";
 import log from "~/logger";
 import { exportCSV } from "~/server";
 
@@ -100,7 +93,10 @@ export default function NavBar() {
             <li>
               <a
                 onClick={() => {
-                  navigate("/settings", { replace: true });
+                  navigate(
+                    `/settings?month=${searchParam.month}&year=${searchParam.year}`,
+                    { replace: true },
+                  );
                 }}
               >
                 Settings
@@ -111,7 +107,10 @@ export default function NavBar() {
             <li>
               <a
                 onClick={() => {
-                  navigate("/", { replace: true });
+                  navigate(
+                    `/?month=${searchParam.month}&year=${searchParam.year}`,
+                    { replace: true },
+                  );
                 }}
               >
                 Home
@@ -121,7 +120,10 @@ export default function NavBar() {
           <li>
             <a
               onClick={async () => {
-                const response = await exportCSV(searchParam.year as string, searchParam.month as string);
+                const response = await exportCSV(
+                  searchParam.year as string,
+                  searchParam.month as string,
+                );
                 const blob = new Blob([response], { type: "text/plain" });
                 log.info(`blob: ${blob}`);
 
