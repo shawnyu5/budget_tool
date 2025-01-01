@@ -51,7 +51,7 @@ export default function () {
   });
 
   createEffect(async () => {
-    if (!monthlyBudget() && monthlyBudget() == monthlyBudgetResource()) {
+    if (!monthlyBudget() || monthlyBudget() == monthlyBudgetResource()) {
       return;
     }
     log.info(
