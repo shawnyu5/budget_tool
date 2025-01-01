@@ -63,15 +63,6 @@ export default function () {
         searchParam.month as string,
         monthlyBudget()!,
       );
-      // await axios.post(
-      //   `${loadConfig().backendUrl}/budget/${searchParam.year}/${searchParam.month}`,
-      //   monthlyBudget(),
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //   },
-      // );
     } catch (e) {
       log.error("Failed to update budget: ", e);
       setErrorMessage("Failed to update settings... Please try again later...");
@@ -94,7 +85,7 @@ export default function () {
       const updated = {
         ...prev,
         budget: {
-          total: totalBudget(),
+          totalAllocation: totalBudget(),
           shawn_percentage_allocation: shawnContribution(),
           maggie_percentage_allocation: maggieContribution(),
         },
