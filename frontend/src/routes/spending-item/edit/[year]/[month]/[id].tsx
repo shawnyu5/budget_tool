@@ -81,6 +81,7 @@ export default function () {
       <input
         name="amount"
         type="number"
+        step="0.01"
         required
         value={amount()}
         onInput={(e: InputEvent) => {

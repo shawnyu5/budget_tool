@@ -84,6 +84,7 @@ export default function () {
       <input
         name="amount"
         type="number"
+        step="0.01"
         required
         onInput={(e: InputEvent) => {
           const input = (e.target as HTMLInputElement).value;
@@ -132,4 +133,3 @@ export default function () {
     </form>
   );
 }
-

@@ -121,6 +121,7 @@ export default function () {
           <label for="month-budget">Month's budget($)</label>
           <input
             type="number"
+            step="0.01"
             id="month-budget"
             name="month-budget"
             placeholder="1000"
