@@ -51,5 +51,6 @@ export default function SplitBudget(props: {
  * @returns the `percentage` of the `total`
  */
 function calculatePercentage(total: number, percentage: number) {
-  return total * (percentage / 100);
+  const result = total * (percentage / 100);
+  return Math.trunc(result * 100) / 100;
 }

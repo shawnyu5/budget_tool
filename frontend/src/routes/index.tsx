@@ -61,7 +61,6 @@ export default function Home() {
   //   { initialValue: null },
   // );
 
-
   const [monthlyBudgetResource, { refetch }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
@@ -145,7 +144,6 @@ export default function Home() {
     await refetch();
   };
 
-  // TODO: now the resource is being passed down to all components, wrap all individual components in suspense as well
   return (
     <main>
       <ErrorBoundary fallback={<p>Failed to load budget</p>}>
