@@ -10,7 +10,7 @@ use common_axum::app_error_v2::AppError;
 use hmac::{digest::KeyInit, Hmac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
-use tracing::{error, info, instrument};
+use tracing::{error, info};
 
 use crate::{config::Config, month::Month, routes::JwtAccessToken};
 
