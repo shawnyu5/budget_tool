@@ -177,6 +177,8 @@ impl MonthlyBudget {
             .par_iter()
             .map(|spend| spend.amount)
             .sum::<f64>();
+
+        self.total_spending = (self.total_spending * 100.0).trunc() / 100.0;
     }
 
     /// Calculates the amount over budget. Populates `self.over_budget_amount`
