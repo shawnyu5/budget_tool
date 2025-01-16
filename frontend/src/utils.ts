@@ -52,3 +52,14 @@ export function generateSpendingItemID(): string {
 
   return `${year}${month}${day}${hour}${minute}${second}`;
 }
+
+/**
+ * Calculate the percentage of a number
+ * @param total - the total amount
+ * @param percentage - percentage of the total
+ * @returns the `percentage` of the `total`
+ */
+export function calculatePercentage(total: number, percentage: number) {
+  const result = total * (percentage / 100);
+  return Math.round(result * 100) / 100;
+}

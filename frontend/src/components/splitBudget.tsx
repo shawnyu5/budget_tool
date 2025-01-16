@@ -1,5 +1,6 @@
 import { Resource, Show } from "solid-js";
 import { MonthlyBudget } from "~/server";
+import { calculatePercentage } from "~/utils";
 
 /**
  * The amount each person is responsible to pay, based on the month's budget. Including displaying any amount that is over budget
@@ -44,13 +45,3 @@ export default function SplitBudget(props: {
   );
 }
 
-/**
- * Calculate the percentage of a number
- * @param total - the total amount
- * @param percentage - percentage of the total
- * @returns the `percentage` of the `total`
- */
-function calculatePercentage(total: number, percentage: number) {
-  const result = total * (percentage / 100);
-  return Math.trunc(result * 100) / 100;
-}
