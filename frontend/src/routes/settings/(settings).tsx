@@ -6,6 +6,7 @@ import log from "~/logger";
 import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
 import SuccessComponent from "~/components/successComponent";
+import { calculatePercentage } from "~/utils";
 
 export default function () {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -132,7 +133,7 @@ export default function () {
             }}
             required
           />
-          <label for="shawn-contribution">Shawn contribution(%):</label>
+          <label for="shawn-contribution">Shawn contribution(%) - ${calculatePercentage(totalBudget(), shawnContribution()) || 0}:</label>
           <input
             type="number"
             id="shawn-contribution"
@@ -147,7 +148,7 @@ export default function () {
             required
           />
 
-          <label for="maggie-contribution">Maggie contribution(%):</label>
+          <label for="maggie-contribution">Maggie contribution(%) - ${calculatePercentage(totalBudget(), maggieContribution()) || 0}:</label>
           <input
             type="number"
             id="maggie-contribution"
