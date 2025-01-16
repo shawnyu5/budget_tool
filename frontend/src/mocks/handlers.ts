@@ -26,8 +26,10 @@ export const handlers = [
         ) as components["schemas"]["Month"],
         budget: {
           totalAllocation: 300,
-          maggie_percentage_allocation: 40,
-          shawn_percentage_allocation: 60,
+          shawnPercentageAllocation: 60,
+          shawnContributionAmount: 180,
+          maggiePercentageAllocation: 40,
+          maggieContributionAmount:120,
         },
         totalSpending: 200,
         overBudgetAmount: 0,
