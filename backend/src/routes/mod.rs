@@ -1,3 +1,4 @@
+use crate::utils::calculate_percentage;
 use anyhow::anyhow;
 use anyhow::Context;
 use axum::body;
@@ -127,11 +128,17 @@ async fn update_budget_handler(
         .context("Failed to connect to database")?;
     body.calculate_over_budget_amount();
     body.calculate_total_spending();
+    body.calcuate_total_budget_allocation();
     info!("Calculated total spending: {}", body.total_spending);
-    // if body.budget.total < body.total_spending {
-    //     body.over_budget_amount = body.total_spending - body.budget.total;
-    // }
     info!("Calculated over budget amount: {}", body.over_budget_amount);
+    info!(
+        "Calculated shawn contribution amount: {}",
+        body.budget.shawn_contribution_amount,
+    );
+    info!(
+        "Calculated maggie contribution amount: {}",
+        body.budget.maggie_contribution_amount,
+    );
 
     let filter = doc! {
         "month": month.to_string()
@@ -476,12 +483,4 @@ async fn export_csv_handler(
     debug!(csv);
 
     return Ok(csv);
-}
-
-/// Calculated the percentage of a total number
-///
-/// * `total`: the total number
-/// * `percentage`: the percentage of the `total` to calculate
-fn calculate_percentage(total: f64, percentage: f64) -> f64 {
-    return total * (percentage / 100.0);
 }

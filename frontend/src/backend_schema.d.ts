@@ -111,10 +111,26 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Budget: {
-            /** Format: double */
-            maggie_percentage_allocation: number;
-            /** Format: double */
-            shawn_percentage_allocation: number;
+            /**
+             * Format: double
+             * @description Maggie contribution $. The server is responsible for keeping this value up to date
+             */
+            maggieContributionAmount?: number | null;
+            /**
+             * Format: double
+             * @description Maggie percentage allocation
+             */
+            maggiePercentageAllocation: number;
+            /**
+             * Format: double
+             * @description Shawn contribution $. The server is responsible for keeping this value up to date
+             */
+            shawnContributionAmount?: number | null;
+            /**
+             * Format: double
+             * @description Shawn percentage allocation
+             */
+            shawnPercentageAllocation: number;
             /**
              * Format: double
              * @description Total allocated budget

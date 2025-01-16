@@ -474,17 +474,29 @@
         "type": "object",
         "required": [
           "totalAllocation",
-          "shawn_percentage_allocation",
-          "maggie_percentage_allocation"
+          "shawnPercentageAllocation",
+          "maggiePercentageAllocation"
         ],
         "properties": {
-          "maggie_percentage_allocation": {
+          "maggieContributionAmount": {
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "description": "Maggie contribution $. The server is responsible for keeping this value up to date"
           },
-          "shawn_percentage_allocation": {
+          "maggiePercentageAllocation": {
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "description": "Maggie percentage allocation"
+          },
+          "shawnContributionAmount": {
+            "type": "number",
+            "format": "double",
+            "description": "Shawn contribution $. The server is responsible for keeping this value up to date"
+          },
+          "shawnPercentageAllocation": {
+            "type": "number",
+            "format": "double",
+            "description": "Shawn percentage allocation"
           },
           "totalAllocation": {
             "type": "number",

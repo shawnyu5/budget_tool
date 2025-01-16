@@ -7,9 +7,8 @@ test("Settings page displays total budget and percentage split", async ({
   const monthlyBudgetInput = page.locator("#month-budget");
   await expect(monthlyBudgetInput).toHaveValue("300");
 
-  const shawnContribution = page.locator("#shawn-contribution");
+  const shawnContribution = page.locator("#shawn-contribution-percentage");
   await expect(shawnContribution).toHaveValue("60");
 
-  const maggieContribution = page.locator("#maggie-contribution");
-  await expect(maggieContribution).toHaveValue("40");
-});
+  const maggieContribution = page.locator("#maggie-contribution-percentage");
+  await expect(maggieContribution).toHaveValue("40"); });

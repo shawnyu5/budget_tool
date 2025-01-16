@@ -1,4 +1,4 @@
-//!
+//! Module for DB related operations
 
 use anyhow::{Context, Result};
 use mongodb::{bson::doc, Client, Collection};
@@ -11,6 +11,7 @@ use utoipa::ToSchema;
 use crate::{
     config::Config,
     month::{Month, MonthError},
+    utils::calculate_percentage,
 };
 
 #[derive(Error, Debug)]
@@ -181,6 +182,22 @@ impl MonthlyBudget {
         self.total_spending = (self.total_spending * 100.0).round() / 100.0;
     }
 
+    /// Calculates the total allocated budget
+    pub fn calcuate_total_budget_allocation(&mut self) {
+        self.budget.total_allocation =
+            self.budget.maggie_contribution_amount + self.budget.shawn_contribution_amount;
+
+        // self.budget.shawn_contribution_amount = calculate_percentage(
+        //     self.budget.total_allocation,
+        //     self.budget.shawn_percentage_allocation,
+        // );
+
+        // self.budget.maggie_contribution_amount = calculate_percentage(
+        //     self.budget.total_allocation,
+        //     self.budget.maggie_percentage_allocation,
+        // );
+    }
+
     /// Calculates the amount over budget. Populates `self.over_budget_amount`
     pub fn calculate_over_budget_amount(&mut self) {
         if self.budget.total_allocation < self.total_spending {
@@ -208,10 +225,18 @@ pub struct Budget {
     /// Total allocated budget
     #[serde(alias = "total")]
     pub total_allocation: f64,
-    #[serde(rename = "shawn_percentage_allocation")]
+    /// Shawn percentage allocation
+    #[serde(alias = "shawn_percentage_allocation")]
     pub shawn_percentage_allocation: f64,
-    #[serde(rename = "maggie_percentage_allocation")]
+    /// Shawn contribution $. The server is responsible for keeping this value up to date
+    #[serde(default)]
+    pub shawn_contribution_amount: f64,
+    /// Maggie percentage allocation
+    #[serde(alias = "maggie_percentage_allocation")]
     pub maggie_percentage_allocation: f64,
+    /// Maggie contribution $. The server is responsible for keeping this value up to date
+    #[serde(default)]
+    pub maggie_contribution_amount: f64,
 }
 
 /// A single transaction

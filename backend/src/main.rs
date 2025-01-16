@@ -4,6 +4,7 @@ mod custom_middleware;
 mod db;
 mod month;
 mod routes;
+mod utils;
 
 use anyhow::Result;
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
