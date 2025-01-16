@@ -229,12 +229,14 @@ pub struct Budget {
     #[serde(alias = "shawn_percentage_allocation")]
     pub shawn_percentage_allocation: f64,
     /// Shawn contribution $. The server is responsible for keeping this value up to date
+    #[schema(required = true)]
     #[serde(default)]
     pub shawn_contribution_amount: f64,
     /// Maggie percentage allocation
     #[serde(alias = "maggie_percentage_allocation")]
     pub maggie_percentage_allocation: f64,
     /// Maggie contribution $. The server is responsible for keeping this value up to date
+    #[schema(required = true)]
     #[serde(default)]
     pub maggie_contribution_amount: f64,
 }

@@ -115,7 +115,7 @@ export interface components {
              * Format: double
              * @description Maggie contribution $. The server is responsible for keeping this value up to date
              */
-            maggieContributionAmount?: number | null;
+            maggieContributionAmount: number;
             /**
              * Format: double
              * @description Maggie percentage allocation
@@ -125,7 +125,7 @@ export interface components {
              * Format: double
              * @description Shawn contribution $. The server is responsible for keeping this value up to date
              */
-            shawnContributionAmount?: number | null;
+            shawnContributionAmount: number;
             /**
              * Format: double
              * @description Shawn percentage allocation

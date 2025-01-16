@@ -475,7 +475,9 @@
         "required": [
           "totalAllocation",
           "shawnPercentageAllocation",
-          "maggiePercentageAllocation"
+          "shawnContributionAmount",
+          "maggiePercentageAllocation",
+          "maggieContributionAmount"
         ],
         "properties": {
           "maggieContributionAmount": {

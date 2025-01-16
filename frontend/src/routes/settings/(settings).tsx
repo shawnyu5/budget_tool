@@ -12,6 +12,7 @@ import log from "~/logger";
 import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
 import SuccessComponent from "~/components/successComponent";
+import { calculatePercentage } from "~/utils";
 
 export default function () {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -20,6 +21,7 @@ export default function () {
   const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
   const [monthlyBudget, setMonthlyBudget] =
     createSignal<MonthlyBudget | null>();
+  let hasUserModified = false;
 
   const [monthlyBudgetResource, { refetch }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
@@ -38,12 +40,15 @@ export default function () {
   createEffect(() => {
     if (
       !monthlyBudgetResource() ||
+      hasUserModified ||
       monthlyBudget() == monthlyBudgetResource()
     ) {
       return;
     }
 
-    log.info(`Updating monthly budget signal: ${monthlyBudgetResource()}`);
+    log.info(
+      `Updating monthly budget signal: ${JSON.stringify(monthlyBudgetResource(), null, 3)}`,
+    );
     setMonthlyBudget(monthlyBudgetResource() ?? null);
   });
 
@@ -96,6 +101,7 @@ export default function () {
     // });
 
     setSuccessMessage("Settings updated successfully!");
+    hasUserModified = false;
     await refetch();
     // Make the success message disappear after a few seconds
     setTimeout(() => {
@@ -110,11 +116,6 @@ export default function () {
       </span>
       <div id="settings-form">
         <h2>Budget allocation</h2>
-        {
-          // <Show when={props.monthlyBudget()?.carriedOverFrom}>
-          //   <p>Settings carried over from {props.monthlyBudget()?.carriedOverFrom}</p>
-          // </Show>
-        }
         <ErrorComponent message={errorMessage()} />
         <Show when={errorMessage() == null && successMessage()}>
           <SuccessComponent message={successMessage()} />
@@ -129,8 +130,9 @@ export default function () {
               name="month-budget"
               disabled
               placeholder="1000"
-              value={monthlyBudgetResource()?.budget.totalAllocation}
+              value={monthlyBudget()?.budget.totalAllocation}
               onInput={(e: InputEvent) => {
+                hasUserModified = true;
                 const input = (e.target as HTMLInputElement).value;
                 const updated: MonthlyBudget = {
                   ...monthlyBudget()!,
@@ -140,10 +142,10 @@ export default function () {
                   },
                 };
                 setMonthlyBudget(updated);
-                // setTotalBudgetAllocation(parseFloat(input));
               }}
               required
             />
+
             <label for="shawn-contribution-percentage">
               Shawn contribution percentage:
             </label>
@@ -153,8 +155,9 @@ export default function () {
               name="shawn-contribution-percentage"
               step="0.01"
               placeholder="50"
-              value={monthlyBudgetResource()?.budget.shawnPercentageAllocation}
+              value={monthlyBudget()?.budget.shawnPercentageAllocation}
               onInput={(e: InputEvent) => {
+                hasUserModified = true;
                 const input = e.target as HTMLInputElement;
                 const percentageContribution = parseFloat(input.value);
                 const updated: MonthlyBudget = {
@@ -162,10 +165,10 @@ export default function () {
                   budget: {
                     ...monthlyBudget()!.budget,
                     shawnPercentageAllocation: percentageContribution,
+                    shawnContributionAmount: calculatePercentage(monthlyBudget()!.budget.totalAllocation, percentageContribution)
                   },
                 };
                 setMonthlyBudget(updated);
-                // setShawnContributionPercent(contribution);
               }}
               required
             />
@@ -179,21 +182,20 @@ export default function () {
               name="shawn-contribution-amount"
               step="0.01"
               placeholder="50"
-              value={
-                monthlyBudgetResource()?.budget.shawnContributionAmount ?? 0
-              }
+              value={monthlyBudget()?.budget.shawnContributionAmount ?? 0}
               onInput={(e: InputEvent) => {
+                hasUserModified = true;
                 const input = e.target as HTMLInputElement;
                 const contribution = parseFloat(input.value);
                 const updated: MonthlyBudget = {
                   ...monthlyBudget()!,
                   budget: {
                     ...monthlyBudget()!.budget,
+                    totalAllocation: contribution + monthlyBudget()!.budget.maggieContributionAmount,
                     shawnContributionAmount: contribution,
                   },
                 };
                 setMonthlyBudget(updated);
-                // setShawnContributionAmount(contribution);
               }}
               required
             />
@@ -208,8 +210,9 @@ export default function () {
               id="maggie-contribution-percentage"
               placeholder="50"
               name="maggie-contribution-percentage"
-              value={monthlyBudgetResource()?.budget.maggiePercentageAllocation}
+              value={monthlyBudget()?.budget.maggiePercentageAllocation}
               onInput={(e: InputEvent) => {
+                hasUserModified = true;
                 const input = e.target as HTMLInputElement;
                 const contribution = parseFloat(input.value);
                 const updated: MonthlyBudget = {
@@ -217,10 +220,10 @@ export default function () {
                   budget: {
                     ...monthlyBudget()!.budget,
                     maggiePercentageAllocation: contribution,
+                    maggieContributionAmount: calculatePercentage(monthlyBudget()!.budget.totalAllocation, contribution)
                   },
                 };
                 setMonthlyBudget(updated);
-                // setMaggieContributionPercent(contribution);
               }}
               required
             />
@@ -234,16 +237,16 @@ export default function () {
               name="maggie-contribution-amount"
               step="0.01"
               placeholder="50"
-              value={
-                monthlyBudgetResource()?.budget.maggieContributionAmount ?? 0
-              }
+              value={monthlyBudget()?.budget.maggieContributionAmount ?? 0}
               onInput={(e: InputEvent) => {
+                hasUserModified = true;
                 const input = e.target as HTMLInputElement;
                 const contribution = parseFloat(input.value);
                 const updated: MonthlyBudget = {
                   ...monthlyBudget()!,
                   budget: {
                     ...monthlyBudget()!.budget,
+                    totalAllocation: contribution + monthlyBudget()!.budget.shawnContributionAmount,
                     maggieContributionAmount: contribution,
                   },
                 };
