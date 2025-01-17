@@ -155,159 +155,161 @@ export default function () {
         <NavBar />
       </span>
       <div id="settings-form">
-        <h2>Budget allocation</h2>
-        <ErrorComponent message={errorMessage()} />
-        <Show when={errorMessage() == null && successMessage()}>
-          <SuccessComponent message={successMessage()} />
+        <Show when={monthlyBudget()} fallback="Loading...">
+          <h2>Budget allocation</h2>
+          <ErrorComponent message={errorMessage()} />
+          <Show when={errorMessage() == null && successMessage()}>
+            <SuccessComponent message={successMessage()} />
+          </Show>
+          <Suspense fallback="Loading...">
+            <form action={handleSubmission} method="post">
+              <label for="month-budget">Month's budget($)</label>
+              <input
+                type="number"
+                step="0.01"
+                id="month-budget"
+                name="month-budget"
+                disabled
+                value={monthlyBudget()?.budget.totalAllocation}
+                onInput={(e: InputEvent) => {
+                  hasUserModified = true;
+                  const input = (e.target as HTMLInputElement).value;
+                  const updated: MonthlyBudget = {
+                    ...monthlyBudget()!,
+                    budget: {
+                      ...monthlyBudget()!.budget,
+                      totalAllocation: parseFloat(input),
+                    },
+                  };
+                  setMonthlyBudget(updated);
+                }}
+                required
+              />
+
+              <label for="shawn-contribution-percentage">
+                Shawn contribution percentage:
+              </label>
+              <input
+                type="number"
+                id="shawn-contribution-percentage"
+                name="shawn-contribution-percentage"
+                step="0.01"
+                placeholder="50"
+                value={monthlyBudget()?.budget.shawnPercentageAllocation}
+                onInput={(e: InputEvent) => {
+                  hasUserModified = true;
+                  const input = e.target as HTMLInputElement;
+                  const percentageContribution = parseFloat(input.value);
+                  const updated: MonthlyBudget = {
+                    ...monthlyBudget()!,
+                    budget: {
+                      ...monthlyBudget()!.budget,
+                      shawnPercentageAllocation: percentageContribution,
+                      shawnContributionAmount: calculatePercentage(
+                        monthlyBudget()!.budget.totalAllocation,
+                        percentageContribution,
+                      ),
+                    },
+                  };
+                  setMonthlyBudget(updated);
+                }}
+                required
+              />
+
+              <label for="shawn-contribution-amount">
+                Shawn contribution amount:
+              </label>
+              <input
+                type="number"
+                id="shawn-contribution-amount"
+                name="shawn-contribution-amount"
+                step="0.01"
+                placeholder="50"
+                value={monthlyBudget()?.budget.shawnContributionAmount ?? 0}
+                onInput={(e: InputEvent) => {
+                  hasUserModified = true;
+                  const input = e.target as HTMLInputElement;
+                  const contribution = parseFloat(input.value);
+                  const updated: MonthlyBudget = {
+                    ...monthlyBudget()!,
+                    budget: {
+                      ...monthlyBudget()!.budget,
+                      totalAllocation:
+                        contribution +
+                        monthlyBudget()!.budget.maggieContributionAmount,
+                      shawnContributionAmount: contribution,
+                    },
+                  };
+                  setMonthlyBudget(updated);
+                }}
+                required
+              />
+
+              <hr />
+
+              <label for="maggie-contribution-percentage">
+                Maggie contribution percentage:
+              </label>
+              <input
+                type="number"
+                id="maggie-contribution-percentage"
+                placeholder="50"
+                name="maggie-contribution-percentage"
+                value={monthlyBudget()?.budget.maggiePercentageAllocation}
+                onInput={(e: InputEvent) => {
+                  hasUserModified = true;
+                  const input = e.target as HTMLInputElement;
+                  const contribution = parseFloat(input.value);
+                  const updated: MonthlyBudget = {
+                    ...monthlyBudget()!,
+                    budget: {
+                      ...monthlyBudget()!.budget,
+                      maggiePercentageAllocation: contribution,
+                      maggieContributionAmount: calculatePercentage(
+                        monthlyBudget()!.budget.totalAllocation,
+                        contribution,
+                      ),
+                    },
+                  };
+                  setMonthlyBudget(updated);
+                }}
+                required
+              />
+
+              <label for="maggie-contribution-amount">
+                Maggie contribution amount:
+              </label>
+              <input
+                type="number"
+                id="maggie-contribution-amount"
+                name="maggie-contribution-amount"
+                step="0.01"
+                placeholder="50"
+                value={monthlyBudget()?.budget.maggieContributionAmount ?? 0}
+                onInput={(e: InputEvent) => {
+                  hasUserModified = true;
+                  const input = e.target as HTMLInputElement;
+                  const contribution = parseFloat(input.value);
+                  const updated: MonthlyBudget = {
+                    ...monthlyBudget()!,
+                    budget: {
+                      ...monthlyBudget()!.budget,
+                      totalAllocation:
+                        contribution +
+                        monthlyBudget()!.budget.shawnContributionAmount,
+                      maggieContributionAmount: contribution,
+                    },
+                  };
+                  setMonthlyBudget(updated);
+                }}
+                required
+              />
+              <button class="submit success button" disabled={!!errorMessage()}>
+                Submit
+              </button>
+            </form>
+          </Suspense>
         </Show>
-        <Suspense fallback="Loading...">
-          <form action={handleSubmission} method="post">
-            <label for="month-budget">Month's budget($)</label>
-            <input
-              type="number"
-              step="0.01"
-              id="month-budget"
-              name="month-budget"
-              disabled
-              value={monthlyBudget()?.budget.totalAllocation}
-              onInput={(e: InputEvent) => {
-                hasUserModified = true;
-                const input = (e.target as HTMLInputElement).value;
-                const updated: MonthlyBudget = {
-                  ...monthlyBudget()!,
-                  budget: {
-                    ...monthlyBudget()!.budget,
-                    totalAllocation: parseFloat(input),
-                  },
-                };
-                setMonthlyBudget(updated);
-              }}
-              required
-            />
-
-            <label for="shawn-contribution-percentage">
-              Shawn contribution percentage:
-            </label>
-            <input
-              type="number"
-              id="shawn-contribution-percentage"
-              name="shawn-contribution-percentage"
-              step="0.01"
-              placeholder="50"
-              value={monthlyBudget()?.budget.shawnPercentageAllocation}
-              onInput={(e: InputEvent) => {
-                hasUserModified = true;
-                const input = e.target as HTMLInputElement;
-                const percentageContribution = parseFloat(input.value);
-                const updated: MonthlyBudget = {
-                  ...monthlyBudget()!,
-                  budget: {
-                    ...monthlyBudget()!.budget,
-                    shawnPercentageAllocation: percentageContribution,
-                    shawnContributionAmount: calculatePercentage(
-                      monthlyBudget()!.budget.totalAllocation,
-                      percentageContribution,
-                    ),
-                  },
-                };
-                setMonthlyBudget(updated);
-              }}
-              required
-            />
-
-            <label for="shawn-contribution-amount">
-              Shawn contribution amount:
-            </label>
-            <input
-              type="number"
-              id="shawn-contribution-amount"
-              name="shawn-contribution-amount"
-              step="0.01"
-              placeholder="50"
-              value={monthlyBudget()?.budget.shawnContributionAmount ?? 0}
-              onInput={(e: InputEvent) => {
-                hasUserModified = true;
-                const input = e.target as HTMLInputElement;
-                const contribution = parseFloat(input.value);
-                const updated: MonthlyBudget = {
-                  ...monthlyBudget()!,
-                  budget: {
-                    ...monthlyBudget()!.budget,
-                    totalAllocation:
-                      contribution +
-                      monthlyBudget()!.budget.maggieContributionAmount,
-                    shawnContributionAmount: contribution,
-                  },
-                };
-                setMonthlyBudget(updated);
-              }}
-              required
-            />
-
-            <hr />
-
-            <label for="maggie-contribution-percentage">
-              Maggie contribution percentage:
-            </label>
-            <input
-              type="number"
-              id="maggie-contribution-percentage"
-              placeholder="50"
-              name="maggie-contribution-percentage"
-              value={monthlyBudget()?.budget.maggiePercentageAllocation}
-              onInput={(e: InputEvent) => {
-                hasUserModified = true;
-                const input = e.target as HTMLInputElement;
-                const contribution = parseFloat(input.value);
-                const updated: MonthlyBudget = {
-                  ...monthlyBudget()!,
-                  budget: {
-                    ...monthlyBudget()!.budget,
-                    maggiePercentageAllocation: contribution,
-                    maggieContributionAmount: calculatePercentage(
-                      monthlyBudget()!.budget.totalAllocation,
-                      contribution,
-                    ),
-                  },
-                };
-                setMonthlyBudget(updated);
-              }}
-              required
-            />
-
-            <label for="maggie-contribution-amount">
-              Maggie contribution amount:
-            </label>
-            <input
-              type="number"
-              id="maggie-contribution-amount"
-              name="maggie-contribution-amount"
-              step="0.01"
-              placeholder="50"
-              value={monthlyBudget()?.budget.maggieContributionAmount ?? 0}
-              onInput={(e: InputEvent) => {
-                hasUserModified = true;
-                const input = e.target as HTMLInputElement;
-                const contribution = parseFloat(input.value);
-                const updated: MonthlyBudget = {
-                  ...monthlyBudget()!,
-                  budget: {
-                    ...monthlyBudget()!.budget,
-                    totalAllocation:
-                      contribution +
-                      monthlyBudget()!.budget.shawnContributionAmount,
-                    maggieContributionAmount: contribution,
-                  },
-                };
-                setMonthlyBudget(updated);
-              }}
-              required
-            />
-            <button class="submit success button" disabled={!!errorMessage()}>
-              Submit
-            </button>
-          </form>
-        </Suspense>
       </div>
     </>
   );
