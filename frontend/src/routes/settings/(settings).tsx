@@ -1,4 +1,4 @@
-import { action, useSearchParams } from "@solidjs/router";
+import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import "./settings.css";
 import {
   createEffect,
@@ -7,7 +7,12 @@ import {
   Show,
   Suspense,
 } from "solid-js";
-import { getMonthlyBudget, MonthlyBudget, updateMonthlyBudget } from "~/server";
+import {
+  getMonthlyBudget,
+  MonthlyBudget,
+  MonthlyBudgetErrors,
+  updateMonthlyBudget,
+} from "~/server";
 import log from "~/logger";
 import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
@@ -21,6 +26,7 @@ export default function () {
   const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
   const [monthlyBudget, setMonthlyBudget] =
     createSignal<MonthlyBudget | null>();
+  const navigate = useNavigate();
   let hasUserModified = false;
 
   const [monthlyBudgetResource, { refetch }] = createResource(
@@ -30,10 +36,29 @@ export default function () {
         return;
       }
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
-      return await getMonthlyBudget(
-        searchParamSignal().year as string,
-        searchParamSignal().month as string,
-      );
+      try {
+        const budget = await getMonthlyBudget(
+          searchParamSignal().year as string,
+          searchParamSignal().month as string,
+        );
+
+        // If fetching is successful, make sure the error message is gone
+        setErrorMessage(null);
+        return budget;
+      } catch (e) {
+        if (
+          e == MonthlyBudgetErrors.RE_AUTH_NEEDED ||
+          e == MonthlyBudgetErrors.FORBIDDEN
+        ) {
+          navigate("/login", { replace: true });
+        } else if (e == MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
+          setErrorMessage("Failed to fetch monthly budget...");
+        }
+      }
+      // return await getMonthlyBudget(
+      //   searchParamSignal().year as string,
+      //   searchParamSignal().month as string,
+      // );
     },
   );
 
@@ -129,7 +154,6 @@ export default function () {
               id="month-budget"
               name="month-budget"
               disabled
-              placeholder="1000"
               value={monthlyBudget()?.budget.totalAllocation}
               onInput={(e: InputEvent) => {
                 hasUserModified = true;
@@ -165,7 +189,10 @@ export default function () {
                   budget: {
                     ...monthlyBudget()!.budget,
                     shawnPercentageAllocation: percentageContribution,
-                    shawnContributionAmount: calculatePercentage(monthlyBudget()!.budget.totalAllocation, percentageContribution)
+                    shawnContributionAmount: calculatePercentage(
+                      monthlyBudget()!.budget.totalAllocation,
+                      percentageContribution,
+                    ),
                   },
                 };
                 setMonthlyBudget(updated);
@@ -191,7 +218,9 @@ export default function () {
                   ...monthlyBudget()!,
                   budget: {
                     ...monthlyBudget()!.budget,
-                    totalAllocation: contribution + monthlyBudget()!.budget.maggieContributionAmount,
+                    totalAllocation:
+                      contribution +
+                      monthlyBudget()!.budget.maggieContributionAmount,
                     shawnContributionAmount: contribution,
                   },
                 };
@@ -220,7 +249,10 @@ export default function () {
                   budget: {
                     ...monthlyBudget()!.budget,
                     maggiePercentageAllocation: contribution,
-                    maggieContributionAmount: calculatePercentage(monthlyBudget()!.budget.totalAllocation, contribution)
+                    maggieContributionAmount: calculatePercentage(
+                      monthlyBudget()!.budget.totalAllocation,
+                      contribution,
+                    ),
                   },
                 };
                 setMonthlyBudget(updated);
@@ -246,7 +278,9 @@ export default function () {
                   ...monthlyBudget()!,
                   budget: {
                     ...monthlyBudget()!.budget,
-                    totalAllocation: contribution + monthlyBudget()!.budget.shawnContributionAmount,
+                    totalAllocation:
+                      contribution +
+                      monthlyBudget()!.budget.shawnContributionAmount,
                     maggieContributionAmount: contribution,
                   },
                 };
