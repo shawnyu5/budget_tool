@@ -29,11 +29,11 @@ export default function () {
   const navigate = useNavigate();
   let hasUserModified = false;
 
-  const setMonthlyBudget = (monthlyBudget: MonthlyBudget) => {
+  const setMonthlyBudget = (monthlyBudget: MonthlyBudget | null) => {
     _setMonthlyBudget(monthlyBudget);
     if (
-      monthlyBudget.budget.maggiePercentageAllocation +
-        monthlyBudget.budget.shawnPercentageAllocation !=
+      (monthlyBudget?.budget.maggiePercentageAllocation ?? 0) +
+        (monthlyBudget?.budget.shawnPercentageAllocation ?? 0) !=
       100
     ) {
       setErrorMessage(

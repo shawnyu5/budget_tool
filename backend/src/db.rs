@@ -11,6 +11,7 @@ use utoipa::ToSchema;
 use crate::{
     config::Config,
     month::{Month, MonthError},
+    utils::calculate_percentage,
 };
 
 #[derive(Error, Debug)]
@@ -170,8 +171,40 @@ pub struct MonthlyBudget {
 }
 
 impl MonthlyBudget {
-    /// Calculates the total spending for the month. Populates `self.total_spending`
-    pub fn calculate_total_spending(&mut self) {
+    pub fn update_calculations(&mut self) {
+        self.calculate_over_budget_amount();
+        self.calculate_contribution_amount();
+        self.calculate_total_spending();
+        self.calcuate_total_budget_allocation();
+    }
+
+    /// Calculates the amount each person is contributing.
+    ///
+    /// Updates `self.budget.shawn_contribution_amount` and `self.budget.maggie_contribution_amount`
+    fn calculate_contribution_amount(&mut self) {
+        self.budget.shawn_contribution_amount = calculate_percentage(
+            self.budget.total_allocation,
+            self.budget.shawn_percentage_allocation,
+        );
+
+        self.budget.maggie_contribution_amount = calculate_percentage(
+            self.budget.total_allocation,
+            self.budget.maggie_percentage_allocation,
+        );
+
+        debug!(
+            "Shawn contribution amount: {}",
+            self.budget.shawn_contribution_amount
+        );
+        debug!(
+            "Maggie contribution amount: {}",
+            self.budget.maggie_contribution_amount
+        );
+    }
+    /// Calculates the total spending for the month by adding up all the amounts in `self.spending`
+    ///
+    /// Updates `self.total_spending`
+    fn calculate_total_spending(&mut self) {
         self.total_spending = self
             .spending
             .par_iter()
@@ -179,10 +212,13 @@ impl MonthlyBudget {
             .sum::<f64>();
 
         self.total_spending = (self.total_spending * 100.0).round() / 100.0;
+        debug!("Total spending: {}", self.total_spending);
     }
 
-    /// Calculates the total allocated budget
-    pub fn calcuate_total_budget_allocation(&mut self) {
+    /// Calculates the total allocated budget, by adding up `self.budget.maggie_contribution_amount` and `self.budget.shawn_contribution_amount`.
+    ///
+    /// Updates `self.budget.total_allocation`
+    fn calcuate_total_budget_allocation(&mut self) {
         self.budget.total_allocation =
             self.budget.maggie_contribution_amount + self.budget.shawn_contribution_amount;
 
@@ -198,7 +234,7 @@ impl MonthlyBudget {
     }
 
     /// Calculates the amount over budget. Populates `self.over_budget_amount`
-    pub fn calculate_over_budget_amount(&mut self) {
+    fn calculate_over_budget_amount(&mut self) {
         if self.budget.total_allocation < self.total_spending {
             self.over_budget_amount = self.total_spending - self.budget.total_allocation;
         } else {

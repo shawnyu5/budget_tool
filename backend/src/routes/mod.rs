@@ -89,7 +89,10 @@ async fn get_month_budget_handler(
         .context("Failed to connect to database")?;
 
     match db.get_month_budget(month).await {
-        Ok(monthly_budget) => return Ok(Json(monthly_budget)),
+        Ok(mut monthly_budget) => {
+            monthly_budget.update_calculations();
+            return Ok(Json(monthly_budget));
+        }
         Err(e) => {
             error!("Error querying db: {:?}", e);
             return Err(AppError(
@@ -126,9 +129,7 @@ async fn update_budget_handler(
     let db = DB::new(year)
         .await
         .context("Failed to connect to database")?;
-    body.calculate_over_budget_amount();
-    body.calculate_total_spending();
-    body.calcuate_total_budget_allocation();
+    body.update_calculations();
     info!("Calculated total spending: {}", body.total_spending);
     info!("Calculated over budget amount: {}", body.over_budget_amount);
     info!(
@@ -349,12 +350,11 @@ async fn update_spending_item(
         })
         .collect();
     monthly_budget.spending = updated_monthly_spending;
-    monthly_budget.calculate_over_budget_amount();
+    monthly_budget.update_calculations();
     info!(
         "Calculated over budget amount: {}",
         monthly_budget.over_budget_amount
     );
-    monthly_budget.calculate_total_spending();
     info!(
         "Calculated total spending: {}",
         monthly_budget.total_spending
