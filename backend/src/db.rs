@@ -173,12 +173,12 @@ pub struct MonthlyBudget {
 impl MonthlyBudget {
     pub fn update_calculations(&mut self) {
         self.calculate_over_budget_amount();
-        self.calculate_contribution_amount();
         self.calculate_total_spending();
+        // self.calculate_contribution_amount();
         self.calcuate_total_budget_allocation();
     }
 
-    /// Calculates the amount each person is contributing.
+    /// Calculates the amount each person is contributing. This calculation assumes `self.budget.total_spending` to be up to date
     ///
     /// Updates `self.budget.shawn_contribution_amount` and `self.budget.maggie_contribution_amount`
     fn calculate_contribution_amount(&mut self) {
@@ -222,6 +222,8 @@ impl MonthlyBudget {
         self.budget.total_allocation =
             self.budget.maggie_contribution_amount + self.budget.shawn_contribution_amount;
 
+        self.budget.total_allocation = (self.budget.total_allocation * 100.0).round() / 100.0;
+
         // self.budget.shawn_contribution_amount = calculate_percentage(
         //     self.budget.total_allocation,
         //     self.budget.shawn_percentage_allocation,
@@ -233,7 +235,9 @@ impl MonthlyBudget {
         // );
     }
 
-    /// Calculates the amount over budget. Populates `self.over_budget_amount`
+    /// Calculates the amount over budget
+    ///
+    /// Populates `self.over_budget_amount`
     fn calculate_over_budget_amount(&mut self) {
         if self.budget.total_allocation < self.total_spending {
             self.over_budget_amount = self.total_spending - self.budget.total_allocation;

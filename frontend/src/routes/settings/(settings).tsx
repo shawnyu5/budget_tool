@@ -229,17 +229,43 @@ export default function () {
                 onInput={(e: InputEvent) => {
                   hasUserModified = true;
                   const input = e.target as HTMLInputElement;
-                  const contribution = parseFloat(input.value);
+                  const shawnContribution = parseFloat(input.value);
+
+                  let totalAllocation =
+                    shawnContribution +
+                    monthlyBudget()!.budget.maggieContributionAmount;
+                  totalAllocation = Math.round(totalAllocation * 100) / 100;
+
+                  let maggiecontribution =
+                    shawnContribution *
+                    ((monthlyBudget()?.budget.maggiePercentageAllocation ?? 0) /
+                      100);
+                  maggiecontribution =
+                    Math.round(maggiecontribution * 100) / 100;
+
                   const updated: MonthlyBudget = {
                     ...monthlyBudget()!,
                     budget: {
                       ...monthlyBudget()!.budget,
                       totalAllocation:
-                        contribution +
-                        monthlyBudget()!.budget.maggieContributionAmount,
-                      shawnContributionAmount: contribution,
+                        Math.round(
+                          (maggiecontribution + shawnContribution) * 100,
+                        ) / 100,
+                      maggieContributionAmount: maggiecontribution,
+                      shawnContributionAmount: shawnContribution,
                     },
                   };
+
+                  // const updated: MonthlyBudget = {
+                  //   ...monthlyBudget()!,
+                  //   budget: {
+                  //     ...monthlyBudget()!.budget,
+                  //     totalAllocation:
+                  //       shawnContribution +
+                  //       monthlyBudget()!.budget.maggieContributionAmount,
+                  //     shawnContributionAmount: shawnContribution,
+                  //   },
+                  // };
                   setMonthlyBudget(updated);
                 }}
                 required
@@ -288,16 +314,31 @@ export default function () {
                 value={monthlyBudget()?.budget.maggieContributionAmount ?? 0}
                 onInput={(e: InputEvent) => {
                   hasUserModified = true;
+
                   const input = e.target as HTMLInputElement;
-                  const contribution = parseFloat(input.value);
+                  const maggiecontribution = parseFloat(input.value);
+
+                  let totalAllocation =
+                    maggiecontribution +
+                    monthlyBudget()!.budget.shawnContributionAmount;
+                  totalAllocation = Math.round(totalAllocation * 100) / 100;
+
+                  let shawnContribution =
+                    maggiecontribution /
+                    ((monthlyBudget()?.budget.shawnPercentageAllocation ?? 0) /
+                      100);
+                  shawnContribution = Math.round(shawnContribution * 100) / 100;
+
                   const updated: MonthlyBudget = {
                     ...monthlyBudget()!,
                     budget: {
                       ...monthlyBudget()!.budget,
                       totalAllocation:
-                        contribution +
-                        monthlyBudget()!.budget.shawnContributionAmount,
-                      maggieContributionAmount: contribution,
+                        Math.round(
+                          (maggiecontribution + shawnContribution) * 100,
+                        ) / 100,
+                      maggieContributionAmount: maggiecontribution,
+                      shawnContributionAmount: shawnContribution,
                     },
                   };
                   setMonthlyBudget(updated);
