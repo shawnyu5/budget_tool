@@ -24,10 +24,25 @@ export default function () {
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
-  const [monthlyBudget, setMonthlyBudget] =
+  const [monthlyBudget, _setMonthlyBudget] =
     createSignal<MonthlyBudget | null>();
   const navigate = useNavigate();
   let hasUserModified = false;
+
+  const setMonthlyBudget = (monthlyBudget: MonthlyBudget) => {
+    _setMonthlyBudget(monthlyBudget);
+    if (
+      monthlyBudget.budget.maggiePercentageAllocation +
+        monthlyBudget.budget.shawnPercentageAllocation !=
+      100
+    ) {
+      setErrorMessage(
+        "Ah oh... The percentage allocations does not add up to 100%",
+      );
+    } else {
+      setErrorMessage(null);
+    }
+  };
 
   const [monthlyBudgetResource, { refetch }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
@@ -288,7 +303,9 @@ export default function () {
               }}
               required
             />
-            <button class="submit success button">Submit</button>
+            <button class="submit success button" disabled={!!errorMessage()}>
+              Submit
+            </button>
           </form>
         </Suspense>
       </div>
