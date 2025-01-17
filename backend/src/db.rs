@@ -11,7 +11,6 @@ use utoipa::ToSchema;
 use crate::{
     config::Config,
     month::{Month, MonthError},
-    utils::calculate_percentage,
 };
 
 #[derive(Error, Debug)]
