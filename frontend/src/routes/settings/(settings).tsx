@@ -17,7 +17,7 @@ import log from "~/logger";
 import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
 import SuccessComponent from "~/components/successComponent";
-import { calculatePercentage } from "~/utils";
+import { calculatePercentage, calculatePercentageOf } from "~/utils";
 
 export default function () {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -231,17 +231,15 @@ export default function () {
                   const input = e.target as HTMLInputElement;
                   const shawnContribution = parseFloat(input.value);
 
-                  let totalAllocation =
+                  let totalBudget =
                     shawnContribution +
                     monthlyBudget()!.budget.maggieContributionAmount;
-                  totalAllocation = Math.round(totalAllocation * 100) / 100;
+                  totalBudget = Math.round(totalBudget * 100) / 100;
 
-                  let maggiecontribution =
-                    shawnContribution *
-                    ((monthlyBudget()?.budget.maggiePercentageAllocation ?? 0) /
-                      100);
-                  maggiecontribution =
-                    Math.round(maggiecontribution * 100) / 100;
+                  const maggiecontribution = calculatePercentageOf(
+                    monthlyBudget()?.budget.maggiePercentageAllocation ?? 0,
+                    shawnContribution,
+                  );
 
                   const updated: MonthlyBudget = {
                     ...monthlyBudget()!,
@@ -255,17 +253,6 @@ export default function () {
                       shawnContributionAmount: shawnContribution,
                     },
                   };
-
-                  // const updated: MonthlyBudget = {
-                  //   ...monthlyBudget()!,
-                  //   budget: {
-                  //     ...monthlyBudget()!.budget,
-                  //     totalAllocation:
-                  //       shawnContribution +
-                  //       monthlyBudget()!.budget.maggieContributionAmount,
-                  //     shawnContributionAmount: shawnContribution,
-                  //   },
-                  // };
                   setMonthlyBudget(updated);
                 }}
                 required
@@ -318,16 +305,15 @@ export default function () {
                   const input = e.target as HTMLInputElement;
                   const maggiecontribution = parseFloat(input.value);
 
-                  let totalAllocation =
+                  let totalBudget =
                     maggiecontribution +
                     monthlyBudget()!.budget.shawnContributionAmount;
-                  totalAllocation = Math.round(totalAllocation * 100) / 100;
+                  totalBudget = Math.round(totalBudget * 100) / 100;
 
-                  let shawnContribution =
-                    maggiecontribution /
-                    ((monthlyBudget()?.budget.shawnPercentageAllocation ?? 0) /
-                      100);
-                  shawnContribution = Math.round(shawnContribution * 100) / 100;
+                  const shawnContribution = calculatePercentageOf(
+                    maggiecontribution,
+                    monthlyBudget()?.budget.shawnPercentageAllocation ?? 0,
+                  );
 
                   const updated: MonthlyBudget = {
                     ...monthlyBudget()!,

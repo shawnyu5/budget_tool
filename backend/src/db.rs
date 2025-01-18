@@ -11,7 +11,7 @@ use utoipa::ToSchema;
 use crate::{
     config::Config,
     month::{Month, MonthError},
-    utils::calculate_percentage,
+    utils::{calculate_percentage, calculate_percentage_of},
 };
 
 #[derive(Error, Debug)]
@@ -174,7 +174,7 @@ impl MonthlyBudget {
     pub fn update_calculations(&mut self) {
         self.calculate_over_budget_amount();
         self.calculate_total_spending();
-        // self.calculate_contribution_amount();
+        self.calculate_contribution_amount();
         self.calcuate_total_budget_allocation();
     }
 
@@ -182,14 +182,14 @@ impl MonthlyBudget {
     ///
     /// Updates `self.budget.shawn_contribution_amount` and `self.budget.maggie_contribution_amount`
     fn calculate_contribution_amount(&mut self) {
-        self.budget.shawn_contribution_amount = calculate_percentage(
-            self.budget.total_allocation,
+        self.budget.shawn_contribution_amount = calculate_percentage_of(
+            self.budget.maggie_contribution_amount,
             self.budget.shawn_percentage_allocation,
         );
 
-        self.budget.maggie_contribution_amount = calculate_percentage(
+        self.budget.maggie_contribution_amount = calculate_percentage_of(
             self.budget.total_allocation,
-            self.budget.maggie_percentage_allocation,
+            self.budget.shawn_contribution_amount,
         );
 
         debug!(
@@ -223,16 +223,6 @@ impl MonthlyBudget {
             self.budget.maggie_contribution_amount + self.budget.shawn_contribution_amount;
 
         self.budget.total_allocation = (self.budget.total_allocation * 100.0).round() / 100.0;
-
-        // self.budget.shawn_contribution_amount = calculate_percentage(
-        //     self.budget.total_allocation,
-        //     self.budget.shawn_percentage_allocation,
-        // );
-
-        // self.budget.maggie_contribution_amount = calculate_percentage(
-        //     self.budget.total_allocation,
-        //     self.budget.maggie_percentage_allocation,
-        // );
     }
 
     /// Calculates the amount over budget
@@ -267,14 +257,14 @@ pub struct Budget {
     /// Shawn percentage allocation
     #[serde(alias = "shawn_percentage_allocation")]
     pub shawn_percentage_allocation: f64,
-    /// Shawn contribution $. The server is responsible for keeping this value up to date
+    /// Shawn contribution amount. The frontend is responsible for computing this value
     #[schema(required = true)]
     #[serde(default)]
     pub shawn_contribution_amount: f64,
     /// Maggie percentage allocation
     #[serde(alias = "maggie_percentage_allocation")]
     pub maggie_percentage_allocation: f64,
-    /// Maggie contribution $. The server is responsible for keeping this value up to date
+    /// Maggie contribution amount. The frontend is responsible for computing this value
     #[schema(required = true)]
     #[serde(default)]
     pub maggie_contribution_amount: f64,

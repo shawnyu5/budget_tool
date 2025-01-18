@@ -49,8 +49,9 @@ test("Settings page fields updates dymnically", async ({ page }) => {
   await page.fill("input#maggie-contribution-percentage", "50");
 
   // Set both contribution amount to 100
-  await page.fill("input#maggie-contribution-amount", "100");
   await page.fill("input#shawn-contribution-amount", "100");
+  // TODO: since we calculate the maggie contribution based on shawn's contribution amount and maggie's contribution percentage, this value is auto adjusted to 50, due to maggie's contribution amount being 50% of Shawn's
+  await page.fill("input#maggie-contribution-amount", "100");
 
   // The total budget should be $200
   await expect(monthBudgetLocator(page), {

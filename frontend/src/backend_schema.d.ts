@@ -113,7 +113,7 @@ export interface components {
         Budget: {
             /**
              * Format: double
-             * @description Maggie contribution $. The server is responsible for keeping this value up to date
+             * @description Maggie contribution amount. The frontend is responsible for computing this value
              */
             maggieContributionAmount: number;
             /**
@@ -123,7 +123,7 @@ export interface components {
             maggiePercentageAllocation: number;
             /**
              * Format: double
-             * @description Shawn contribution $. The server is responsible for keeping this value up to date
+             * @description Shawn contribution amount. The frontend is responsible for computing this value
              */
             shawnContributionAmount: number;
             /**

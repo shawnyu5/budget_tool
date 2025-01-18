@@ -63,3 +63,16 @@ export function calculatePercentage(total: number, percentage: number) {
   const result = total * (percentage / 100);
   return Math.round(result * 100) / 100;
 }
+
+/**
+ * Calculates `number` is what `percentage` of a number
+ * @returns the total number `number` is a percentage of
+ */
+export function calculatePercentageOf(
+  number: number,
+  percentage: number,
+): number {
+  let result = number / (percentage / 100.0);
+  result = Math.round(result * 100) / 100;
+  return result;
+}
