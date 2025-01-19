@@ -89,8 +89,9 @@ async fn get_month_budget_handler(
         .context("Failed to connect to database")?;
 
     match db.get_month_budget(month).await {
-        Ok(monthly_budget) => {
+        Ok(mut monthly_budget) => {
             // monthly_budget.update_calculations();
+            monthly_budget.update_individual_contribution_amount();
             return Ok(Json(monthly_budget));
         }
         Err(e) => {
@@ -350,7 +351,7 @@ async fn update_spending_item(
         })
         .collect();
     monthly_budget.spending = updated_monthly_spending;
-    // monthly_budget.update_calculations();
+    monthly_budget.calculate_over_budget_amount();
     info!(
         "Calculated over budget amount: {}",
         monthly_budget.over_budget_amount
