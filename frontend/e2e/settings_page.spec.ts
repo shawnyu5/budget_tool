@@ -48,27 +48,30 @@ test("Settings page fields updates dynamically", async ({ page }) => {
   await page.fill("input#shawn-contribution-percentage", "50");
   await page.fill("input#maggie-contribution-percentage", "50");
 
-  // Set both contribution amount to 100
+  // Set shawn contribution amount to $100
   await page.fill("input#shawn-contribution-amount", "100");
-  // TODO: since we calculate the maggie contribution based on shawn's contribution amount and maggie's contribution percentage, this value is auto adjusted to 50, due to maggie's contribution amount being 50% of Shawn's
-  // await page.fill("input#maggie-contribution-amount", "100");
+  // Maggie contribution amount should be $100, since we are splitting 50/50
+  await expect(maggieContributionAmountLocator(page), {
+    message: "Incorrect maggie contribution amount",
+  }).toHaveValue("100");
 
-  // The total budget should be $150
+  // The total budget should be $200, since each person is contributing $100
   await expect(monthBudgetLocator(page), {
     message: "Incorrect monthly total",
-  }).toHaveValue("150");
-
-  await page.fill("input#maggie-contribution-amount", "100");
-  await expect(shawnContributionAmountLocator(page), {
-    message: "Incorrect contribution amount",
   }).toHaveValue("200");
 
+  // Change maggie contributing percentage to 40%
   await page.fill("input#maggie-contribution-percentage", "40");
+  // Shawn's contributing percentage should update to 60%
   await expect(shawnContributionPercentageLocator(page), {
-    message: "Should have auto updated to 60",
+    message: "Incorrect contribution percentage",
   }).toHaveValue("60");
 
-  await expect(monthBudgetLocator(page), {
-    message: "The monthly total should not have changed",
-  }).toHaveValue("300");
+  await expect(shawnContributionAmountLocator(page), {
+    message: "Incorrect Shawn contributing amount",
+  }).toHaveValue("120");
+
+  await expect(maggieContributionAmountLocator(page), {
+    message: "Incorrect Maggie contributing amount",
+  }).toHaveValue("80");
 });
