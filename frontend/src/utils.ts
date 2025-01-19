@@ -65,8 +65,8 @@ export function calculatePercentage(total: number, percentage: number) {
 }
 
 /**
- * Calculates `number` is what `percentage` of a number
- * @returns the total number `number` is a percentage of
+ * Calculates `number` is the `percentage` of what number
+ * @returns the total value `number` is a `percentage` of
  */
 export function calculatePercentageOf(
   number: number,

@@ -42,7 +42,7 @@ test("Settings page displays total budget and percentage split", async ({
   await expect(maggieContributionAmount).toHaveValue("120");
 });
 
-test("Settings page fields updates dymnically", async ({ page }) => {
+test("Settings page fields updates dynamically", async ({ page }) => {
   await page.goto("http://localhost:3000/settings");
   // Set split percentage to 50/50
   await page.fill("input#shawn-contribution-percentage", "50");
@@ -51,19 +51,24 @@ test("Settings page fields updates dymnically", async ({ page }) => {
   // Set both contribution amount to 100
   await page.fill("input#shawn-contribution-amount", "100");
   // TODO: since we calculate the maggie contribution based on shawn's contribution amount and maggie's contribution percentage, this value is auto adjusted to 50, due to maggie's contribution amount being 50% of Shawn's
+  // await page.fill("input#maggie-contribution-amount", "100");
+
+  // The total budget should be $150
+  await expect(monthBudgetLocator(page), {
+    message: "Incorrect monthly total",
+  }).toHaveValue("150");
+
   await page.fill("input#maggie-contribution-amount", "100");
-
-  // The total budget should be $200
-  await expect(monthBudgetLocator(page), {
-    message: "Incorrect monthly total",
+  await expect(shawnContributionAmountLocator(page), {
+    message: "Incorrect contribution amount",
   }).toHaveValue("200");
 
-  await page.fill("input#shawn-contribution-percentage", "60");
-  // 60% of the total budget - $200 should be 120
-  await expect(shawnContributionAmountLocator(page)).toHaveValue("120");
+  await page.fill("input#maggie-contribution-percentage", "40");
+  await expect(shawnContributionPercentageLocator(page), {
+    message: "Should have auto updated to 60",
+  }).toHaveValue("60");
 
-  // The total budget should remain $200
   await expect(monthBudgetLocator(page), {
-    message: "Incorrect monthly total",
-  }).toHaveValue("200");
+    message: "The monthly total should not have changed",
+  }).toHaveValue("300");
 });

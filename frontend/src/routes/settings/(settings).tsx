@@ -30,7 +30,6 @@ export default function () {
   let hasUserModified = false;
 
   const setMonthlyBudget = (monthlyBudget: MonthlyBudget | null) => {
-    _setMonthlyBudget(monthlyBudget);
     if (
       (monthlyBudget?.budget.maggiePercentageAllocation ?? 0) +
         (monthlyBudget?.budget.shawnPercentageAllocation ?? 0) !=
@@ -39,9 +38,10 @@ export default function () {
       setErrorMessage(
         "Ah oh... The percentage allocations does not add up to 100%",
       );
-    } else {
-      setErrorMessage(null);
+      return;
     }
+    setErrorMessage(null);
+    _setMonthlyBudget(monthlyBudget);
   };
 
   const [monthlyBudgetResource, { refetch }] = createResource(
@@ -199,15 +199,22 @@ export default function () {
                 onInput={(e: InputEvent) => {
                   hasUserModified = true;
                   const input = e.target as HTMLInputElement;
-                  const percentageContribution = parseFloat(input.value);
+                  const shawnPercentageContribution = parseFloat(input.value);
+                  const maggiePercentageAllocation =
+                    100 - shawnPercentageContribution;
                   const updated: MonthlyBudget = {
                     ...monthlyBudget()!,
                     budget: {
                       ...monthlyBudget()!.budget,
-                      shawnPercentageAllocation: percentageContribution,
+                      shawnPercentageAllocation: shawnPercentageContribution,
                       shawnContributionAmount: calculatePercentage(
-                        monthlyBudget()!.budget.totalAllocation,
-                        percentageContribution,
+                        monthlyBudget()?.budget.totalAllocation ?? 0,
+                        shawnPercentageContribution,
+                      ),
+                      maggiePercentageAllocation: maggiePercentageAllocation,
+                      maggieContributionAmount: calculatePercentage(
+                        monthlyBudget()?.budget.totalAllocation ?? 0,
+                        maggiePercentageAllocation,
                       ),
                     },
                   };
@@ -231,25 +238,17 @@ export default function () {
                   const input = e.target as HTMLInputElement;
                   const shawnContribution = parseFloat(input.value);
 
-                  let totalBudget =
-                    shawnContribution +
-                    monthlyBudget()!.budget.maggieContributionAmount;
-                  totalBudget = Math.round(totalBudget * 100) / 100;
-
-                  const maggiecontribution = calculatePercentageOf(
-                    monthlyBudget()?.budget.maggiePercentageAllocation ?? 0,
+                  const totalBudget = calculatePercentageOf(
                     shawnContribution,
+                    monthlyBudget()?.budget.shawnPercentageAllocation ?? 0,
                   );
 
                   const updated: MonthlyBudget = {
                     ...monthlyBudget()!,
                     budget: {
                       ...monthlyBudget()!.budget,
-                      totalAllocation:
-                        Math.round(
-                          (maggiecontribution + shawnContribution) * 100,
-                        ) / 100,
-                      maggieContributionAmount: maggiecontribution,
+                      totalAllocation: Math.round(totalBudget * 100) / 100,
+                      maggieContributionAmount: totalBudget - shawnContribution,
                       shawnContributionAmount: shawnContribution,
                     },
                   };
@@ -273,6 +272,7 @@ export default function () {
                   hasUserModified = true;
                   const input = e.target as HTMLInputElement;
                   const contribution = parseFloat(input.value);
+                  const shawnPercentageAllocation = 100 - contribution;
                   const updated: MonthlyBudget = {
                     ...monthlyBudget()!,
                     budget: {
@@ -281,6 +281,11 @@ export default function () {
                       maggieContributionAmount: calculatePercentage(
                         monthlyBudget()!.budget.totalAllocation,
                         contribution,
+                      ),
+                      shawnPercentageAllocation: shawnPercentageAllocation,
+                      shawnContributionAmount: calculatePercentage(
+                        monthlyBudget()?.budget.totalAllocation ?? 0,
+                        shawnPercentageAllocation,
                       ),
                     },
                   };
@@ -304,27 +309,18 @@ export default function () {
 
                   const input = e.target as HTMLInputElement;
                   const maggiecontribution = parseFloat(input.value);
-
-                  let totalBudget =
-                    maggiecontribution +
-                    monthlyBudget()!.budget.shawnContributionAmount;
-                  totalBudget = Math.round(totalBudget * 100) / 100;
-
-                  const shawnContribution = calculatePercentageOf(
+                  const totalBudget = calculatePercentageOf(
                     maggiecontribution,
-                    monthlyBudget()?.budget.shawnPercentageAllocation ?? 0,
+                    monthlyBudget()?.budget.maggiePercentageAllocation ?? 0,
                   );
 
                   const updated: MonthlyBudget = {
                     ...monthlyBudget()!,
                     budget: {
                       ...monthlyBudget()!.budget,
-                      totalAllocation:
-                        Math.round(
-                          (maggiecontribution + shawnContribution) * 100,
-                        ) / 100,
+                      totalAllocation: Math.round(totalBudget * 100) / 100,
                       maggieContributionAmount: maggiecontribution,
-                      shawnContributionAmount: shawnContribution,
+                      shawnContributionAmount: totalBudget - maggiecontribution,
                     },
                   };
                   setMonthlyBudget(updated);
