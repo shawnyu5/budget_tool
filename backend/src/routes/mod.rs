@@ -90,8 +90,7 @@ async fn get_month_budget_handler(
 
     match db.get_month_budget(month).await {
         Ok(mut monthly_budget) => {
-            // monthly_budget.update_calculations();
-            monthly_budget.update_individual_contribution_amount();
+            monthly_budget.update_calculations();
             return Ok(Json(monthly_budget));
         }
         Err(e) => {
@@ -125,12 +124,12 @@ async fn get_month_budget_handler(
 )]
 async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
-    Json(body): Json<MonthlyBudget>,
+    Json(mut body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
     let db = DB::new(year)
         .await
         .context("Failed to connect to database")?;
-    // body.update_calculations();
+    body.update_calculations();
     // info!("Calculated total spending: {}", body.total_spending);
     // info!("Calculated over budget amount: {}", body.over_budget_amount);
     // info!(

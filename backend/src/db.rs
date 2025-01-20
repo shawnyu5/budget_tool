@@ -2,6 +2,7 @@
 
 use anyhow::{Context, Result};
 use mongodb::{bson::doc, Client, Collection};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::{debug, error, info};
@@ -170,12 +171,13 @@ pub struct MonthlyBudget {
 }
 
 impl MonthlyBudget {
-    // pub fn update_calculations(&mut self) {
-    //     self.calculate_over_budget_amount();
-    //     // self.calculate_total_spending();
-    //     // self.calculate_contribution_amount();
-    //     // self.calcuate_total_budget_allocation();
-    // }
+    pub fn update_calculations(&mut self) {
+        self.calculate_total_spending();
+        self.calculate_total_budget_allocation();
+        self.calculate_over_budget_amount();
+        self.update_individual_contribution_amount();
+        self.calculate_over_budget_amount();
+    }
 
     // /// Calculates the amount each person is contributing. This calculation assumes `self.budget.total_spending` to be up to date
     // ///
@@ -201,39 +203,43 @@ impl MonthlyBudget {
     //     );
     // }
 
-    // /// Calculates the total spending for the month by adding up all the amounts in `self.spending`
-    // ///
-    // /// Updates `self.total_spending`
-    // fn calculate_total_spending(&mut self) {
-    //     self.total_spending = self
-    //         .spending
-    //         .par_iter()
-    //         .map(|spend| spend.amount)
-    //         .sum::<f64>();
+    /// Calculates the total spending for the month by adding up all the amounts in `self.spending`
+    ///
+    /// Updates `self.total_spending`
+    fn calculate_total_spending(&mut self) {
+        self.total_spending = self
+            .spending
+            .par_iter()
+            .map(|spend| spend.amount)
+            .sum::<f64>();
 
-    //     self.total_spending = (self.total_spending * 100.0).round() / 100.0;
-    //     debug!("Total spending: {}", self.total_spending);
-    // }
+        self.total_spending = (self.total_spending * 100.0).round() / 100.0;
+        debug!("Total spending: {}", self.total_spending);
+    }
 
-    // /// Calculates the total allocated budget, by adding up `self.budget.maggie_contribution_amount` and `self.budget.shawn_contribution_amount`.
-    // ///
-    // /// Updates `self.budget.total_allocation`
-    // fn calcuate_total_budget_allocation(&mut self) {
-    //     self.budget.total_allocation =
-    //         self.budget.maggie_contribution_amount + self.budget.shawn_contribution_amount;
+    /// Calculates the total allocated budget, by adding up `self.budget.maggie_contribution_amount` and `self.budget.shawn_contribution_amount`.
+    ///
+    /// Updates `self.budget.total_allocation`
+    fn calculate_total_budget_allocation(&mut self) {
+        self.budget.total_allocation =
+            self.budget.maggie_contribution_amount + self.budget.shawn_contribution_amount;
 
-    //     self.budget.total_allocation = (self.budget.total_allocation * 100.0).round() / 100.0;
-    // }
+        self.budget.total_allocation = (self.budget.total_allocation * 100.0).round() / 100.0;
+    }
 
     /// Calculates the amount over budget
     ///
     /// Populates `self.over_budget_amount`
     pub fn calculate_over_budget_amount(&mut self) {
+        dbg!(self.budget.total_allocation);
+        dbg!(self.total_spending);
+
         if self.budget.total_allocation < self.total_spending {
             self.over_budget_amount = self.total_spending - self.budget.total_allocation;
         } else {
             self.over_budget_amount = 0.0;
         }
+        debug!("Over budget amount: {}", self.over_budget_amount);
     }
 
     /// Fills in `self.budget.*_contribution_amount` only if they are 0. Otherwise leave them be
