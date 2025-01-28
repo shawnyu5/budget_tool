@@ -75,7 +75,7 @@ export default function () {
           log.error("Failed to update budget: ", e);
           setErrorMessage(`Failed to update budget: ${e}`);
         }
-        navigate("/", { replace: true });
+        navigate(`/?year=${year}&month=${month}`, { replace: true });
       })}
     >
       <ErrorComponent message={errorMessage()} />

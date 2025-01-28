@@ -72,7 +72,7 @@ export default function () {
           },
         );
 
-        navigate("/", { replace: true });
+        navigate(`/?year=${year}&month=${month}`, { replace: true });
       })}
     >
       <ErrorComponent message={errorMessage()} />
