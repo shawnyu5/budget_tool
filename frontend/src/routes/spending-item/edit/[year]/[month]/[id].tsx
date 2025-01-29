@@ -26,11 +26,6 @@ export default function () {
     description: "",
     notes: "",
   });
-  // const [id, setID] = createSignal(params.id);
-  // const [amount, setAmount] = createSignal(0);
-  // const [date, setDate] = createSignal("");
-  // const [description, setDescription] = createSignal("");
-  // const [notes, setNotes] = createSignal("");
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
 
   onMount(async () => {
@@ -49,19 +44,8 @@ export default function () {
         amount: res.data.amount,
         date: res.data.date,
         description: res.data.description,
-        notes: res.data.description,
+        notes: res.data.notes,
       });
-      // setID(res.data.id);
-      // setAmount(res.data.amount);
-      // // __AUTO_GENERATED_PRINT_VAR_START__
-      // console.log(
-      //   "custom print var (anon) setAmount: %s",
-      //   JSON.stringify(amount()),
-      // ); // __AUTO_GENERATED_PRINT_VAR_END__
-
-      // setDate(res.data.date);
-      // setDescription(res.data.description);
-      // setNotes(res.data.notes ?? "");
     } catch (e) {
       log.error("Failed to get spending information: ", e);
       setErrorMessage(`Failed to get spending information: ${e}`);
