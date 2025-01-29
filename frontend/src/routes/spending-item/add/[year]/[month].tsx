@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import axios from "axios";
-import { Accessor, Setter } from "solid-js";
+import { Accessor, createSignal, Setter } from "solid-js";
 import { SpendingItemForm } from "~/components/spendingItemForm";
 import log from "~/logger";
 import {
@@ -17,6 +17,13 @@ export default function () {
   const month = params.month;
   const navigate = useNavigate();
   const jsDate = new Date();
+  const [spendingItem] = createSignal<SpendingItem | null>({
+    id: generateSpendingItemID(),
+    amount: 0,
+    date: `${jsDate.getFullYear()}/${jsDate.getMonth() + 1}/${jsDate.getDate()}`,
+    description: "",
+    notes: "",
+  });
 
   const onSubmit = async (
     updatedSpendingItem: SpendingItem,
@@ -59,13 +66,7 @@ export default function () {
 
   return (
     <SpendingItemForm
-      transaction={{
-        id: generateSpendingItemID(),
-        amount: 0,
-        date: `${jsDate.getFullYear()}/${jsDate.getMonth() + 1}/${jsDate.getDate()}`,
-        description: "",
-        notes: "",
-      }}
+      spendingItem={spendingItem}
       onSubmit={onSubmit}
     />
   );

@@ -1,13 +1,13 @@
 import { action } from "@solidjs/router";
-import { Accessor, createSignal, Setter } from "solid-js";
+import { Accessor, createEffect, createSignal, Setter } from "solid-js";
 import { SpendingItem } from "~/server";
 import ErrorComponent from "./errorComponent";
 
 /**
- * A form that displays a transaction
+ * A form that displays a spending item
  */
 export function SpendingItemForm(props: {
-  transaction: SpendingItem;
+  spendingItem: Accessor<SpendingItem | null>;
   onSubmit: (
     updatedSpendingItem: SpendingItem,
     errorMessage: Accessor<string | null>,
@@ -15,12 +15,17 @@ export function SpendingItemForm(props: {
   ) => Promise<void>;
 }) {
   const [amount, setAmount] = createSignal(0);
-  const [date, setDate] = createSignal(props.transaction.date);
-  const [description, setDescription] = createSignal(
-    props.transaction.description,
-  );
-  const [notes, setNotes] = createSignal(props.transaction.notes ?? "");
+  const [date, setDate] = createSignal("");
+  const [description, setDescription] = createSignal("");
+  const [notes, setNotes] = createSignal("");
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
+
+  createEffect(() => {
+    setAmount(props.spendingItem()?.amount ?? 0);
+    setDate(props.spendingItem()?.date ?? "");
+    setDescription(props.spendingItem()?.description ?? "");
+    setNotes(props.spendingItem()?.notes ?? "");
+  });
 
   return (
     <form
@@ -29,7 +34,7 @@ export function SpendingItemForm(props: {
       action={action(async () => {
         props.onSubmit(
           {
-            id: props.transaction.id,
+            id: props.spendingItem()?.id ?? "",
             amount: amount(),
             date: date(),
             description: description(),
