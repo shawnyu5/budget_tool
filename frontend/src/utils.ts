@@ -61,7 +61,7 @@ export function generateSpendingItemID(): string {
  */
 export function calculatePercentage(total: number, percentage: number) {
   const result = total * (percentage / 100);
-  return Math.round(result * 100) / 100;
+  return round(result);
 }
 
 /**
@@ -73,6 +73,12 @@ export function calculatePercentageOf(
   percentage: number,
 ): number {
   let result = number / (percentage / 100.0);
-  result = Math.round(result * 100) / 100;
-  return result;
+  return round(result);
+}
+
+/**
+ * Rounds `n` to 2 decimal places
+ */
+export function round(n: number): number {
+  return Math.round(n * 100) / 100;
 }

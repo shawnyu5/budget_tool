@@ -17,7 +17,7 @@ import log from "~/logger";
 import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
 import SuccessComponent from "~/components/successComponent";
-import { calculatePercentage, calculatePercentageOf } from "~/utils";
+import { calculatePercentage, calculatePercentageOf, round } from "~/utils";
 
 export default function () {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -247,8 +247,8 @@ export default function () {
                     ...monthlyBudget()!,
                     budget: {
                       ...monthlyBudget()!.budget,
-                      totalAllocation: Math.round(totalBudget * 100) / 100,
-                      maggieContributionAmount: totalBudget - shawnContribution,
+                      totalAllocation: round(totalBudget),
+                      maggieContributionAmount: round(totalBudget - shawnContribution),
                       shawnContributionAmount: shawnContribution,
                     },
                   };
@@ -318,7 +318,7 @@ export default function () {
                     ...monthlyBudget()!,
                     budget: {
                       ...monthlyBudget()!.budget,
-                      totalAllocation: Math.round(totalBudget * 100) / 100,
+                      totalAllocation: round(totalBudget),
                       maggieContributionAmount: maggiecontribution,
                       shawnContributionAmount: totalBudget - maggiecontribution,
                     },
