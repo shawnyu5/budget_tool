@@ -2,6 +2,7 @@ import { AccessorWithLatest } from "@solidjs/router";
 import "./monthlySpending.css";
 import { createEffect, createSignal, Resource, Suspense } from "solid-js";
 import { MonthlyBudget } from "~/server";
+import { round } from "~/utils";
 
 /**
  * Displays the monthly spending. Including:
@@ -14,8 +15,10 @@ export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
   const remainingBudget = () =>
-    (props.monthlyBudget()?.budget.totalAllocation ?? 0) -
-    (props.monthlyBudget()?.totalSpending ?? 0);
+    round(
+      (props.monthlyBudget()?.budget.totalAllocation ?? 0) -
+        (props.monthlyBudget()?.totalSpending ?? 0),
+    );
 
   const [color, setColor] = createSignal("green");
 
