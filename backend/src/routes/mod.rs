@@ -58,6 +58,7 @@ pub fn app() -> Router {
     api_spec.info.contact = None;
     api_spec.info.license = None;
 
+    info!("Generated Open API spec");
     generate_open_api_spec_from_open_api(api_spec, "open_api_spec.json")
         .expect("Failed to generate open API spec");
 

@@ -1,6 +1,6 @@
 import { AccessorWithLatest } from "@solidjs/router";
 import "./monthlySpending.css";
-import { Resource, Suspense } from "solid-js";
+import { createEffect, createSignal, Resource, Suspense } from "solid-js";
 import { MonthlyBudget } from "~/server";
 
 /**
@@ -13,14 +13,28 @@ import { MonthlyBudget } from "~/server";
 export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
+  const remainingBudget = () =>
+    (props.monthlyBudget()?.budget.totalAllocation ?? 0) -
+    (props.monthlyBudget()?.totalSpending ?? 0);
+
+  const [color, setColor] = createSignal("green");
+
+  createEffect(() => {
+    if (remainingBudget() > 0) {
+      setColor("green");
+    } else {
+      setColor("red");
+    }
+  });
+
   return (
     <div id="monthly-budget" class="container">
       <p>Remaining:</p>
-      {
-        // TODO: color should be dynamic, based on if we are over budget or not
-      }
-      <h1 style="color: green">${props.monthlyBudget()?.totalSpending}</h1>
-      <h1>/${props.monthlyBudget()?.budget.totalAllocation}</h1>
+      <h1 style={{ background: "yellow", color: color() }}>
+        ${props.monthlyBudget()?.totalSpending}
+      </h1>
+      <h1>/${props.monthlyBudget()?.budget.totalAllocation} -&nbsp;</h1>
+      <h1 style={{ color: color() }}>${remainingBudget()}</h1>
     </div>
   );
 }

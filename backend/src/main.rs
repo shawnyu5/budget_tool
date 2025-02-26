@@ -7,7 +7,7 @@ mod routes;
 mod utils;
 
 use anyhow::Result;
-use common_axum::axum::{axum_serve, init_tracing_subcriber};
+use common_axum::axum::{axum_serve, generate_open_api_spec, init_tracing_subcriber};
 use config::Config;
 use routes::app;
 use tokio::net::TcpListener;
@@ -17,7 +17,6 @@ use tracing::info;
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
     init_tracing_subcriber().expect("Failed to init tracing subscriber");
-    info!("Generated Open API spec");
     // Attempt to load config. If it fails, dont bother starting the server
     Config::load();
 
