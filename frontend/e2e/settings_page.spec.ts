@@ -1,5 +1,8 @@
 import test, { expect, Page } from "@playwright/test";
 
+/**
+ * Locate the total allocation amount for the month
+ */
 function monthBudgetLocator(page: Page) {
   return page.locator("#month-budget");
 }
@@ -74,4 +77,8 @@ test("Settings page fields updates dynamically", async ({ page }) => {
   await expect(maggieContributionAmountLocator(page), {
     message: "Incorrect Maggie contributing amount",
   }).toHaveValue("80");
+
+  await expect(monthBudgetLocator(page), {
+    message: "Incorrect total month budget",
+  }).toHaveValue("200");
 });
