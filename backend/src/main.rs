@@ -3,6 +3,7 @@ mod config;
 mod custom_middleware;
 mod db;
 mod month;
+mod monthly_budget;
 mod routes;
 mod utils;
 

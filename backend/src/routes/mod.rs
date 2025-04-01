@@ -1,3 +1,5 @@
+use crate::monthly_budget::MonthlyBudget;
+use crate::monthly_budget::SpendingItem;
 use crate::utils::calculate_percentage;
 use anyhow::anyhow;
 use anyhow::Context;
@@ -32,11 +34,7 @@ use utoipa_axum::routes;
 use crate::config::Config;
 use crate::custom_middleware::{check_auth_header, check_valid_year};
 use crate::db::DBError;
-use crate::db::SpendingItem;
-use crate::{
-    db::{MonthlyBudget, DB},
-    month::Month,
-};
+use crate::{db::DB, month::Month};
 
 pub fn app() -> Router {
     let (router, mut api_spec) = OpenApiRouter::new()
