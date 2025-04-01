@@ -29,27 +29,6 @@ pub struct MonthlyBudget {
 }
 
 impl MonthlyBudget {
-    /// Validate the budget. Returns any errors if budget amounts are incorrect
-    pub fn validate_budget(&self) -> Result<()> {
-        let total_budget =
-            self.budget.maggie_contribution_amount + self.budget.maggie_contribution_amount;
-        if self.budget.total_allocation != total_budget {
-            return Err(anyhow!("Total monthly budget is incorrect"));
-        };
-
-        if self.budget.shawn_percentage_allocation + self.budget.maggie_percentage_allocation
-            != 100.0
-        {
-            return Err(anyhow!(
-                "Incorrect percentage allocation. Both allocation does not add up to 100%"
-            ));
-        }
-
-        return Ok(());
-    }
-    #[deprecated(
-        note = "Performing the calculation should be the responsiblity of the frontend. The backend should only perform validation"
-    )]
     pub fn update_calculations(&mut self) {
         self.calculate_total_spending();
         self.calculate_total_budget_allocation();
