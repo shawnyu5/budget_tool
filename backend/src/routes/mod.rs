@@ -10,6 +10,7 @@ use axum::response::IntoResponse;
 use axum::{extract::Path, Json, Router};
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
+use chrono::NaiveDate;
 use chrono::{DateTime, Duration, Local, Utc};
 use common_axum::app_error_v2::AppError;
 use common_axum::axum::generate_open_api_spec_from_open_api;
@@ -129,17 +130,6 @@ async fn update_budget_handler(
         .await
         .context("Failed to connect to database")?;
     body.update_calculations();
-    // info!("Calculated total spending: {}", body.total_spending);
-    // info!("Calculated over budget amount: {}", body.over_budget_amount);
-    // info!(
-    //     "Calculated shawn contribution amount: {}",
-    //     body.budget.shawn_contribution_amount,
-    // );
-    // info!(
-    //     "Calculated maggie contribution amount: {}",
-    //     body.budget.maggie_contribution_amount,
-    // );
-
     let filter = doc! {
         "month": month.to_string()
     };
@@ -349,6 +339,30 @@ async fn update_spending_item(
         })
         .collect();
     monthly_budget.spending = updated_monthly_spending;
+    monthly_budget.spending.sort_by(|a, b| {
+        info!("Sorting spending item");
+        // If we cant parse either dates into a proper date, just give up
+        let fallback_date = NaiveDate::from_ymd_opt(1, 1, 1).unwrap();
+        let a_date = NaiveDate::parse_from_str(&a.date, "%Y/%m/%d").unwrap_or_else(|e| {
+            error!(
+                "Failed to parse date: {e}. Using fallback date: {}",
+                fallback_date.to_string()
+            );
+            fallback_date
+        });
+
+        let b_date = NaiveDate::parse_from_str(&b.date, "%Y/%m/%d").unwrap_or_else(|e| {
+            error!(
+                "Failed to parse date: {e}. Using fallback date: {}",
+                fallback_date.to_string()
+            );
+            fallback_date
+        });
+
+        b_date.cmp(&a_date)
+    });
+    debug!("Sorted spending items: {:?}", monthly_budget.spending);
+
     monthly_budget.calculate_over_budget_amount();
     info!(
         "Calculated over budget amount: {}",
