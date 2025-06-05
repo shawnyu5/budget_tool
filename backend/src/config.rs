@@ -12,7 +12,7 @@ pub struct Config {
     pub database_name: String,
     /// Private key used to sign the JWT
     pub private_key: String,
-    /// Base64 decoded credentials
+    /// Base64 encoded credentials
     pub basic_auth: Vec<String>,
 }
 
