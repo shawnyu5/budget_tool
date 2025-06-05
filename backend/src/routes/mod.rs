@@ -85,13 +85,7 @@ async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
     info!("Connecting to DB");
-    let db = match DB::new(year).await {
-        Ok(db) => db,
-        Err(e) => {
-            error!("Error: {}", e);
-            return Err(AppError(StatusCode::INTERNAL_SERVER_ERROR, anyhow!(e)));
-        }
-    };
+    let db = DB::new(year).await.context("Failed to connect to DB")?;
 
     match db.get_month_budget(month).await {
         Ok(mut monthly_budget) => {

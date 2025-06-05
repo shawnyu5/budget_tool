@@ -43,8 +43,10 @@ version = "0.3.19"
 features = ["env-filter", "std", "fmt"]
 
 [dependencies.common-axum]
+# path = "/home/shawny/common-axum/"
 git = "https://github.com/shawnyu5/common-axum"
-rev = "v1.4.0"
+rev = "v1.4.1"
+
 
 [dependencies.chrono]
 version = "0.4.38"
