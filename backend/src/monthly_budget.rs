@@ -65,9 +65,6 @@ impl MonthlyBudget {
     ///
     /// Populates `self.over_budget_amount`
     pub fn calculate_over_budget_amount(&mut self) {
-        dbg!(self.budget.total_allocation);
-        dbg!(self.total_spending);
-
         if self.budget.total_allocation < self.total_spending {
             self.over_budget_amount = self.total_spending - self.budget.total_allocation;
         } else {
