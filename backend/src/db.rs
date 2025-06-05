@@ -17,13 +17,16 @@ impl DB {
     /// * `year`: the year to get budget of
     pub async fn new(year: String) -> Result<Self> {
         if year.len() != 4 {
+            error!("Year too long. Invalid year");
             return Err(DBError::InvalidYear.into());
         }
 
-        let client = Client::with_uri_str(Config::load().db_connection_string).await?;
+        let client = Client::with_uri_str(Config::load().db_connection_string)
+            .await
+            .context("Failed to construct DB client")?;
         debug!("Attempting to ping db after initializing connection");
         client
-            .database("budget_tool")
+            .database(&Config::load().database_name)
             .run_command(doc! { "ping": 1 })
             .await
             .context("Failed to ping db")?;
