@@ -84,9 +84,14 @@ pub fn app() -> Router {
 async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
-    let db = DB::new(year)
-        .await
-        .context("Failed to connect to database")?;
+    info!("Connecting to DB");
+    let db = match DB::new(year).await {
+        Ok(db) => db,
+        Err(e) => {
+            error!("Error: {}", e);
+            return Err(AppError(StatusCode::INTERNAL_SERVER_ERROR, anyhow!(e)));
+        }
+    };
 
     match db.get_month_budget(month).await {
         Ok(mut monthly_budget) => {
