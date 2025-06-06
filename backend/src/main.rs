@@ -2,13 +2,15 @@
 mod config;
 mod custom_middleware;
 mod db;
+mod graphql;
 mod month;
 mod monthly_budget;
 mod routes;
+mod tgtg;
 mod utils;
 
 use anyhow::Result;
-use common_axum::axum::{axum_serve, generate_open_api_spec, init_tracing_subcriber};
+use common_axum::axum::{axum_serve, init_tracing_subcriber};
 use config::Config;
 use routes::app;
 use tokio::net::TcpListener;

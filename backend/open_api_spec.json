@@ -275,6 +275,13 @@
         }
       }
     },
+    "/graphql": {
+      "get": {
+        "summary": "Graphql playground",
+        "operationId": "graphql_playground",
+        "responses": {}
+      }
+    },
     "/login/basic": {
       "post": {
         "operationId": "basic_auth_handler",

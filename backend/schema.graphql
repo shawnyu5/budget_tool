@@ -1,0 +1,206 @@
+type Address {
+	country: Country!
+	addressLine: String!
+	city: String!
+	postalCode: String!
+}
+
+type AverageOverallRating {
+	averageOverallRating: Float!
+	ratingCount: Int!
+	monthCount: Int!
+	averageCollectionExperienceRating: Float!
+	averageFoodQualityRating: Float!
+	averageContentsVarietyRating: Float!
+	averageFoodQuantityRating: Float!
+}
+
+type Country {
+	isoCode: String!
+	name: String!
+}
+
+type CoverPicture {
+	pictureId: String!
+	currentUrl: String!
+	isAutomaticallyCreated: Boolean!
+}
+
+type Item {
+	itemId: String!
+	salesTaxes: [SalesTax!]!
+	taxAmount: TaxAmount!
+	priceExcludingTaxes: PriceExcludingTaxes!
+	priceIncludingTaxes: PriceIncludingTaxes!
+	valueExcludingTaxes: ValueExcludingTaxes!
+	valueIncludingTaxes: ValueIncludingTaxes!
+	taxationPolicy: String!
+	showSalesTaxes: Boolean!
+	itemPrice: ItemPrice!
+	itemValue: ItemValue!
+	coverPicture: CoverPicture!
+	logoPicture: LogoPicture!
+	name: String!
+	description: String!
+	subtitle: String!
+	foodHandlingInstructions: String!
+	canUserSupplyPackaging: Boolean!
+	packagingOption: String!
+	collectionInfo: String!
+	dietCategories: [JSON!]!
+	itemCategory: String!
+	buffet: Boolean!
+	positiveRatingReasons: [String!]!
+	averageOverallRating: AverageOverallRating!
+	favoriteCount: Int!
+}
+
+type ItemPrice {
+	code: String!
+	minorUnits: Int!
+	decimals: Int!
+}
+
+type ItemTag {
+	id: String!
+	shortText: String!
+	longText: String
+	variant: String!
+	description: String
+	descriptionHeading: String
+}
+
+type ItemValue {
+	code: String!
+	minorUnits: Int!
+	decimals: Int!
+}
+
+type Items {
+	item: Item!
+	store: Store!
+	displayName: String!
+	pickupInterval: PickupInterval!
+	pickupLocation: PickupLocation!
+	purchaseEnd: String!
+	itemsAvailable: Int!
+	distance: Float!
+	favorite: Boolean!
+	subscribedToNotification: Boolean!
+	inSalesWindow: Boolean!
+	newItem: Boolean!
+	itemType: String!
+	matchesFilters: Boolean!
+	itemTags: [ItemTag!]!
+}
+
+"""
+A scalar that can represent any JSON value.
+"""
+scalar JSON
+
+type Location {
+	longitude: Float!
+	latitude: Float!
+}
+
+type LogoPicture {
+	pictureId: String!
+	currentUrl: String!
+	isAutomaticallyCreated: Boolean!
+}
+
+type PickupInterval {
+	end: String!
+	start: String!
+}
+
+type PickupLocation {
+	address: Address!
+	location: Location!
+}
+
+type PriceExcludingTaxes {
+	code: String!
+	minorUnits: Int!
+	decimals: Int!
+}
+
+type PriceIncludingTaxes {
+	code: String!
+	minorUnits: Int!
+	decimals: Int!
+}
+
+type Query {
+	tgtg: Tgtg!
+}
+
+type SalesTax {
+	taxDescription: String!
+	taxPercentage: Float!
+}
+
+type Store {
+	storeId: String!
+	storeName: String!
+	branch: String!
+	description: String!
+	taxIdentifier: String!
+	website: String!
+	storeLocation: StoreLocation!
+	logoPicture: LogoPicture!
+	storeTimeZone: String!
+	hidden: Boolean!
+	favoriteCount: Int!
+	distance: Float!
+	coverPicture: CoverPicture!
+	isManufacturer: Boolean!
+}
+
+type StoreLocation {
+	address: Address!
+	location: Location!
+}
+
+type TaxAmount {
+	code: String!
+	minorUnits: Int!
+	decimals: Int!
+}
+
+type Tgtg {
+	items: Tgtgitems!
+}
+
+"""
+Response body for list of items
+"""
+type Tgtgitems {
+	items: [Items!]!
+	itemsExpandedRadius: [JSON!]!
+}
+
+type ValueExcludingTaxes {
+	code: String!
+	minorUnits: Int!
+	decimals: Int!
+}
+
+type ValueIncludingTaxes {
+	code: String!
+	minorUnits: Int!
+	decimals: Int!
+}
+
+"""
+Directs the executor to include this field or fragment only when the `if` argument is true.
+"""
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Directs the executor to skip this field or fragment when the `if` argument is true.
+"""
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+schema {
+	query: Query
+}

@@ -1,11 +1,15 @@
+use crate::graphql::generate_graphql_schema;
 use crate::monthly_budget::MonthlyBudget;
 use crate::monthly_budget::SpendingItem;
 use crate::utils::calculate_percentage;
 use anyhow::anyhow;
 use anyhow::Context;
+use async_graphql::http::playground_source;
+use async_graphql::http::GraphQLPlaygroundConfig;
 use axum::body;
 use axum::http::{HeaderMap, StatusCode};
 use axum::middleware;
+use axum::response::Html;
 use axum::response::IntoResponse;
 use axum::{extract::Path, Json, Router};
 use base64::prelude::BASE64_STANDARD;
@@ -49,6 +53,7 @@ pub fn app() -> Router {
         .routes(routes!(export_csv_handler))
         .layer(middleware::from_fn(check_auth_header))
         .routes(routes!(basic_auth_handler))
+        .routes(routes!(graphql_playground))
         .routes(routes!(app_version))
         .split_for_parts();
 
@@ -60,8 +65,18 @@ pub fn app() -> Router {
     info!("Generated Open API spec");
     generate_open_api_spec_from_open_api(api_spec, "open_api_spec.json")
         .expect("Failed to generate open API spec");
+    info!("Generating graphql schema");
+    let schema = generate_graphql_schema().expect("Failed to generate graphql schema");
+    println!("{}", schema);
 
     return attach_tracing_cors_middleware(router);
+}
+
+/// Graphql playground
+#[instrument(skip_all)]
+#[utoipa::path(get, path = "/graphql")]
+pub async fn graphql_playground() -> impl IntoResponse {
+    Html(playground_source(GraphQLPlaygroundConfig::new("/")))
 }
 
 /// Get the budget information for a specific month
