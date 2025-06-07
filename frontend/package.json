@@ -8,15 +8,20 @@
       "test": "playwright test",
       "test:ui": "playwright test --ui",
       "start": "vinxi start",
-      "generate": "npx openapi-typescript ../backend/open_api_spec.json -o src/backend_schema.d.ts",
-      "version": "vinxi version"
+      "openapi": "npx openapi-typescript ../backend/open_api_spec.json -o src/backend_schema.d.ts",
+      "version": "vinxi version",
+      "graphql": "graphql-codegen --config codegen.ts",
+      "codegen": "npm run openapi && npm run graphql"
    },
    "dependencies": {
+      "@apollo/client": "^3.13.8",
       "@solidjs/meta": "^0.29.4",
       "@solidjs/router": "^0.15.0",
       "@solidjs/start": "^1.1.3",
       "axios": "^1.7.9",
       "axios-retry": "^4.5.0",
+      "graphql": "^16.11.0",
+      "graphql-request": "^7.2.0",
       "pino": "^9.5.0",
       "solid-js": "^1.9.2",
       "vinxi": "^0.5.3"
@@ -28,6 +33,10 @@
       "node": ">=18"
    },
    "devDependencies": {
+      "@graphql-codegen/cli": "5.0.7",
+      "@graphql-codegen/introspection": "4.0.3",
+      "@graphql-codegen/typescript": "4.1.6",
+      "@graphql-codegen/typescript-graphql-request": "^6.3.0",
       "@playwright/test": "^1.49.1",
       "@types/node": "^22.10.2",
       "msw": "^2.7.0"
