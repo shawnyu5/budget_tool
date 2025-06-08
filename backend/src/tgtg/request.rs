@@ -2,7 +2,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use simd_json::OwnedValue;
 
-use super::common::Items;
 use super::common::Origin;
 use super::common::PickupInterval;
 

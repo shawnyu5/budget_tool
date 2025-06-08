@@ -72,6 +72,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/graphql": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Graphql playground */
+        get: operations["graphql_playground"];
+        put?: never;
+        /** Handler for graphql requests */
+        post: operations["graphql_handler"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/basic": {
         parameters: {
             query?: never;
@@ -424,6 +442,26 @@ export interface operations {
                 };
             };
         };
+    };
+    graphql_playground: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: never;
+    };
+    graphql_handler: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: never;
     };
     basic_auth_handler: {
         parameters: {

@@ -132,7 +132,13 @@ type PriceIncludingTaxes {
 	decimals: Int!
 }
 
-type Query {
+"""
+Root of the query
+"""
+type QueryRoot {
+	"""
+	Tgtg related queries
+	"""
 	tgtg: Tgtg!
 }
 
@@ -169,16 +175,14 @@ type TaxAmount {
 	decimals: Int!
 }
 
+"""
+Tgtg related queries
+"""
 type Tgtg {
-	items: Tgtgitems!
-}
-
-"""
-Response body for list of items
-"""
-type Tgtgitems {
-	items: [Items!]!
-	itemsExpandedRadius: [JSON!]!
+	"""
+	Get tgtg items
+	"""
+	items: Items!
 }
 
 type ValueExcludingTaxes {
@@ -202,5 +206,5 @@ Directs the executor to skip this field or fragment when the `if` argument is tr
 """
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 schema {
-	query: Query
+	query: QueryRoot
 }
