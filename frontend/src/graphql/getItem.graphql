@@ -1,0 +1,39 @@
+query getItems {
+  tgtg {
+    items {
+      displayName
+      itemsAvailable
+      distance
+      item {
+        name
+        description
+        itemCategory
+        itemPrice {
+          code
+          minorUnits
+          decimals
+        }
+        coverPicture {
+          currentUrl
+        }
+      }
+      store {
+        storeName
+        distance
+        storeLocation {
+          address {
+            country {
+              name
+            }
+            city
+            postalCode
+          }
+          location {
+            latitude
+            longitude
+          }
+        }
+      }
+    }
+  }
+}

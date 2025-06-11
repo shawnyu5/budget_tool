@@ -280,6 +280,11 @@
         "summary": "Graphql playground",
         "operationId": "graphql_playground",
         "responses": {}
+      },
+      "post": {
+        "summary": "Handler for graphql requests",
+        "operationId": "graphql_handler",
+        "responses": {}
       }
     },
     "/login/basic": {
