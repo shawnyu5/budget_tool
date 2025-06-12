@@ -20,8 +20,7 @@ export default createHandler(() => (
           {
              // Set IOS app icon
           }
-          <link rel="apple-touch-icon" href="/Gemini_Generated_Image_skp2suskp2suskp2.jpeg"></link>
-
+          <link rel="apple-touch-icon" href="/logo.jpeg"></link>
           <link rel="icon" href="/favicon.ico" />
           {assets}
         </head>
