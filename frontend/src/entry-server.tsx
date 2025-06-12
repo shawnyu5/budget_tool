@@ -8,6 +8,20 @@ export default createHandler(() => (
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          {
+            // Have IOS treat this app as a native app, hide safari tab
+          }
+          <meta name="apple-mobile-web-app-capable" content="yes"></meta>
+          {
+             // Set app name on home page
+          }
+          <meta name="apple-mobile-web-app-title" content="Budget tool"></meta>
+
+          {
+             // Set IOS app icon
+          }
+          <link rel="apple-touch-icon" href="/Gemini_Generated_Image_skp2suskp2suskp2.jpeg"></link>
+
           <link rel="icon" href="/favicon.ico" />
           {assets}
         </head>
