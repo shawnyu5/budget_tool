@@ -1,7 +1,7 @@
 {
    "name": "Budget tool",
    "short_name": "Budget",
-   "start_url": "/",
+   "start_url": "/login",
    "display": "standalone",
    "background_color": "#ffffff",
    "theme_color": "#0f172a",
