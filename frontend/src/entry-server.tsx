@@ -25,6 +25,7 @@ export default createHandler(() => (
              // TODO: this startup image doesnt seem to show up for some reason
           }
           <link rel="apple-touch-startup-image" href="/logo.jpeg"></link>
+          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"></meta>
           <link rel="icon" href="/favicon.ico" />
           {assets}
         </head>
