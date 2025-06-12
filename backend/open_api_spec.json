@@ -607,6 +607,21 @@
           }
         }
       },
+      "NotificationBody": {
+        "type": "object",
+        "required": [
+          "title",
+          "body"
+        ],
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
       "NotificationKeys": {
         "type": "object",
         "required": [
@@ -622,8 +637,9 @@
           }
         }
       },
-      "NotificationSendBody": {
+      "NotificationMetaData": {
         "type": "object",
+        "description": "Stuff the browser sends to do the notification handshake",
         "required": [
           "endpoint",
           "keys"
@@ -640,6 +656,23 @@
           },
           "keys": {
             "$ref": "#/components/schemas/NotificationKeys"
+          }
+        }
+      },
+      "NotificationSendBody": {
+        "type": "object",
+        "required": [
+          "metaData",
+          "body"
+        ],
+        "properties": {
+          "body": {
+            "$ref": "#/components/schemas/NotificationBody",
+            "description": "The body of the notification"
+          },
+          "metaData": {
+            "$ref": "#/components/schemas/NotificationMetaData",
+            "description": "Data sent by the browser to do the handshake for the notification"
           }
         }
       },

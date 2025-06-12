@@ -9,7 +9,6 @@ mod routes;
 mod utils;
 mod web_notifications;
 
-use crate::web_notifications::send_push;
 use anyhow::Result;
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
 use config::Config;
