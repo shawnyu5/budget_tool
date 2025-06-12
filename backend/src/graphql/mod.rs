@@ -17,9 +17,6 @@ pub struct QueryRoot;
 #[derive(Default, Clone, SimpleObject)]
 pub struct FrontendConfig {
     /// Base 64 encoded public key used for encryption
-    #[graphql(deprecation = "In favor of `encryption_public_key`")]
-    public_key: String,
-    /// Base 64 encoded public key used for encryption
     encryption_public_key: String,
     /// Non base 64 encoded VAPID public key used for sending notifications
     vapid_public_key: String,
@@ -33,7 +30,6 @@ impl QueryRoot {
         let backend_config = Config::load();
 
         FrontendConfig {
-            public_key: BASE64_STANDARD.encode(backend_config.public_key.clone()),
             encryption_public_key: BASE64_STANDARD.encode(backend_config.public_key),
             vapid_public_key: backend_config.vapid_public_key,
         }

@@ -5,10 +5,6 @@ type FrontendConfig {
 	"""
 	Base 64 encoded public key used for encryption
 	"""
-	publicKey: String! @deprecated(reason: "In favor of `encryption_public_key`")
-	"""
-	Base 64 encoded public key used for encryption
-	"""
 	encryptionPublicKey: String!
 	"""
 	Non base 64 encoded VAPID public key used for sending notifications
@@ -26,10 +22,6 @@ type QueryRoot {
 	config: FrontendConfig!
 }
 
-"""
-Marks an element of a GraphQL schema as no longer supported.
-"""
-directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
 """
 Directs the executor to include this field or fragment only when the `if` argument is true.
 """

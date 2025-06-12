@@ -22,11 +22,6 @@ export type FrontendConfig = {
   __typename?: 'FrontendConfig';
   /** Base 64 encoded public key used for encryption */
   encryptionPublicKey: Scalars['String']['output'];
-  /**
-   * Base 64 encoded public key used for encryption
-   * @deprecated In favor of `encryption_public_key`
-   */
-  publicKey: Scalars['String']['output'];
   /** Non base 64 encoded VAPID public key used for sending notifications */
   vapidPublicKey: Scalars['String']['output'];
 };

@@ -41,22 +41,6 @@
             "deprecationReason": null
           },
           {
-            "name": "publicKey",
-            "description": "Base 64 encoded public key used for encryption",
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "isDeprecated": true,
-            "deprecationReason": "In favor of `encryption_public_key`"
-          },
-          {
             "name": "vapidPublicKey",
             "description": "Non base 64 encoded VAPID public key used for sending notifications",
             "args": [],
@@ -1059,7 +1043,7 @@
         "args": [
           {
             "name": "reason",
-            "description": null,
+            "description": "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).",
             "type": {
               "kind": "SCALAR",
               "name": "String",

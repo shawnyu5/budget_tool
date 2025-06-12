@@ -1,6 +1,5 @@
 query getConfig {
   config {
-    # publicKey
     encryptionPublicKey
     vapidPublicKey
   }
