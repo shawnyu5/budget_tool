@@ -11,7 +11,7 @@ export default createHandler(() => (
           {
             // Have IOS treat this app as a native app, hide safari tab
           }
-          <meta name="apple-mobile-web-app-capable" content="yes"></meta>
+          <meta name="mobile-web-app-capable" content="yes"></meta>
           {
              // Set app name on home page
           }
