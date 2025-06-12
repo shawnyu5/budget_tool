@@ -1,6 +1,5 @@
 import { z } from "zod/v4";
 import { GraphQLClient } from "graphql-request";
-import log from "./logger";
 import { getSdk } from "./generated/graphql";
 
 /**
@@ -26,7 +25,7 @@ export function loadLocalConfig(): LocalConfig {
   };
   const result = LocalConfigSchema.safeParse(config);
   if (!result.success) {
-    log.error(`Failed to load local config: ${result.error.message}`);
+    console.error(`Failed to load local config: ${result.error.message}`);
   }
 
   return result.data!;

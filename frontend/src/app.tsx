@@ -1,7 +1,7 @@
 import { MetaProvider, Title } from "@solidjs/meta";
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
-import { Suspense } from "solid-js";
+import { onMount, Suspense } from "solid-js";
 
 export default function App() {
   if ("serviceWorker" in navigator) {
@@ -9,6 +9,24 @@ export default function App() {
       console.log("Service Worker registered");
     });
   }
+  onMount(() => {
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+      console.error("Push notifications are not supported. Ignore this...");
+      return;
+    }
+
+    console.log(`Notification permission: ${Notification.permission}`);
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then((permission) => {
+        console.log("Notification permission:", permission);
+      });
+    } else {
+      console.log(
+        "Notification permission already set to:",
+        Notification.permission,
+      );
+    }
+  });
   return (
     <Router
       root={(props) => (
@@ -31,4 +49,3 @@ export default function App() {
     </Router>
   );
 }
-

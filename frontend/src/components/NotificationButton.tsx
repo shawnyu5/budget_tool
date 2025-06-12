@@ -1,7 +1,6 @@
 import axios from "axios";
 import { createResource, createSignal } from "solid-js";
 import { loadLocalConfig, loadServerConfig } from "~/config";
-import log from "~/logger";
 import { paths } from "../backend_schema";
 
 export default function NotificationButton() {
@@ -18,19 +17,11 @@ export default function NotificationButton() {
     setPermission(result);
 
     if (result === "granted") {
-      // You can now subscribe with PushManager
       const reg = await navigator.serviceWorker.ready;
-
-      log.info(`public key: ${serverConfig()?.vapidPublicKey}`);
-      // log.info(`public key converted: ${convertedPubKey}`);
-
       const subscription = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: serverConfig()?.vapidPublicKey,
       });
-
-      // Send `subscription` to your backend
-      console.log("Push subscription:", JSON.stringify(subscription, null, 3));
 
       type RequestBody =
         paths["/notification/send"]["post"]["requestBody"]["content"]["application/json"];
@@ -40,7 +31,7 @@ export default function NotificationButton() {
         subscription,
       );
     } else {
-      alert("Permission denied for notifications.");
+      console.warn("Permission denied for notifications.");
     }
   }
 

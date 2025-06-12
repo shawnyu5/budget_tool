@@ -161,7 +161,7 @@ export default function Home() {
             setMonthlyBudget={syncMonthlyBudgetWithServer}
           />
 
-          <NotificationButton />
+          {<NotificationButton />}
         </Suspense>
       </ErrorBoundary>
     </main>
