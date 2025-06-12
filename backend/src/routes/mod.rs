@@ -1,9 +1,9 @@
-use crate::monthly_budget::MonthlyBudget;
-use crate::monthly_budget::SpendingItem;
-use crate::utils::calculate_percentage;
 use anyhow::anyhow;
 use anyhow::Context;
+use async_graphql_axum::GraphQLRequest;
+use async_graphql_axum::GraphQLResponse;
 use axum::body;
+use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
 use axum::middleware;
 use axum::response::IntoResponse;
@@ -35,10 +35,18 @@ use utoipa_axum::routes;
 use crate::config::Config;
 use crate::custom_middleware::{check_auth_header, check_valid_year};
 use crate::db::DBError;
+use crate::graphql::generate_graphql_schema;
+use crate::graphql::SchemaType;
+use crate::monthly_budget::MonthlyBudget;
+use crate::monthly_budget::SpendingItem;
+use crate::utils::calculate_percentage;
+use crate::web_notifications::{__path_send_notification_handler, send_notification_handler};
 use crate::{db::DB, month::Month};
 
 pub fn app() -> Router {
-    let (router, mut api_spec) = OpenApiRouter::new()
+    let graphql_schema = generate_graphql_schema().expect("Failed to generate graphql schema");
+
+    let (mut router, mut api_spec) = OpenApiRouter::new()
         .routes(routes!(get_month_budget_handler, update_budget_handler))
         .routes(routes! {
             get_spending_item,
@@ -48,7 +56,9 @@ pub fn app() -> Router {
         .routes(routes!(validate_token))
         .routes(routes!(export_csv_handler))
         .layer(middleware::from_fn(check_auth_header))
+        .routes(routes!(graphql_handler))
         .routes(routes!(basic_auth_handler))
+        .routes(routes!(send_notification_handler))
         .routes(routes!(app_version))
         .split_for_parts();
 
@@ -57,11 +67,38 @@ pub fn app() -> Router {
     api_spec.info.contact = None;
     api_spec.info.license = None;
 
+    #[cfg(debug_assertions)]
+    {
+        let graphql_playground_route = OpenApiRouter::new().routes(routes!(graphql_playground));
+        router = router.merge(graphql_playground_route);
+    }
+    // Reassign here to make sure the router the right type
+    let router = router.with_state(graphql_schema);
+
     info!("Generated Open API spec");
     generate_open_api_spec_from_open_api(api_spec, "open_api_spec.json")
         .expect("Failed to generate open API spec");
 
     return attach_tracing_cors_middleware(router);
+}
+
+#[cfg(debug_assertions)]
+/// Graphql playground
+#[instrument(skip_all)]
+#[utoipa::path(get, path = "/graphql")]
+pub async fn graphql_playground() -> impl IntoResponse {
+    use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+    use axum::response::Html;
+
+    Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
+}
+
+/// Handler for graphql requests
+#[instrument(skip_all)]
+#[utoipa::path(post, path = "/graphql")]
+async fn graphql_handler(State(schema): State<SchemaType>, req: GraphQLRequest) -> GraphQLResponse {
+    let req = req.into_inner();
+    schema.execute(req).await.into()
 }
 
 /// Get the budget information for a specific month

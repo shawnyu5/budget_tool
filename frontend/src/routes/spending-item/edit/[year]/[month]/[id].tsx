@@ -9,7 +9,7 @@ import {
 } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
 import { SpendingItemForm } from "~/components/spendingItemForm";
-import { loadConfig } from "~/config";
+import { loadLocalConfig } from "~/config";
 import log from "~/logger";
 import { SpendingItem } from "~/server";
 
@@ -31,7 +31,7 @@ export default function () {
   onMount(async () => {
     try {
       const res = await axios.get<SpendingItem>(
-        `${loadConfig().backendUrl}/spending-item/${year}/${month}/${spendingItem()?.id}`,
+        `${loadLocalConfig().backendUrl}/spending-item/${year}/${month}/${spendingItem()?.id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -65,7 +65,7 @@ export default function () {
 
     try {
       await axios.post(
-        `${loadConfig().backendUrl}/spending-item/${year}/${month}/${spendingItem()?.id}`,
+        `${loadLocalConfig().backendUrl}/spending-item/${year}/${month}/${spendingItem()?.id}`,
         updatedSpendingItem,
         {
           headers: {

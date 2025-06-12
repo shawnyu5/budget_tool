@@ -20,6 +20,7 @@ import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import NavBar from "~/components/navBar";
 import axios from "axios";
+import NotificationButton from "~/components/NotificationButton";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -159,6 +160,8 @@ export default function Home() {
             monthlyBudget={monthlyBudgetResource}
             setMonthlyBudget={syncMonthlyBudgetWithServer}
           />
+
+          <NotificationButton />
         </Suspense>
       </ErrorBoundary>
     </main>

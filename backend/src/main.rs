@@ -2,13 +2,16 @@
 mod config;
 mod custom_middleware;
 mod db;
+mod graphql;
 mod month;
 mod monthly_budget;
 mod routes;
 mod utils;
+mod web_notifications;
 
+use crate::web_notifications::send_push;
 use anyhow::Result;
-use common_axum::axum::{axum_serve, generate_open_api_spec, init_tracing_subcriber};
+use common_axum::axum::{axum_serve, init_tracing_subcriber};
 use config::Config;
 use routes::app;
 use tokio::net::TcpListener;
@@ -21,6 +24,7 @@ async fn main() -> Result<()> {
     // Attempt to load config. If it fails, dont bother starting the server
     Config::load();
 
+    // send_push().await.unwrap();
     let addr = "0.0.0.0:8000";
     let listener = TcpListener::bind(addr).await.unwrap();
     info!("Listening on {}", addr);

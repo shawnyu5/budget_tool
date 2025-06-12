@@ -72,6 +72,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/graphql": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Handler for graphql requests */
+        post: operations["graphql_handler"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/basic": {
         parameters: {
             query?: never;
@@ -82,6 +99,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["basic_auth_handler"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notification/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["send_notification_handler"];
         delete?: never;
         options?: never;
         head?: never;
@@ -161,6 +194,15 @@ export interface components {
              * @description Total spending for the month. Including any over budget amount
              */
             totalSpending: number;
+        };
+        NotificationKeys: {
+            auth: string;
+            p256dh: string;
+        };
+        NotificationSendBody: {
+            endpoint: string;
+            expirationTime?: string | null;
+            keys: components["schemas"]["NotificationKeys"];
         };
         /** @description A single transaction */
         SpendingItem: {
@@ -425,6 +467,16 @@ export interface operations {
             };
         };
     };
+    graphql_handler: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: never;
+    };
     basic_auth_handler: {
         parameters: {
             query?: never;
@@ -462,6 +514,20 @@ export interface operations {
                 };
             };
         };
+    };
+    send_notification_handler: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationSendBody"];
+            };
+        };
+        responses: never;
     };
     get_spending_item: {
         parameters: {

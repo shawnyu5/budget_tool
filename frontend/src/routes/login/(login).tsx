@@ -2,6 +2,7 @@ import { action, redirect } from "@solidjs/router";
 import axios from "axios";
 import { createSignal, onMount } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
+import { loadServerConfig } from "~/config";
 import log from "~/logger";
 import { basicAuthLogin, validateJTWToken } from "~/server";
 

@@ -275,6 +275,13 @@
         }
       }
     },
+    "/graphql": {
+      "post": {
+        "summary": "Handler for graphql requests",
+        "operationId": "graphql_handler",
+        "responses": {}
+      }
+    },
     "/login/basic": {
       "post": {
         "operationId": "basic_auth_handler",
@@ -310,6 +317,22 @@
             }
           }
         }
+      }
+    },
+    "/notification/send": {
+      "post": {
+        "operationId": "send_notification_handler",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationSendBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {}
       }
     },
     "/spending-item/{year}/{month}/{id}": {
@@ -581,6 +604,42 @@
             "type": "number",
             "format": "double",
             "description": "Total spending for the month. Including any over budget amount"
+          }
+        }
+      },
+      "NotificationKeys": {
+        "type": "object",
+        "required": [
+          "p256dh",
+          "auth"
+        ],
+        "properties": {
+          "auth": {
+            "type": "string"
+          },
+          "p256dh": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationSendBody": {
+        "type": "object",
+        "required": [
+          "endpoint",
+          "keys"
+        ],
+        "properties": {
+          "endpoint": {
+            "type": "string"
+          },
+          "expirationTime": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "keys": {
+            "$ref": "#/components/schemas/NotificationKeys"
           }
         }
       },

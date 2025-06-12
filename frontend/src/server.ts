@@ -4,12 +4,11 @@
  */
 import axios, { AxiosResponse } from "axios";
 import { paths } from "./backend_schema";
-import { loadConfig } from "./config";
+import { loadLocalConfig } from "./config";
 import log from "./logger";
 import { useNavigate } from "@solidjs/router";
 import { getLocalAuthToken, setLocalAuthToken } from "./utils";
 import axiosRetry from "axios-retry";
-import Month from "./routes/spending-item/add/[year]/[month]";
 
 axiosRetry(axios, {
   retries: 4,
@@ -57,7 +56,7 @@ export async function getMonthlyBudget(
 ): Promise<MonthlyBudget> {
   try {
     const response: AxiosResponse<MonthlyBudget> = await axios.get(
-      `${loadConfig().backendUrl}/budget/${year}/${month}`,
+      `${loadLocalConfig().backendUrl}/budget/${year}/${month}`,
       {
         headers: {
           Authorization: `Bearer ${getLocalAuthToken()}`,
@@ -93,7 +92,7 @@ export async function updateMonthlyBudget(
 ) {
   try {
     await axios.post(
-      `${loadConfig().backendUrl}/budget/${year}/${month}`,
+      `${loadLocalConfig().backendUrl}/budget/${year}/${month}`,
       monthlyBudget,
       {
         headers: {
@@ -134,7 +133,7 @@ export async function validateJTWToken() {
   const navigate = useNavigate();
   try {
     const response = await axios.get(
-      `${loadConfig().backendUrl}/auth/validate-token`,
+      `${loadLocalConfig().backendUrl}/auth/validate-token`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -159,7 +158,7 @@ export async function basicAuthLogin(userName: string, password: string) {
   const base64Encoded = btoa(`${userName}:${password}`);
   try {
     const response = await axios.post(
-      `${loadConfig().backendUrl}/login/basic`,
+      `${loadLocalConfig().backendUrl}/login/basic`,
       {},
       {
         headers: {
@@ -192,7 +191,7 @@ export function calculateTotalSpending(monthlyBudget: MonthlyBudget): number {
 
 export async function exportCSV(year: string, month: string): Promise<string> {
   const response = await axios.get(
-    `${loadConfig().backendUrl}/export/${year}/${month}/csv`,
+    `${loadLocalConfig().backendUrl}/export/${year}/${month}/csv`,
     {
       headers: {
         Authorization: `Bearer ${getLocalAuthToken()}`,

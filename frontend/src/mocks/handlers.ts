@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import { loadConfig } from "../config";
+import { loadLocalConfig } from "../config";
 import { MonthlyBudget } from "~/server";
 import { generateSpendingItemID, monthNumberToName } from "~/utils";
 import { components } from "~/backend_schema";
@@ -7,18 +7,18 @@ import { components } from "~/backend_schema";
 const date = new Date();
 
 export const handlers = [
-  http.get(`${loadConfig().backendUrl}/`, () => {
+  http.get(`${loadLocalConfig().backendUrl}/`, () => {
     // ...and respond to them using this JSON response.
     return HttpResponse.json({
       version: "1.0.0",
     });
   }),
-  http.post(`${loadConfig().backendUrl}/login/basic`, () => {
+  http.post(`${loadLocalConfig().backendUrl}/login/basic`, () => {
     return HttpResponse.text("Authenicated");
   }),
   // This route will return data that is on budget
   http.get(
-    `${loadConfig().backendUrl}/budget/${date.getFullYear()}/${monthNumberToName(date.getMonth() + 1)}`,
+    `${loadLocalConfig().backendUrl}/budget/${date.getFullYear()}/${monthNumberToName(date.getMonth() + 1)}`,
     () => {
       const budget: MonthlyBudget = {
         month: monthNumberToName(

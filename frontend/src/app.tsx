@@ -4,6 +4,11 @@ import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 
 export default function App() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js").then(() => {
+      console.log("Service Worker registered");
+    });
+  }
   return (
     <Router
       root={(props) => (
@@ -26,3 +31,4 @@ export default function App() {
     </Router>
   );
 }
+
