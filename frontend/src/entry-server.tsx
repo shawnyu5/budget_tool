@@ -21,6 +21,10 @@ export default createHandler(() => (
              // Set IOS app icon
           }
           <link rel="apple-touch-icon" href="/logo.jpeg"></link>
+          {
+             // TODO: this startup image doesnt seem to show up for some reason
+          }
+          <link rel="apple-touch-startup-image" href="/logo.jpeg"></link>
           <link rel="icon" href="/favicon.ico" />
           {assets}
         </head>
