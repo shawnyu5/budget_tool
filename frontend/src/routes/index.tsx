@@ -4,6 +4,7 @@ import {
   createResource,
   createSignal,
   ErrorBoundary,
+  Show,
   Suspense,
 } from "solid-js";
 import MonthlySpending from "~/components/monthlySpending";
@@ -149,7 +150,10 @@ export default function Home() {
     <main>
       <ErrorBoundary fallback={<p>Failed to load budget</p>}>
         <Suspense fallback={<p>Loading...</p>}>
-          <span class="inline-flex-container">
+          <span class="flex flex-col">
+            <Show when={Notification.permission === "denied"}>
+              <ErrorComponent message="This app needs to send notifications! Some functionality may not work properly without this permission" />
+            </Show>
             <NavBar />
           </span>
           <ErrorComponent message={errorMessage()} />

@@ -5,10 +5,13 @@ import { onMount, Suspense } from "solid-js";
 
 export default function App() {
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/sw.js").then(() => {
-      console.log("Service Worker registered");
+    navigator.serviceWorker.getRegistration("/sw.js").then((reg) => {
+      reg?.unregister().then(() => {
+        navigator.serviceWorker.register("/sw.js");
+      });
     });
   }
+
   onMount(() => {
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
       console.error("Push notifications are not supported. Ignore this...");
