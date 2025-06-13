@@ -8,6 +8,7 @@ export default function NotificationButton() {
   const [serverConfig] = createResource(loadServerConfig);
 
   async function requestPushPermission() {
+    console.log("HIII");
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
       alert("Push notifications are not supported.");
       return;

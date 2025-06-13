@@ -45,7 +45,7 @@ impl Config {
             database_name: env::var("db_name").unwrap_or("budget_tool".to_string()),
             private_key: env::var("private_key")
                 .expect("Missing `private_key` env var, used for JWT signing"),
-            public_key: env::var("public_key").expect("Missing public key"),
+            public_key: env::var("public_key").expect("Missing public_key"),
             basic_auth: basic_auth_vec,
             vapid_public_key: env::var("vapid_public_key")
                 .expect("Missing vapid_public_key env var. Used for client notification signing"),

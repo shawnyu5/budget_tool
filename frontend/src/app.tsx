@@ -8,6 +8,7 @@ export default function App() {
     navigator.serviceWorker.getRegistration("/sw.js").then((reg) => {
       reg?.unregister().then(() => {
         navigator.serviceWorker.register("/sw.js");
+        console.log("Service worker registered");
       });
     });
   }
