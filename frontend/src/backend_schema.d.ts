@@ -114,6 +114,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** Send a notification */
         post: operations["send_notification_handler"];
         delete?: never;
         options?: never;
@@ -203,17 +204,17 @@ export interface components {
             auth: string;
             p256dh: string;
         };
-        /** @description Stuff the browser sends to do the notification handshake */
-        NotificationMetaData: {
-            endpoint: string;
-            expirationTime?: string | null;
-            keys: components["schemas"]["NotificationKeys"];
-        };
         NotificationSendBody: {
             /** @description The body of the notification */
             body: components["schemas"]["NotificationBody"];
             /** @description Data sent by the browser to do the handshake for the notification */
-            metaData: components["schemas"]["NotificationMetaData"];
+            subscription: components["schemas"]["NotificationSubscription"];
+        };
+        /** @description Stuff the browser sends to do the notification handshake */
+        NotificationSubscription: {
+            endpoint: string;
+            expirationTime?: string | null;
+            keys: components["schemas"]["NotificationKeys"];
         };
         /** @description A single transaction */
         SpendingItem: {

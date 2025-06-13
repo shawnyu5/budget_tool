@@ -321,6 +321,7 @@
     },
     "/notification/send": {
       "post": {
+        "summary": "Send a notification",
         "operationId": "send_notification_handler",
         "requestBody": {
           "content": {
@@ -637,7 +638,24 @@
           }
         }
       },
-      "NotificationMetaData": {
+      "NotificationSendBody": {
+        "type": "object",
+        "required": [
+          "subscription",
+          "body"
+        ],
+        "properties": {
+          "body": {
+            "$ref": "#/components/schemas/NotificationBody",
+            "description": "The body of the notification"
+          },
+          "subscription": {
+            "$ref": "#/components/schemas/NotificationSubscription",
+            "description": "Data sent by the browser to do the handshake for the notification"
+          }
+        }
+      },
+      "NotificationSubscription": {
         "type": "object",
         "description": "Stuff the browser sends to do the notification handshake",
         "required": [
@@ -656,23 +674,6 @@
           },
           "keys": {
             "$ref": "#/components/schemas/NotificationKeys"
-          }
-        }
-      },
-      "NotificationSendBody": {
-        "type": "object",
-        "required": [
-          "metaData",
-          "body"
-        ],
-        "properties": {
-          "body": {
-            "$ref": "#/components/schemas/NotificationBody",
-            "description": "The body of the notification"
-          },
-          "metaData": {
-            "$ref": "#/components/schemas/NotificationMetaData",
-            "description": "Data sent by the browser to do the handshake for the notification"
           }
         }
       },

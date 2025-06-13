@@ -29,8 +29,7 @@ export default function NotificationButton() {
 
       console.log(JSON.stringify(subscription, null, 3));
       const body: RequestBody = {
-        // @ts-ignore
-        metaData: subscription.toJSON(),
+        subscription: subscription.toJSON(),
         body: {
           title: "HIIII",
           body: "HELLOOOO",

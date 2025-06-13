@@ -10,7 +10,7 @@ use web_push::*;
 #[serde(rename_all = "camelCase")]
 pub struct NotificationSendBody {
     /// Data sent by the browser to do the handshake for the notification
-    pub meta_data: NotificationMetaData,
+    pub subscription: NotificationSubscription,
     /// The body of the notification
     pub body: NotificationBody,
 }
@@ -23,7 +23,7 @@ pub struct NotificationBody {
 /// Stuff the browser sends to do the notification handshake
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct NotificationMetaData {
+pub struct NotificationSubscription {
     pub endpoint: String,
     pub expiration_time: Option<String>,
     pub keys: NotificationKeys,
@@ -35,13 +35,15 @@ pub struct NotificationKeys {
     pub auth: String,
 }
 
+// #[utoipa::path(post, path = "/notification/save-subscription")]
+/// Send a notification
 #[utoipa::path(post, path = "/notification/send", request_body (
     content = NotificationSendBody, content_type = "application/json",
 ) )]
 pub async fn send_notification_handler(body: Json<NotificationSendBody>) -> Result<(), AppError> {
-    let endpoint = &body.meta_data.endpoint;
-    let p256dh = &body.meta_data.keys.p256dh;
-    let auth = &body.meta_data.keys.auth;
+    let endpoint = &body.subscription.endpoint;
+    let p256dh = &body.subscription.keys.p256dh;
+    let auth = &body.subscription.keys.auth;
 
     let subscription_info = SubscriptionInfo::new(endpoint, p256dh, auth);
     let sig_builder =
