@@ -15,11 +15,11 @@ export default function App() {
         .getRegistration("/sw.js")
         .then(async (reg) => {
           if (reg) {
+             console.log("Found previous registered service worker. Unregistering first");
             await reg.unregister();
-             console.log("unregister, then registering");
              return await navigator.serviceWorker.register("/sw.js");
           } else {
-            console.log("Registered");
+            console.log("Registering service worker");
             // No existing service worker, just register new one
             return navigator.serviceWorker.register("/sw.js");
           }

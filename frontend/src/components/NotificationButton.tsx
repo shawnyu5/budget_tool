@@ -29,6 +29,7 @@ export default function NotificationButton() {
 
       console.log(JSON.stringify(subscription, null, 3));
       const body: RequestBody = {
+        // @ts-ignore
         metaData: subscription.toJSON(),
         body: {
           title: "HIIII",
@@ -48,6 +49,9 @@ export default function NotificationButton() {
     }
   }
 
+  // TODO: there should be a button or smth in settings, that shows the status of notification - enabled / disabled
+  // If enabled, option to disable it
+  // If disabled, option to enable, and prompt user for permission to send notifications
   return (
     <button
       onClick={requestPushPermission}

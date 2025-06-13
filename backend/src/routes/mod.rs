@@ -4,25 +4,19 @@ use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use axum::body;
 use axum::extract::State;
-use axum::http::{HeaderMap, StatusCode};
+use axum::http::StatusCode;
 use axum::middleware;
 use axum::response::IntoResponse;
 use axum::{extract::Path, Json, Router};
-use base64::prelude::BASE64_STANDARD;
-use base64::Engine;
 use chrono::NaiveDate;
-use chrono::{DateTime, Duration, Local, Utc};
+use chrono::{DateTime, Local, Utc};
 use common_axum::app_error_v2::AppError;
 use common_axum::axum::generate_open_api_spec_from_open_api;
 use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
-use hmac::digest::KeyInit;
-use hmac::Hmac;
-use jwt::SignWithKey;
 use mongodb::bson::doc;
 use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use sha2::Sha256;
 use simd_json::from_slice;
 use tracing::debug;
 use tracing::error;
@@ -32,16 +26,18 @@ use tracing::warn;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::config::Config;
 use crate::custom_middleware::{check_auth_header, check_valid_year};
 use crate::db::DBError;
 use crate::graphql::generate_graphql_schema;
 use crate::graphql::SchemaType;
 use crate::monthly_budget::MonthlyBudget;
 use crate::monthly_budget::SpendingItem;
+use crate::routes::auth::{__path_basic_auth_handler, basic_auth_handler};
+use crate::routes::notification::{__path_send_notification_handler, send_notification_handler};
 use crate::utils::calculate_percentage;
-use crate::web_notifications::{__path_send_notification_handler, send_notification_handler};
 use crate::{db::DB, month::Month};
+mod auth;
+mod notification;
 
 pub fn app() -> Router {
     let graphql_schema = generate_graphql_schema().expect("Failed to generate graphql schema");
@@ -188,8 +184,10 @@ async fn update_budget_handler(
     return Ok(());
 }
 
+/// Contents of the JWT token
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JwtAccessToken {
+    /// Username
     pub user: String,
     pub expire: DateTime<Utc>,
 }
@@ -200,69 +198,6 @@ pub struct JwtAccessToken {
 //     expire: DateTime<Utc>,
 //     token_id: String,
 // }
-
-#[instrument(skip_all)]
-#[utoipa::path(post,
-    path = "/login/basic",
-    responses(
-        (status = 200, description = "Login successful. Returns a JWT token", body = String),
-        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
-        (status = 403, description = "Authenication failed", body = String),
-    )
-)]
-async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> {
-    let config = Config::load();
-    // The base64 decoded user
-    let user = match headers.get("authorization") {
-        Some(user) => {
-            let auth_header_str = user
-                .to_str()
-                .context("Failed to convert auth header to string")?;
-            let auth_user = auth_header_str.replace("Basic ", "");
-            info!("base64 decoding user from auth header: {:?}", auth_user);
-
-            let decoded_auth_user = BASE64_STANDARD
-                .decode(auth_user)
-                .context("Failed to decode user from auth header")?;
-            let decoded_auth_user = String::from_utf8(decoded_auth_user)
-                .context("Failed to convert auth header to string")?;
-
-            let user: Vec<&String> = config
-                .basic_auth
-                .par_iter()
-                .filter(|s| *s == &decoded_auth_user)
-                .collect();
-            if user.is_empty() {
-                return Err(AppError(
-                    StatusCode::FORBIDDEN,
-                    anyhow!("User does not have access"),
-                ));
-            }
-            assert!(
-                user.len() == 1,
-                "There should be only one user that matched the authorizatio header. Something is wrong if there are multiple..."
-            );
-
-            user[0]
-        }
-        None => {
-            return Err(AppError(
-                StatusCode::FORBIDDEN,
-                anyhow!("Missing authorization headers"),
-            ))
-        }
-    };
-
-    // Create a JWT for user
-    let key: Hmac<Sha256> = Hmac::new_from_slice(&Config::load().private_key.into_bytes())?;
-    let claim = JwtAccessToken {
-        user: user.to_string(),
-        expire: (Local::now() + Duration::hours(24)).into(),
-    };
-    let token_str = claim.sign_with_key(&key)?;
-
-    return Ok(token_str);
-}
 
 /// Search for a spending item by time and ID
 #[instrument(skip_all)]

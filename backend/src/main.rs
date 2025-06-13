@@ -7,7 +7,6 @@ mod month;
 mod monthly_budget;
 mod routes;
 mod utils;
-mod web_notifications;
 
 use anyhow::Result;
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
