@@ -7,10 +7,18 @@ export default function App() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistration("/sw.js").then((reg) => {
       reg?.unregister().then(() => {
-        navigator.serviceWorker.register("/sw.js");
-        console.log("Service worker registered");
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then((reg) =>
+            console.log("Service Worker registered at scope:", reg.scope),
+          )
+          .catch((err) =>
+            console.error("Service Worker registration failed:", err),
+          );
       });
     });
+  } else {
+    console.warn("Service worker not supported");
   }
 
   onMount(() => {
