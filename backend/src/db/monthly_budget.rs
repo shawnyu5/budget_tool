@@ -1,26 +1,22 @@
 //! Module for DB related operations
 
 use anyhow::{Context, Result};
-use mongodb::{bson::doc, Client, Collection};
-use thiserror::Error;
+use mongodb::{bson::doc, Client};
+use serde::de::DeserializeOwned;
 use tracing::{debug, error, info};
 
 use crate::{
     config::Config,
+    db::{DBError, DB},
     month::{Month, MonthError},
     monthly_budget::MonthlyBudget,
 };
 
-impl DB {
+impl<T: std::marker::Send + std::marker::Sync + DeserializeOwned> DB<T> {
     /// Creates a new db connection
     ///
-    /// * `year`: the year to get budget of
-    pub async fn new(year: String) -> Result<Self> {
-        if year.len() != 4 {
-            error!("Year too long. Invalid year");
-            return Err(DBError::InvalidYear.into());
-        }
-
+    /// * `name`: name of the collection to connect to
+    pub async fn new(name: &str) -> Result<Self> {
         let client = Client::with_uri_str(Config::load().db_connection_string)
             .await
             .context("Failed to construct DB client")?;
@@ -34,12 +30,14 @@ impl DB {
 
         let collection = client
             .database(&Config::load().database_name)
-            .collection::<MonthlyBudget>(&year);
-        debug!("Setting collection to db budget_tool, in collection {year}");
+            .collection::<T>(name);
+        debug!("Setting collection to db budget_tool, in collection {name}");
 
         return Ok(Self { client, collection });
     }
+}
 
+impl DB<MonthlyBudget> {
     /// Get the budget information for a selected month
     ///
     /// * `month`: the month to get budget for
@@ -122,26 +120,23 @@ impl DB {
         }
     }
 }
-#[derive(Error, Debug)]
-pub enum DBError {
-    /// There are no budget information found for the current budgeting period
-    #[error("Budget not found")]
-    BudgetNotFound,
-    /// DB related errors
-    // #[error("Database related erorrs: {0}")]
-    // DB(#[from] mongodb::error::Error),
-    /// Input is an invalid year
-    #[error("Invalid year")]
-    InvalidYear,
-    /// Generic error
-    #[error("Database related error: {0}")]
-    DB(#[from] anyhow::Error),
-}
-/// Interface for database operations
-pub struct DB {
-    /// The DB client
-    // TODO: consider removing this
-    client: Client,
-    /// The current collection of the current year to operate on
-    pub collection: Collection<MonthlyBudget>,
-}
+
+// pub async fn get_user(&self, username: &str) -> Result<(), DBError> {
+//     let collection = self.collection.clone();
+//     match collection
+//         .find_one(doc! {
+//             "user":username,
+//         })
+//         .await
+//         .context("Failed to perform db query")?
+//     {
+//         Some(user) => {
+//             // return Ok(user)
+//             dbg!(&user);
+//             return Ok(());
+//         }
+//         None => Err(DBError::DB(anyhow!("Failed to look for user"))),
+//     }
+
+//     return Ok(());
+// }

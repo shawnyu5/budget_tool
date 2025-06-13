@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::{config::Config, db::DB, monthly_budget::MonthlyBudget};
 use anyhow::{Context, Result};
 use axum::Json;
 use common_axum::app_error_v2::AppError;
@@ -35,7 +35,13 @@ pub struct NotificationKeys {
     pub auth: String,
 }
 
-// #[utoipa::path(post, path = "/notification/save-subscription")]
+#[utoipa::path(post, path = "/notification/save-subscription")]
+pub async fn save_notification_subscription_handler() {
+    let db = DB::<MonthlyBudget>::new("users")
+        .await
+        .context("Failed to connect to DB");
+}
+
 /// Send a notification
 #[utoipa::path(post, path = "/notification/send", request_body (
     content = NotificationSendBody, content_type = "application/json",

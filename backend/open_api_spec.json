@@ -319,6 +319,12 @@
         }
       }
     },
+    "/notification/save-subscription": {
+      "post": {
+        "operationId": "save_notification_subscription_handler",
+        "responses": {}
+      }
+    },
     "/notification/send": {
       "post": {
         "summary": "Send a notification",

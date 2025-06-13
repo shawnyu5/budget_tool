@@ -33,6 +33,9 @@ use crate::graphql::SchemaType;
 use crate::monthly_budget::MonthlyBudget;
 use crate::monthly_budget::SpendingItem;
 use crate::routes::auth::{__path_basic_auth_handler, basic_auth_handler};
+use crate::routes::notification::{
+    __path_save_notification_subscription_handler, save_notification_subscription_handler,
+};
 use crate::routes::notification::{__path_send_notification_handler, send_notification_handler};
 use crate::utils::calculate_percentage;
 use crate::{db::DB, month::Month};
@@ -55,6 +58,7 @@ pub fn app() -> Router {
         .routes(routes!(graphql_handler))
         .routes(routes!(basic_auth_handler))
         .routes(routes!(send_notification_handler))
+        .routes(routes!(save_notification_subscription_handler))
         .routes(routes!(app_version))
         .split_for_parts();
 
@@ -118,7 +122,7 @@ async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
     info!("Connecting to DB");
-    let db = match DB::new(year).await {
+    let db = match DB::new(&year).await {
         Ok(db) => db,
         Err(e) => {
             error!("Error: {}", e);
@@ -164,7 +168,7 @@ async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(mut body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
-    let db = DB::new(year)
+    let db = DB::new(&year)
         .await
         .context("Failed to connect to database")?;
     body.update_calculations();
@@ -219,7 +223,7 @@ pub struct JwtAccessToken {
 async fn get_spending_item(
     Path((year, month, id)): Path<(String, Month, String)>,
 ) -> Result<Json<Option<SpendingItem>>, AppError> {
-    let db = DB::new(year)
+    let db = DB::<MonthlyBudget>::new(&year)
         .await
         .context("Failed to connect to database")?;
 
@@ -286,7 +290,7 @@ async fn update_spending_item(
     Path((year, month, id)): Path<(String, Month, String)>,
     Json(spending_item): Json<SpendingItem>,
 ) -> Result<(), AppError> {
-    let db = DB::new(year)
+    let db = DB::new(&year)
         .await
         .context("Failed to connect to database")?;
 
