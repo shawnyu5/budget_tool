@@ -43,7 +43,6 @@ export async function loadServerConfig(): Promise<ServerConfig> {
   const sdk = getSdk(client);
   const { config } = await sdk.getConfig();
   const result = ServerConfigSchema.safeParse(config);
-  console.log(JSON.stringify(result.data, null, 3))
   if (!result.success) {
     return Promise.reject(
       `Failed to load config from server: ${result.error.message}`,

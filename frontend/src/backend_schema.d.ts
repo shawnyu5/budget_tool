@@ -195,14 +195,25 @@ export interface components {
              */
             totalSpending: number;
         };
+        NotificationBody: {
+            body: string;
+            title: string;
+        };
         NotificationKeys: {
             auth: string;
             p256dh: string;
         };
-        NotificationSendBody: {
+        /** @description Stuff the browser sends to do the notification handshake */
+        NotificationMetaData: {
             endpoint: string;
             expirationTime?: string | null;
             keys: components["schemas"]["NotificationKeys"];
+        };
+        NotificationSendBody: {
+            /** @description The body of the notification */
+            body: components["schemas"]["NotificationBody"];
+            /** @description Data sent by the browser to do the handshake for the notification */
+            metaData: components["schemas"]["NotificationMetaData"];
         };
         /** @description A single transaction */
         SpendingItem: {

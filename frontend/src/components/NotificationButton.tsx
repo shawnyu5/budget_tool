@@ -26,10 +26,22 @@ export default function NotificationButton() {
       type RequestBody =
         paths["/notification/send"]["post"]["requestBody"]["content"]["application/json"];
 
+      console.log(JSON.stringify(subscription, null, 3));
+      const body: RequestBody = {
+        metaData: subscription.toJSON(),
+        body: {
+          title: "HIIII",
+          body: "HELLOOOO",
+        },
+      };
       await axios.post<RequestBody>(
         `${loadLocalConfig().backendUrl}/notification/send`,
-        subscription,
+        body,
       );
+      // await axios.post<RequestBody>(
+      //   `${loadLocalConfig().backendUrl}/notification/send`,
+      //   subscription,
+      // );
     } else {
       console.warn("Permission denied for notifications.");
     }
