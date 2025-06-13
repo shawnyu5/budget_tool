@@ -4,27 +4,34 @@ import { FileRoutes } from "@solidjs/start/router";
 import { onMount, Suspense } from "solid-js";
 
 export default function App() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistration("/sw.js").then((reg) => {
-      reg?.unregister().then(() => {
-        navigator.serviceWorker
-          .register("/sw.js")
-          .then((reg) =>
-            console.log("Service Worker registered at scope:", reg.scope),
-          )
-          .catch((err) =>
-            console.error("Service Worker registration failed:", err),
-          );
-      });
-    });
-  } else {
-    console.warn("Service worker not supported");
-  }
-
   onMount(() => {
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
       console.error("Push notifications are not supported. Ignore this...");
       return;
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .getRegistration("/sw.js")
+        .then(async (reg) => {
+          if (reg) {
+            await reg.unregister();
+             console.log("unregister, then registering");
+             return await navigator.serviceWorker.register("/sw.js");
+          } else {
+            console.log("Registered");
+            // No existing service worker, just register new one
+            return navigator.serviceWorker.register("/sw.js");
+          }
+        })
+        .then((reg) => {
+          console.log("Service Worker registered at scope:", reg.scope);
+        })
+        .catch((err) => {
+          console.error("Service Worker registration failed:", err);
+        });
+    } else {
+      console.warn("Service worker not supported");
     }
 
     console.log(`Notification permission: ${Notification.permission}`);
