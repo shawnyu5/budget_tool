@@ -1,15 +1,19 @@
-use anyhow::{anyhow, Context};
+use anyhow::Result;
+use anyhow::{Context, anyhow};
+use axum::extract::FromRequestParts;
+use axum::http::request::Parts;
 use axum::http::{HeaderMap, StatusCode};
 use base64::prelude::*;
-use chrono::{Duration, Local};
+use chrono::{Duration, Local, Utc};
 use common_axum::app_error_v2::AppError;
-use hmac::{digest::KeyInit, Hmac};
+use hmac::{Hmac, digest::KeyInit};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use jwt::SignWithKey;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use sha2::Sha256;
-use tracing::{info, instrument};
+use tracing::{error, info, instrument};
 
-use crate::{config::Config, routes::JwtAccessToken};
+use crate::{config::Config, routes::JwtClaim};
 
 #[instrument(skip_all)]
 #[utoipa::path(post,
@@ -57,18 +61,68 @@ pub async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> 
             return Err(AppError(
                 StatusCode::FORBIDDEN,
                 anyhow!("Missing authorization headers"),
-            ))
+            ));
         }
     };
 
     let username = user.split(":").collect::<Vec<&str>>()[0].to_string();
-    // Create a JWT for user
-    let key: Hmac<Sha256> = Hmac::new_from_slice(&Config::load().private_key.into_bytes())?;
-    let claim = JwtAccessToken {
-        user: username,
-        expire: (Local::now() + Duration::hours(24)).into(),
+    let key = EncodingKey::from_secret(&Config::load().private_key.into_bytes());
+    let claim = JwtClaim {
+        username,
+        exp: ((Utc::now() + Duration::hours(24)).timestamp() as usize),
     };
-    let token_str = claim.sign_with_key(&key)?;
+    // dbg!(&claim);
+    let token = encode(&Header::default(), &claim, &key).unwrap();
+    return Ok(token);
+}
 
-    return Ok(token_str);
+pub fn decode_jwt(jwt: &str) -> Result<JwtClaim> {
+    let validation = Validation::new(jsonwebtoken::Algorithm::HS256);
+    let key = DecodingKey::from_secret(&Config::load().private_key.into_bytes());
+    let token_data = decode::<JwtClaim>(jwt, &key, &validation)?;
+    // dbg!(&token_data);
+
+    return Ok(token_data.claims);
+}
+
+impl<S> FromRequestParts<S> for JwtClaim
+where
+    S: Send + Sync,
+{
+    type Rejection = StatusCode;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let jwt_token = match parts.headers.get("authorization") {
+            Some(auth_header) => {
+                info!("Auth header: {:?}", auth_header);
+                let auth_header_str = auth_header
+                    .to_str()
+                    .context("Failed to convert authorization header to string")
+                    .unwrap();
+
+                if !auth_header_str.contains("Bearer") {
+                    return Err(StatusCode::FORBIDDEN);
+                }
+                auth_header_str.replace("Bearer ", "")
+            }
+            None => {
+                error!("Missing auth header");
+                return Err(StatusCode::FORBIDDEN);
+            }
+        };
+
+        let claim = match decode_jwt(&jwt_token) {
+            Ok(e) => e,
+            Err(e) => {
+                error!("Failed to verify JWT token: {e}");
+                return Err(StatusCode::FORBIDDEN);
+            }
+        };
+
+        return Ok(claim);
+        // parts.extensions.get::<JwtClaim>().cloned().ok_or_else(|| {
+        //     error!("Failed to exract JWT");
+        //     StatusCode::UNAUTHORIZED
+        // })
+    }
 }
