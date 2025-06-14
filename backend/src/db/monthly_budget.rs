@@ -12,31 +12,6 @@ use crate::{
     monthly_budget::MonthlyBudget,
 };
 
-impl<T: std::marker::Send + std::marker::Sync + DeserializeOwned> DB<T> {
-    /// Creates a new db connection
-    ///
-    /// * `name`: name of the collection to connect to
-    pub async fn new(name: &str) -> Result<Self> {
-        let client = Client::with_uri_str(Config::load().db_connection_string)
-            .await
-            .context("Failed to construct DB client")?;
-        debug!("Attempting to ping db after initializing connection");
-        client
-            .database(&Config::load().database_name)
-            .run_command(doc! { "ping": 1 })
-            .await
-            .context("Failed to ping db")?;
-        debug!("Pinging successful");
-
-        let collection = client
-            .database(&Config::load().database_name)
-            .collection::<T>(name);
-        debug!("Setting collection to db budget_tool, in collection {name}");
-
-        return Ok(Self { client, collection });
-    }
-}
-
 impl DB<MonthlyBudget> {
     /// Get the budget information for a selected month
     ///

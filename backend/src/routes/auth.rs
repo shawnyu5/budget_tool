@@ -4,13 +4,10 @@ use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::{HeaderMap, StatusCode};
 use base64::prelude::*;
-use chrono::{Duration, Local, Utc};
+use chrono::{Duration, Utc};
 use common_axum::app_error_v2::AppError;
-use hmac::{Hmac, digest::KeyInit};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use jwt::SignWithKey;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use sha2::Sha256;
 use tracing::{error, info, instrument};
 
 use crate::{config::Config, routes::JwtClaim};

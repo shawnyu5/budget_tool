@@ -1,5 +1,5 @@
-use anyhow::anyhow;
 use anyhow::Context;
+use anyhow::anyhow;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use axum::body;
@@ -7,7 +7,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::middleware;
 use axum::response::IntoResponse;
-use axum::{extract::Path, Json, Router};
+use axum::{Json, Router, extract::Path};
 use chrono::NaiveDate;
 use chrono::{DateTime, Local, Utc};
 use common_axum::app_error_v2::AppError;
@@ -28,8 +28,8 @@ use utoipa_axum::routes;
 
 use crate::custom_middleware::{check_auth_header, check_valid_year};
 use crate::db::DBError;
-use crate::graphql::generate_graphql_schema;
 use crate::graphql::SchemaType;
+use crate::graphql::generate_graphql_schema;
 use crate::monthly_budget::MonthlyBudget;
 use crate::monthly_budget::SpendingItem;
 use crate::routes::auth::{__path_basic_auth_handler, basic_auth_handler};
@@ -39,8 +39,8 @@ use crate::routes::notification::{
 use crate::routes::notification::{__path_send_notification_handler, send_notification_handler};
 use crate::utils::calculate_percentage;
 use crate::{db::DB, month::Month};
-mod auth;
-mod notification;
+pub mod auth;
+pub mod notification;
 
 pub fn app() -> Router {
     let graphql_schema = generate_graphql_schema().expect("Failed to generate graphql schema");
@@ -87,7 +87,7 @@ pub fn app() -> Router {
 #[instrument(skip_all)]
 #[utoipa::path(get, path = "/graphql")]
 pub async fn graphql_playground() -> impl IntoResponse {
-    use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+    use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
     use axum::response::Html;
 
     Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
@@ -119,8 +119,10 @@ async fn graphql_handler(State(schema): State<SchemaType>, req: GraphQLRequest) 
     )
 )]
 async fn get_month_budget_handler(
+    jwt: JwtClaim,
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
+    dbg!(&jwt);
     info!("Connecting to DB");
     let db = match DB::new(&year).await {
         Ok(db) => db,
@@ -189,11 +191,11 @@ async fn update_budget_handler(
 }
 
 /// Contents of the JWT token
-#[derive(Serialize, Deserialize, Debug)]
-pub struct JwtAccessToken {
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct JwtClaim {
     /// Username
-    pub user: String,
-    pub expire: DateTime<Utc>,
+    pub username: String,
+    pub exp: usize,
 }
 
 // TODO: implement an access / refresh token system later
@@ -406,9 +408,10 @@ async fn validate_token() -> &'static str {
     ),
 )]
 async fn export_csv_handler(
+    jwt: JwtClaim,
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<String, AppError> {
-    let monthly_budget = get_month_budget_handler(Path((year, month)))
+    let monthly_budget = get_month_budget_handler(jwt, Path((year, month)))
         .await?
         .into_response();
     let monthly_budget = body::to_bytes(monthly_budget.into_body(), usize::MAX)
