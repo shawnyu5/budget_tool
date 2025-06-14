@@ -1,9 +1,11 @@
 import { action, redirect } from "@solidjs/router";
 import axios from "axios";
 import { createSignal, onMount } from "solid-js";
+import { saveNotificationSubscriptionHandler } from "~/client/sdk.gen";
 import ErrorComponent from "~/components/errorComponent";
 import { loadServerConfig } from "~/config";
 import log from "~/logger";
+import { getNotificationSubscription } from "~/notification";
 import { basicAuthLogin, validateJTWToken } from "~/server";
 
 export default function Login() {
@@ -17,6 +19,20 @@ export default function Login() {
   const onSubmit = action(async (_data: FormData) => {
     try {
       await basicAuthLogin(userName(), password());
+      const subscription = await getNotificationSubscription();
+      if (subscription) {
+        console.log("Saving push notification subscription to backend");
+        await saveNotificationSubscriptionHandler({
+          body: {
+            endpoint: subscription.endpoint,
+            keys: {
+              auth: String(subscription.getKey("auth")),
+              p256dh: String(subscription.getKey("p256dh")),
+            },
+            expirationTime: subscription.expirationTime,
+          },
+        });
+      }
       return redirect("/");
     } catch (e) {
       log.error(`Failed to login: ${e}`);

@@ -1,3 +1,4 @@
+use crate::{month::Month, routes::auth::decode_jwt};
 use anyhow::{Context, anyhow};
 use axum::{
     extract::{Path, Request},
@@ -5,18 +6,8 @@ use axum::{
     middleware::Next,
     response::IntoResponse,
 };
-use chrono::Utc;
 use common_axum::app_error_v2::AppError;
-use hmac::{Hmac, digest::KeyInit};
-use jwt::VerifyWithKey;
-use sha2::Sha256;
 use tracing::{error, info};
-
-use crate::{
-    config::Config,
-    month::Month,
-    routes::{JwtClaim, auth::decode_jwt},
-};
 
 /// Checks the year in the path. Returns 400 if the year is invalid
 pub async fn check_valid_year(
