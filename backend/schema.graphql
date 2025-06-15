@@ -13,6 +13,10 @@ type FrontendConfig {
 }
 
 type MutationRoot {
+	"""
+	Save a notification subscription for a user
+	The user is extracted from the JWT
+	"""
 	saveSubscription(subscription: SubscriptionInput!): User!
 }
 

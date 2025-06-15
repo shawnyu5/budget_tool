@@ -28,6 +28,10 @@ export type FrontendConfig = {
 
 export type MutationRoot = {
   __typename?: 'MutationRoot';
+  /**
+   * Save a notification subscription for a user
+   * The user is extracted from the JWT
+   */
   saveSubscription: User;
 };
 
@@ -83,7 +87,7 @@ export type SaveSubscriptionMutationVariables = Exact<{
 }>;
 
 
-export type SaveSubscriptionMutation = { __typename?: 'MutationRoot', saveSubscription: { __typename?: 'User', username: string, notificationSubscription: { __typename?: 'NotificationSubscription', endpoint: string, expirationTime?: number | null, keys: { __typename?: 'NotificationKeys', p256Dh: string, auth: string } } } };
+export type SaveSubscriptionMutation = { __typename?: 'MutationRoot', saveSubscription: { __typename?: 'User', username: string } };
 
 
 export const GetConfigDocument = gql`
@@ -98,14 +102,6 @@ export const SaveSubscriptionDocument = gql`
     mutation saveSubscription($subscription: SubscriptionInput!) {
   saveSubscription(subscription: $subscription) {
     username
-    notificationSubscription {
-      endpoint
-      expirationTime
-      keys {
-        p256Dh
-        auth
-      }
-    }
   }
 }
     `;

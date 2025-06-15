@@ -4,9 +4,10 @@ use tracing::{info, instrument, warn};
 
 use crate::{
     db::{users::User, DB},
-    routes::JwtClaim,
+    routes::{notification::NotificationSubscription, JwtClaim},
 };
 
+/// Root of the Mutation
 #[derive(Default, Clone)]
 pub struct MutationRoot;
 
@@ -20,6 +21,8 @@ pub struct SubscriptionInput {
 
 #[Object]
 impl MutationRoot {
+    /// Save a notification subscription for a user
+    /// The user is extracted from the JWT
     #[instrument(skip_all)]
     async fn save_subscription(
         &self,

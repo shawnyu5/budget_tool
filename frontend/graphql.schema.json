@@ -84,7 +84,7 @@
         "fields": [
           {
             "name": "saveSubscription",
-            "description": null,
+            "description": "Save a notification subscription for a user\nThe user is extracted from the JWT",
             "args": [
               {
                 "name": "subscription",
