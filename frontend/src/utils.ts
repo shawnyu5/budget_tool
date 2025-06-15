@@ -82,3 +82,18 @@ export function calculatePercentageOf(
 export function round(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+/**
+ * Convert array buffer to base64
+ * @param buffer - an ArrayBuffer
+ * @returns base64 encoded `buffer`
+ */
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = "";
+  let bytes = new Uint8Array(buffer);
+  let len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}

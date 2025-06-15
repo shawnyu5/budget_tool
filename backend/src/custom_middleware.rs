@@ -1,5 +1,5 @@
 use crate::{month::Month, routes::auth::decode_jwt};
-use anyhow::{Context, anyhow};
+use anyhow::{anyhow, Context};
 use axum::{
     extract::{Path, Request},
     http::{HeaderMap, StatusCode},
@@ -7,7 +7,7 @@ use axum::{
     response::IntoResponse,
 };
 use common_axum::app_error_v2::AppError;
-use tracing::{error, info};
+use tracing::{error, info, instrument};
 
 /// Checks the year in the path. Returns 400 if the year is invalid
 pub async fn check_valid_year(
@@ -23,6 +23,7 @@ pub async fn check_valid_year(
 }
 
 /// checks for the JWT token in the authorization header, and ensures it is not expired. If it is, return 401 unauthorized
+#[instrument(skip_all)]
 pub async fn check_auth_header(
     header: HeaderMap,
     request: Request,
