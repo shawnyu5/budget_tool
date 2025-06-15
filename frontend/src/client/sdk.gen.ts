@@ -91,6 +91,9 @@ export const basicAuthHandler = <ThrowOnError extends boolean = false>(options?:
     });
 };
 
+/**
+ * @deprecated
+ */
 export const saveNotificationSubscriptionHandler = <ThrowOnError extends boolean = false>(options: Options<SaveNotificationSubscriptionHandlerData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<unknown, unknown, ThrowOnError>({
         url: '/notification/save-subscription',

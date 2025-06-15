@@ -114,6 +114,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @deprecated */
         post: operations["save_notification_subscription_handler"];
         delete?: never;
         options?: never;
@@ -229,7 +230,6 @@ export interface components {
         /** @description Stuff the browser sends to do the notification handshake */
         NotificationSubscription: {
             endpoint: string;
-            /** Format: int64 */
             expirationTime?: number | null;
             keys: components["schemas"]["NotificationKeys"];
         };

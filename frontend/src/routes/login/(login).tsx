@@ -4,9 +4,11 @@ import { createSignal, onMount } from "solid-js";
 import { saveNotificationSubscriptionHandler } from "~/client/sdk.gen";
 import ErrorComponent from "~/components/errorComponent";
 import { loadServerConfig } from "~/config";
+import { NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
 import { getNotificationSubscription } from "~/notification";
 import { basicAuthLogin, validateJTWToken } from "~/server";
+import { arrayBufferToBase64, getLocalAuthToken } from "~/utils";
 
 export default function Login() {
   const [userName, setUserName] = createSignal("");
@@ -18,21 +20,31 @@ export default function Login() {
 
   const onSubmit = action(async (_data: FormData) => {
     try {
-      await basicAuthLogin(userName(), password());
-      const subscription = await getNotificationSubscription();
-      if (subscription) {
-        console.log("Saving push notification subscription to backend");
-        await saveNotificationSubscriptionHandler({
-          body: {
-            endpoint: subscription.endpoint,
-            keys: {
-              auth: String(subscription.getKey("auth")),
-              p256dh: String(subscription.getKey("p256dh")),
+      await basicAuthLogin(userName(), password()).then(async () => {
+        const subscription = await getNotificationSubscription();
+
+        if (subscription) {
+          console.log("Saving push notification subscription to backend");
+
+          const sdk = NewGraphQLSDK();
+          console.log(
+            arrayBufferToBase64(
+              subscription.getKey("auth") || new ArrayBuffer(0),
+            ),
+          );
+          sdk.saveSubscription({
+            subscription: {
+              auth: arrayBufferToBase64(
+                subscription.getKey("auth") || new ArrayBuffer(0),
+              ),
+              endpoint: subscription.endpoint,
+              p256Dh: arrayBufferToBase64(
+                subscription.getKey("p256dh") || new ArrayBuffer(0),
+              ),
             },
-            expirationTime: subscription.expirationTime,
-          },
-        });
-      }
+          });
+        }
+      });
       return redirect("/");
     } catch (e) {
       log.error(`Failed to login: ${e}`);

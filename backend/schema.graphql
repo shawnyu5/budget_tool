@@ -12,6 +12,24 @@ type FrontendConfig {
 	vapidPublicKey: String!
 }
 
+type MutationRoot {
+	saveSubscription(subscription: SubscriptionInput!): User!
+}
+
+type NotificationKeys {
+	p256Dh: String!
+	auth: String!
+}
+
+"""
+Stuff the browser sends to do the notification handshake
+"""
+type NotificationSubscription {
+	endpoint: String!
+	expirationTime: Int
+	keys: NotificationKeys!
+}
+
 """
 Root of the query
 """
@@ -20,6 +38,27 @@ type QueryRoot {
 	Configuration for the frontend to consume
 	"""
 	config: FrontendConfig!
+}
+
+input SubscriptionInput {
+	endpoint: String!
+	p256Dh: String!
+	auth: String!
+	expirationTime: Int
+}
+
+"""
+Represents a user
+"""
+type User {
+	"""
+	Username of the user
+	"""
+	username: String!
+	"""
+	Notification subscription
+	"""
+	notificationSubscription: NotificationSubscription!
 }
 
 """
@@ -32,4 +71,5 @@ Directs the executor to skip this field or fragment when the `if` argument is tr
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 schema {
 	query: QueryRoot
+	mutation: MutationRoot
 }

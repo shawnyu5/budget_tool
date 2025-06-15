@@ -1,6 +1,5 @@
 import { z } from "zod/v4";
-import { GraphQLClient } from "graphql-request";
-import { getSdk } from "./generated/graphql";
+import { NewGraphQLSDK } from "./graphql";
 
 /**
  * Schema for local configuration
@@ -36,11 +35,7 @@ export function loadLocalConfig(): LocalConfig {
  * @return promise containing server configuration. A rejected promise if the http call fails
  */
 export async function loadServerConfig(): Promise<ServerConfig> {
-  const client = new GraphQLClient(
-    `${loadLocalConfig().backendUrl}/graphql`,
-    {},
-  );
-  const sdk = getSdk(client);
+  const sdk = NewGraphQLSDK();
   const { config } = await sdk.getConfig();
   const result = ServerConfigSchema.safeParse(config);
   if (!result.success) {

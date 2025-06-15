@@ -8,7 +8,7 @@ use tracing::debug;
 use crate::config::Config;
 
 mod monthly_budget;
-mod users;
+pub mod users;
 
 /// Interface for database operations
 pub struct DB<T: std::marker::Send + std::marker::Sync + DeserializeOwned> {

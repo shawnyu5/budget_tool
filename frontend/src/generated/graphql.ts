@@ -26,6 +26,30 @@ export type FrontendConfig = {
   vapidPublicKey: Scalars['String']['output'];
 };
 
+export type MutationRoot = {
+  __typename?: 'MutationRoot';
+  saveSubscription: User;
+};
+
+
+export type MutationRootSaveSubscriptionArgs = {
+  subscription: SubscriptionInput;
+};
+
+export type NotificationKeys = {
+  __typename?: 'NotificationKeys';
+  auth: Scalars['String']['output'];
+  p256Dh: Scalars['String']['output'];
+};
+
+/** Stuff the browser sends to do the notification handshake */
+export type NotificationSubscription = {
+  __typename?: 'NotificationSubscription';
+  endpoint: Scalars['String']['output'];
+  expirationTime?: Maybe<Scalars['Int']['output']>;
+  keys: NotificationKeys;
+};
+
 /** Root of the query */
 export type QueryRoot = {
   __typename?: 'QueryRoot';
@@ -33,10 +57,33 @@ export type QueryRoot = {
   config: FrontendConfig;
 };
 
+export type SubscriptionInput = {
+  auth: Scalars['String']['input'];
+  endpoint: Scalars['String']['input'];
+  expirationTime?: InputMaybe<Scalars['Int']['input']>;
+  p256Dh: Scalars['String']['input'];
+};
+
+/** Represents a user */
+export type User = {
+  __typename?: 'User';
+  /** Notification subscription */
+  notificationSubscription: NotificationSubscription;
+  /** Username of the user */
+  username: Scalars['String']['output'];
+};
+
 export type GetConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetConfigQuery = { __typename?: 'QueryRoot', config: { __typename?: 'FrontendConfig', encryptionPublicKey: string, vapidPublicKey: string } };
+
+export type SaveSubscriptionMutationVariables = Exact<{
+  subscription: SubscriptionInput;
+}>;
+
+
+export type SaveSubscriptionMutation = { __typename?: 'MutationRoot', saveSubscription: { __typename?: 'User', username: string, notificationSubscription: { __typename?: 'NotificationSubscription', endpoint: string, expirationTime?: number | null, keys: { __typename?: 'NotificationKeys', p256Dh: string, auth: string } } } };
 
 
 export const GetConfigDocument = gql`
@@ -44,6 +91,21 @@ export const GetConfigDocument = gql`
   config {
     encryptionPublicKey
     vapidPublicKey
+  }
+}
+    `;
+export const SaveSubscriptionDocument = gql`
+    mutation saveSubscription($subscription: SubscriptionInput!) {
+  saveSubscription(subscription: $subscription) {
+    username
+    notificationSubscription {
+      endpoint
+      expirationTime
+      keys {
+        p256Dh
+        auth
+      }
+    }
   }
 }
     `;
@@ -57,6 +119,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   return {
     getConfig(variables?: GetConfigQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetConfigQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetConfigQuery>({ document: GetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'getConfig', 'query', variables);
+    },
+    saveSubscription(variables: SaveSubscriptionMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SaveSubscriptionMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SaveSubscriptionMutation>({ document: SaveSubscriptionDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'saveSubscription', 'mutation', variables);
     }
   };
 }

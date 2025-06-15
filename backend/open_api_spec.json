@@ -333,7 +333,8 @@
           },
           "required": true
         },
-        "responses": {}
+        "responses": {},
+        "deprecated": true
       }
     },
     "/notification/send": {
@@ -688,7 +689,7 @@
               "integer",
               "null"
             ],
-            "format": "int32"
+            "minimum": 0
           },
           "keys": {
             "$ref": "#/components/schemas/NotificationKeys"

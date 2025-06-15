@@ -1,5 +1,5 @@
-use anyhow::Context;
 use anyhow::anyhow;
+use anyhow::Context;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use axum::body;
@@ -7,7 +7,7 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::middleware;
 use axum::response::IntoResponse;
-use axum::{Json, Router, extract::Path};
+use axum::{extract::Path, Json, Router};
 use chrono::NaiveDate;
 use chrono::{DateTime, Local, Utc};
 use common_axum::app_error_v2::AppError;
@@ -28,8 +28,8 @@ use utoipa_axum::routes;
 
 use crate::custom_middleware::{check_auth_header, check_valid_year};
 use crate::db::DBError;
-use crate::graphql::SchemaType;
 use crate::graphql::generate_graphql_schema;
+use crate::graphql::SchemaType;
 use crate::monthly_budget::MonthlyBudget;
 use crate::monthly_budget::SpendingItem;
 use crate::routes::auth::{__path_basic_auth_handler, basic_auth_handler};
@@ -87,7 +87,7 @@ pub fn app() -> Router {
 #[instrument(skip_all)]
 #[utoipa::path(get, path = "/graphql")]
 pub async fn graphql_playground() -> impl IntoResponse {
-    use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
+    use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
     use axum::response::Html;
 
     Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
@@ -96,9 +96,13 @@ pub async fn graphql_playground() -> impl IntoResponse {
 /// Handler for graphql requests
 #[instrument(skip_all)]
 #[utoipa::path(post, path = "/graphql")]
-async fn graphql_handler(State(schema): State<SchemaType>, req: GraphQLRequest) -> GraphQLResponse {
+async fn graphql_handler(
+    jwt: JwtClaim,
+    State(schema): State<SchemaType>,
+    req: GraphQLRequest,
+) -> GraphQLResponse {
     let req = req.into_inner();
-    schema.execute(req).await.into()
+    schema.execute(req.data(jwt)).await.into()
 }
 
 /// Get the budget information for a specific month
@@ -122,7 +126,6 @@ async fn get_month_budget_handler(
     jwt: JwtClaim,
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
-    dbg!(&jwt);
     info!("Connecting to DB");
     let db = match DB::new(&year).await {
         Ok(db) => db,
