@@ -1,12 +1,12 @@
 use anyhow::Result;
-use anyhow::{Context, anyhow};
+use anyhow::{anyhow, Context};
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::{HeaderMap, StatusCode};
 use base64::prelude::*;
 use chrono::{Duration, Utc};
 use common_axum::app_error_v2::AppError;
-use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use tracing::{error, info, instrument};
 
@@ -68,7 +68,6 @@ pub async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> 
         username,
         exp: ((Utc::now() + Duration::hours(24)).timestamp() as usize),
     };
-    // dbg!(&claim);
     let token = encode(&Header::default(), &claim, &key).unwrap();
     return Ok(token);
 }

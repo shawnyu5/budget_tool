@@ -1,5 +1,6 @@
 #![allow(clippy::needless_return)]
 mod config;
+mod cron;
 mod custom_middleware;
 mod db;
 mod graphql;
@@ -15,6 +16,8 @@ use routes::app;
 use tokio::net::TcpListener;
 use tracing::info;
 
+use crate::db::{users::USER_TABLE_NAME, DB};
+
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
@@ -22,7 +25,6 @@ async fn main() -> Result<()> {
     // Attempt to load config. If it fails, dont bother starting the server
     Config::load();
 
-    // send_push().await.unwrap();
     let addr = "0.0.0.0:8000";
     let listener = TcpListener::bind(addr).await.unwrap();
     info!("Listening on {}", addr);

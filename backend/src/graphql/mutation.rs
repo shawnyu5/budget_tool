@@ -3,7 +3,10 @@ use async_graphql::{Context, InputObject, Object};
 use tracing::{info, instrument, warn};
 
 use crate::{
-    db::{users::User, DB},
+    db::{
+        users::{User, USER_TABLE_NAME},
+        DB,
+    },
     routes::{notification::NotificationSubscription, JwtClaim},
 };
 
@@ -37,7 +40,9 @@ impl MutationRoot {
         // Tracks if we are updating an existing user in the DB
         let mut existing_user = true;
 
-        let db = DB::new("users").await.context("Failed to connect to DB")?;
+        let db = DB::new(USER_TABLE_NAME)
+            .await
+            .context("Failed to connect to DB")?;
         let mut user = db.get_user(&jwt.username).await.unwrap_or_else(|_| {
             warn!("User {} not found in DB. Creating new user", jwt.username);
             existing_user = false;
