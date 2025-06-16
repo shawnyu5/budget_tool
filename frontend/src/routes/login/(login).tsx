@@ -25,13 +25,7 @@ export default function Login() {
 
         if (subscription) {
           console.log("Saving push notification subscription to backend");
-
           const sdk = NewGraphQLSDK();
-          console.log(
-            arrayBufferToBase64(
-              subscription.getKey("auth") || new ArrayBuffer(0),
-            ),
-          );
           sdk.saveSubscription({
             subscription: {
               auth: arrayBufferToBase64(
