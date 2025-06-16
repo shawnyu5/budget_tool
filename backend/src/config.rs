@@ -24,6 +24,7 @@ pub struct Config {
 }
 
 impl Config {
+    /// Load server configuration. This function will panic if anything goes wrong. We can not start the application with missing / invalid configuration
     pub fn load() -> Config {
         dotenv().ok();
         let basic_auth = env::var("basic_auth").unwrap_or_default();
