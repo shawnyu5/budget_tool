@@ -1,12 +1,17 @@
 use crate::{db::DBError, routes::notification::NotificationSubscription};
+use anyhow::Result;
 use anyhow::{anyhow, Context};
 use async_graphql::SimpleObject;
+use futures::TryStreamExt;
 use mongodb::{bson::doc, options::ReplaceOptions, results::UpdateResult, Collection};
 use serde::{Deserialize, Serialize};
 use tracing::{debug, info, instrument};
 use utoipa::ToSchema;
 
 use crate::db::DB;
+
+/// Name of the user table in the DB
+pub const USER_TABLE_NAME: &str = "Users";
 
 /// Represents a user
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default)]
@@ -76,5 +81,17 @@ impl DB<User> {
         }
 
         return Ok(result);
+    }
+
+    #[instrument(skip_all)]
+    /// Fetch all users in the DB
+    pub async fn get_all_users(&self) -> Result<Vec<User>> {
+        let collection = self.collection.clone();
+        let mut cursor = collection.find(doc! {}).await?;
+        let mut users = vec![];
+        while let Some(user) = cursor.try_next().await? {
+            users.push(user);
+        }
+        Ok(users)
     }
 }
