@@ -26,15 +26,12 @@ export default function Login() {
         if (subscription) {
           console.log("Saving push notification subscription to backend");
           const sdk = NewGraphQLSDK();
+          const subscriptionJson = subscription.toJSON();
           sdk.saveSubscription({
             subscription: {
-              auth: arrayBufferToBase64(
-                subscription.getKey("auth") || new ArrayBuffer(0),
-              ),
-              endpoint: subscription.endpoint,
-              p256Dh: arrayBufferToBase64(
-                subscription.getKey("p256dh") || new ArrayBuffer(0),
-              ),
+              auth: subscriptionJson.keys?.auth ?? "",
+              endpoint: subscriptionJson.endpoint ?? "",
+              p256Dh: subscriptionJson.keys?.p256dh ?? "",
             },
           });
         }
