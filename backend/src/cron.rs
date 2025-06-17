@@ -28,11 +28,11 @@ pub async fn init_all_user_crons(scheduler: &JobScheduler) -> Result<HashMap<Str
         let username = user.username.clone();
         let cron_id = scheduler
             .add(Job::new_async_tz(
-                "1/10 * * * * *",
+                "0 0 21 L * *",
                 chrono_tz::America::New_York,
                 move |_uuid, _l| {
                     // Job::new_async_tz("0 0 0 L * *", chrono_tz::America::New_York, |_uuid, _l| {
-                    info!("Cron job sending notification");
+                    info!("Sending end of month notification");
                     let endpoint = user.notification_subscription.endpoint.clone();
                     let p256dh = user.notification_subscription.keys.p256dh.clone();
                     let auth = user.notification_subscription.keys.auth.clone();
@@ -53,8 +53,8 @@ pub async fn init_all_user_crons(scheduler: &JobScheduler) -> Result<HashMap<Str
                             &user.notification_subscription.keys.p256dh,
                             &user.notification_subscription.keys.auth,
                             NotificationBody {
-                                title: "From cron job".to_string(),
-                                body: "Hi from cron job".to_string(),
+                                title: "Reminder: end of the month!".to_string(),
+                                body: "Time to settle the budget 😊".to_string(),
                             },
                         )
                         .await
