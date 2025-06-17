@@ -1,7 +1,7 @@
 use std::fs;
 
 use anyhow::{Context, Result};
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptySubscription, Schema};
 use tracing::info;
 
 use crate::graphql::{mutation::MutationRoot, query::QueryRoot};

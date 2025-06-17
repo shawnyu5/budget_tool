@@ -8,8 +8,8 @@ use axum::http::StatusCode;
 use axum::middleware;
 use axum::response::IntoResponse;
 use axum::{extract::Path, Json, Router};
+use chrono::Local;
 use chrono::NaiveDate;
-use chrono::{DateTime, Local, Utc};
 use common_axum::app_error_v2::AppError;
 use common_axum::axum::generate_open_api_spec_from_open_api;
 use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
@@ -47,7 +47,7 @@ pub mod notification;
 pub async fn app() -> Router {
     let graphql_schema = generate_graphql_schema().expect("Failed to generate graphql schema");
 
-    let cron_ids = match JobScheduler::new().await {
+    let _cron_ids = match JobScheduler::new().await {
         Ok(sched) => {
             let cron_ids = init_all_user_crons(&sched).await.unwrap();
             sched.shutdown_on_ctrl_c();
@@ -143,7 +143,6 @@ async fn graphql_handler(
     )
 )]
 async fn get_month_budget_handler(
-    jwt: JwtClaim,
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
     info!("Connecting to DB");
@@ -431,10 +430,9 @@ async fn validate_token() -> &'static str {
     ),
 )]
 async fn export_csv_handler(
-    jwt: JwtClaim,
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<String, AppError> {
-    let monthly_budget = get_month_budget_handler(jwt, Path((year, month)))
+    let monthly_budget = get_month_budget_handler(Path((year, month)))
         .await?
         .into_response();
     let monthly_budget = body::to_bytes(monthly_budget.into_body(), usize::MAX)
