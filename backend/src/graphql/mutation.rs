@@ -1,10 +1,10 @@
 use anyhow::{Context as AnhowContext, Result};
 use async_graphql::{Context, InputObject, Object};
-use tracing::{info, instrument, warn};
+use tracing::{debug, info, instrument, warn};
 
 use crate::{
     db::{
-        users::{User, USER_TABLE_NAME},
+        users::{User, UserCron, USER_TABLE_NAME},
         DB,
     },
     routes::{notification::NotificationSubscription, JwtClaim},
@@ -48,21 +48,21 @@ impl MutationRoot {
             existing_user = false;
             User {
                 username: jwt.username.clone(),
-                notification_subscription: Default::default(),
+                ..Default::default()
             }
         });
+        debug!("Found user: {:?}", user);
 
         user.notification_subscription.endpoint = subscription.endpoint;
         user.notification_subscription.keys.p256dh = subscription.p256dh;
         user.notification_subscription.keys.auth = subscription.auth;
         user.notification_subscription.expiration_time = subscription.expiration_time;
 
-        let result = db
+        let _result = db
             .save_user_info(&user)
             .await
             .context("Failed to update subscription info")?;
 
-        debug_assert!(existing_user && result.modified_count == 1, "If we are modifying an existing user, we must update the existing record. Otherwise something went wrong...");
         Ok(user)
     }
 }

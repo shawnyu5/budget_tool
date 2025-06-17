@@ -2,6 +2,7 @@ use crate::{db::DBError, routes::notification::NotificationSubscription};
 use anyhow::Result;
 use anyhow::{anyhow, Context};
 use async_graphql::SimpleObject;
+use chrono::{DateTime, Utc};
 use futures::TryStreamExt;
 use mongodb::{bson::doc, options::ReplaceOptions, results::UpdateResult, Collection};
 use serde::{Deserialize, Serialize};
@@ -14,14 +15,34 @@ use crate::db::DB;
 pub const USER_TABLE_NAME: &str = "Users";
 
 /// Represents a user
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default)]
-#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     /// Username of the user
     pub username: String,
     /// Notification subscription
     pub notification_subscription: NotificationSubscription,
+    pub last_updated: Option<String>,
+    // pub user_crons: Vec<UserCron>,
+}
+
+impl Default for User {
+    fn default() -> Self {
+        Self {
+            username: Default::default(),
+            notification_subscription: Default::default(),
+            last_updated: Some(Utc::now().to_string()),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct UserCron {
+    /// Name of cron
+    pub name: String,
+    /// Frequency of the cron job. Executed in the current time zone
+    pub frequency: String,
 }
 
 impl DB<User> {
@@ -52,6 +73,9 @@ impl DB<User> {
     /// * `user`: the user whos info to save
     #[instrument(skip_all)]
     pub async fn save_user_info(&self, user: &User) -> Result<UpdateResult, DBError> {
+        let mut user = user.clone();
+        user.last_updated = Some(Utc::now().to_string());
+
         let filter = doc! {
             "username": user.username.clone(),
         };

@@ -9,14 +9,13 @@ mod monthly_budget;
 mod routes;
 mod utils;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
 use config::Config;
 use routes::app;
 use tokio::net::TcpListener;
+use tokio_cron_scheduler::JobScheduler;
 use tracing::info;
-
-use crate::db::{users::USER_TABLE_NAME, DB};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -28,5 +27,5 @@ async fn main() -> Result<()> {
     let addr = "0.0.0.0:8000";
     let listener = TcpListener::bind(addr).await.unwrap();
     info!("Listening on {}", addr);
-    return axum_serve(listener, app()).await;
+    return axum_serve(listener, app().await).await;
 }

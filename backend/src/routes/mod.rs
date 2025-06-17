@@ -18,6 +18,7 @@ use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use simd_json::from_slice;
+use tokio_cron_scheduler::JobScheduler;
 use tracing::debug;
 use tracing::error;
 use tracing::info;
@@ -26,6 +27,7 @@ use tracing::warn;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
+use crate::cron::init_all_user_crons;
 use crate::custom_middleware::{check_auth_header, check_valid_year};
 use crate::db::DBError;
 use crate::graphql::generate_graphql_schema;
@@ -42,8 +44,26 @@ use crate::{db::DB, month::Month};
 pub mod auth;
 pub mod notification;
 
-pub fn app() -> Router {
+pub async fn app() -> Router {
     let graphql_schema = generate_graphql_schema().expect("Failed to generate graphql schema");
+
+    let cron_ids = match JobScheduler::new().await {
+        Ok(sched) => {
+            let cron_ids = init_all_user_crons(&sched).await.unwrap();
+            sched.shutdown_on_ctrl_c();
+            match sched.start().await {
+                Ok(_) => {}
+                Err(_) => {
+                    error!("Failed to start cron job for all users")
+                }
+            }
+            Ok(cron_ids)
+        }
+        Err(e) => {
+            error!("Failed to initalize cron job scheduler: {e}");
+            Err(e)
+        }
+    };
 
     let (mut router, mut api_spec) = OpenApiRouter::new()
         .routes(routes!(get_month_budget_handler, update_budget_handler))
