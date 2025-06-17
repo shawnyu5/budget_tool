@@ -4,10 +4,10 @@ use tracing::{debug, info, instrument, warn};
 
 use crate::{
     db::{
-        users::{User, UserCron, USER_TABLE_NAME},
+        users::{User, USER_TABLE_NAME},
         DB,
     },
-    routes::{notification::NotificationSubscription, JwtClaim},
+    routes::JwtClaim,
 };
 
 /// Root of the Mutation

@@ -1,8 +1,7 @@
 //! Module for DB related operations
 
 use anyhow::{Context, Result};
-use mongodb::{bson::doc, Client};
-use serde::de::DeserializeOwned;
+use mongodb::bson::doc;
 use tracing::{debug, error, info};
 
 use crate::{

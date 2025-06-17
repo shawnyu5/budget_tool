@@ -9,12 +9,11 @@ mod monthly_budget;
 mod routes;
 mod utils;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
 use config::Config;
 use routes::app;
 use tokio::net::TcpListener;
-use tokio_cron_scheduler::JobScheduler;
 use tracing::info;
 
 #[tokio::main]
