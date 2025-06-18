@@ -1,14 +1,11 @@
 import { action, redirect } from "@solidjs/router";
 import axios from "axios";
 import { createSignal, onMount } from "solid-js";
-import { saveNotificationSubscriptionHandler } from "~/client/sdk.gen";
 import ErrorComponent from "~/components/errorComponent";
-import { loadServerConfig } from "~/config";
 import { NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
 import { getNotificationSubscription } from "~/notification";
 import { basicAuthLogin, validateJTWToken } from "~/server";
-import { arrayBufferToBase64, getLocalAuthToken } from "~/utils";
 
 export default function Login() {
   const [userName, setUserName] = createSignal("");

@@ -2,7 +2,7 @@
  * Functions for communicating with the backend server
  *
  */
-import axios, { AxiosResponse, AxiosStatic } from "axios";
+import axios from "axios";
 import { paths } from "./backend_schema";
 import { loadLocalConfig } from "./config";
 import log from "./logger";
@@ -208,7 +208,7 @@ export async function saveNotificationSubscription(
       expirationTime: subscription.expirationTime,
     },
   });
-  return response
+  return response;
 }
 /**
  * Calculates the total spending for a month

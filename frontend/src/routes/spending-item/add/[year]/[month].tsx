@@ -1,11 +1,11 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import axios from "axios";
 import { Accessor, createSignal, Setter } from "solid-js";
+import { MonthlyBudget } from "~/client";
 import { SpendingItemForm } from "~/components/spendingItemForm";
 import log from "~/logger";
 import {
   getMonthlyBudget,
-  MonthlyBudget,
   SpendingItem,
   updateMonthlyBudget,
 } from "~/server";

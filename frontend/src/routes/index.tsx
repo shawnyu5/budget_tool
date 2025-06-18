@@ -13,7 +13,6 @@ import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
   MonthlyBudgetErrors,
   getMonthlyBudget,
-  MonthlyBudget,
   updateMonthlyBudget,
 } from "~/server";
 import log from "~/logger";
@@ -21,7 +20,7 @@ import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import NavBar from "~/components/navBar";
 import axios from "axios";
-import NotificationButton from "~/components/NotificationButton";
+import { Month, MonthlyBudget } from "~/client";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -73,7 +72,7 @@ export default function Home() {
       try {
         const budget = await getMonthlyBudget(
           searchParamSignal().year as string,
-          searchParamSignal().month as string,
+          searchParamSignal().month as Month,
         );
 
         // If fetching is successful, make sure the error message is gone
