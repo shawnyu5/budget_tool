@@ -1,6 +1,6 @@
 use anyhow::Context;
 use anyhow::Result;
-use mongodb::{bson::doc, Client, Collection};
+use mongodb::{Client, Collection, bson::doc};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 use tracing::debug;
@@ -51,7 +51,10 @@ impl<T: std::marker::Send + std::marker::Sync + DeserializeOwned> DB<T> {
         let collection = client
             .database(&Config::load().database_name)
             .collection::<T>(name);
-        debug!("Setting collection to db budget_tool, in collection {name}");
+        debug!(
+            "Setting collection to db {db_name}, in collection {name}",
+            db_name = &Config::load().database_name
+        );
 
         return Ok(Self { client, collection });
     }
