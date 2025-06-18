@@ -36,11 +36,11 @@ jobs:
         if: steps.dry_run.outputs.new-release-published == 'true'
         uses: moonrepo/setup-rust@v1
 
-      - name: Re generate cargo lock file
-        if: steps.dry_run.outputs.new-release-published == 'true'
-        run: |
-          cd backend
-          cargo generate-lockfile
+      # - name: Re generate cargo lock file
+      #   if: steps.dry_run.outputs.new-release-published == 'true'
+      #   run: |
+      #     cd backend
+      #     cargo generate-lockfile
 
       # - name: Commit changes
       #   if: steps.dry_run.outputs.new-release-published == 'true'
