@@ -1,0 +1,80 @@
+"""
+Frontend configuration
+"""
+type FrontendConfig {
+	"""
+	Base 64 encoded public key used for encryption
+	"""
+	encryptionPublicKey: String!
+	"""
+	Non base 64 encoded VAPID public key used for sending notifications
+	"""
+	vapidPublicKey: String!
+}
+
+type MutationRoot {
+	"""
+	Save a notification subscription for a user
+	The user is extracted from the JWT
+	"""
+	saveSubscription(subscription: SubscriptionInput!): User!
+}
+
+type NotificationKeys {
+	p256Dh: String!
+	auth: String!
+}
+
+"""
+Stuff the browser sends to do the notification handshake
+"""
+type NotificationSubscription {
+	endpoint: String!
+	expirationTime: Int
+	keys: NotificationKeys!
+}
+
+"""
+Root of the query
+"""
+type QueryRoot {
+	"""
+	Configuration for the frontend to consume
+	"""
+	config: FrontendConfig!
+}
+
+input SubscriptionInput {
+	endpoint: String!
+	p256Dh: String!
+	auth: String!
+	expirationTime: Int
+}
+
+"""
+Represents a user
+"""
+type User {
+	"""
+	Username of the user
+	"""
+	username: String!
+	"""
+	Notification subscription
+	"""
+	notificationSubscription: NotificationSubscription!
+	lastUpdated: String
+}
+
+"""
+Directs the executor to include this field or fragment only when the `if` argument is true.
+"""
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Directs the executor to skip this field or fragment when the `if` argument is true.
+"""
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+schema {
+	query: QueryRoot
+	mutation: MutationRoot
+}

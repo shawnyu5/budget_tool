@@ -1,29 +1,24 @@
-use crate::monthly_budget::MonthlyBudget;
-use crate::monthly_budget::SpendingItem;
-use crate::utils::calculate_percentage;
 use anyhow::anyhow;
 use anyhow::Context;
+use async_graphql_axum::GraphQLRequest;
+use async_graphql_axum::GraphQLResponse;
 use axum::body;
-use axum::http::{HeaderMap, StatusCode};
+use axum::extract::State;
+use axum::http::StatusCode;
 use axum::middleware;
 use axum::response::IntoResponse;
 use axum::{extract::Path, Json, Router};
-use base64::prelude::BASE64_STANDARD;
-use base64::Engine;
+use chrono::Local;
 use chrono::NaiveDate;
-use chrono::{DateTime, Duration, Local, Utc};
 use common_axum::app_error_v2::AppError;
 use common_axum::axum::generate_open_api_spec_from_open_api;
 use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
-use hmac::digest::KeyInit;
-use hmac::Hmac;
-use jwt::SignWithKey;
 use mongodb::bson::doc;
 use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use sha2::Sha256;
 use simd_json::from_slice;
+use tokio_cron_scheduler::JobScheduler;
 use tracing::debug;
 use tracing::error;
 use tracing::info;
@@ -32,13 +27,45 @@ use tracing::warn;
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
-use crate::config::Config;
-use crate::custom_middleware::{check_auth_header, check_valid_year};
+use crate::cron::init_all_user_crons;
+use crate::custom_middleware::check_auth_header;
 use crate::db::DBError;
+use crate::graphql::generate_graphql_schema;
+use crate::graphql::SchemaType;
+use crate::monthly_budget::MonthlyBudget;
+use crate::monthly_budget::SpendingItem;
+use crate::routes::auth::{__path_basic_auth_handler, basic_auth_handler};
+use crate::routes::notification::{
+    __path_save_notification_subscription_handler, save_notification_subscription_handler,
+};
+use crate::routes::notification::{__path_send_notification_handler, send_notification_handler};
+use crate::utils::calculate_percentage;
 use crate::{db::DB, month::Month};
+pub mod auth;
+pub mod notification;
 
-pub fn app() -> Router {
-    let (router, mut api_spec) = OpenApiRouter::new()
+pub async fn app() -> Router {
+    let graphql_schema = generate_graphql_schema().expect("Failed to generate graphql schema");
+
+    let _cron_ids = match JobScheduler::new().await {
+        Ok(sched) => {
+            let cron_ids = init_all_user_crons(&sched).await.unwrap();
+            sched.shutdown_on_ctrl_c();
+            match sched.start().await {
+                Ok(_) => {}
+                Err(_) => {
+                    error!("Failed to start cron job for all users")
+                }
+            }
+            Ok(cron_ids)
+        }
+        Err(e) => {
+            error!("Failed to initalize cron job scheduler: {e}");
+            Err(e)
+        }
+    };
+
+    let (mut router, mut api_spec) = OpenApiRouter::new()
         .routes(routes!(get_month_budget_handler, update_budget_handler))
         .routes(routes! {
             get_spending_item,
@@ -48,7 +75,10 @@ pub fn app() -> Router {
         .routes(routes!(validate_token))
         .routes(routes!(export_csv_handler))
         .layer(middleware::from_fn(check_auth_header))
+        .routes(routes!(graphql_handler))
         .routes(routes!(basic_auth_handler))
+        .routes(routes!(send_notification_handler))
+        .routes(routes!(save_notification_subscription_handler))
         .routes(routes!(app_version))
         .split_for_parts();
 
@@ -57,11 +87,42 @@ pub fn app() -> Router {
     api_spec.info.contact = None;
     api_spec.info.license = None;
 
+    #[cfg(debug_assertions)]
+    {
+        let graphql_playground_route = OpenApiRouter::new().routes(routes!(graphql_playground));
+        router = router.merge(graphql_playground_route);
+    }
+    // Reassign here to make sure the router the right type
+    let router = router.with_state(graphql_schema);
+
     info!("Generated Open API spec");
     generate_open_api_spec_from_open_api(api_spec, "open_api_spec.json")
         .expect("Failed to generate open API spec");
 
     return attach_tracing_cors_middleware(router);
+}
+
+#[cfg(debug_assertions)]
+/// Graphql playground
+#[instrument(skip_all)]
+#[utoipa::path(get, path = "/graphql")]
+pub async fn graphql_playground() -> impl IntoResponse {
+    use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+    use axum::response::Html;
+
+    Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
+}
+
+/// Handler for graphql requests
+#[instrument(skip_all)]
+#[utoipa::path(post, path = "/graphql")]
+async fn graphql_handler(
+    jwt: JwtClaim,
+    State(schema): State<SchemaType>,
+    req: GraphQLRequest,
+) -> GraphQLResponse {
+    let req = req.into_inner();
+    schema.execute(req.data(jwt)).await.into()
 }
 
 /// Get the budget information for a specific month
@@ -85,7 +146,7 @@ async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
     info!("Connecting to DB");
-    let db = match DB::new(year).await {
+    let db = match DB::new(&year).await {
         Ok(db) => db,
         Err(e) => {
             error!("Error: {}", e);
@@ -131,7 +192,7 @@ async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(mut body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
-    let db = DB::new(year)
+    let db = DB::new(&year)
         .await
         .context("Failed to connect to database")?;
     body.update_calculations();
@@ -151,10 +212,12 @@ async fn update_budget_handler(
     return Ok(());
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct JwtAccessToken {
-    pub user: String,
-    pub expire: DateTime<Utc>,
+/// Contents of the JWT token
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct JwtClaim {
+    /// Username
+    pub username: String,
+    pub exp: usize,
 }
 
 // TODO: implement an access / refresh token system later
@@ -163,69 +226,6 @@ pub struct JwtAccessToken {
 //     expire: DateTime<Utc>,
 //     token_id: String,
 // }
-
-#[instrument(skip_all)]
-#[utoipa::path(post,
-    path = "/login/basic",
-    responses(
-        (status = 200, description = "Login successful. Returns a JWT token", body = String),
-        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
-        (status = 403, description = "Authenication failed", body = String),
-    )
-)]
-async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> {
-    let config = Config::load();
-    // The base64 decoded user
-    let user = match headers.get("authorization") {
-        Some(user) => {
-            let auth_header_str = user
-                .to_str()
-                .context("Failed to convert auth header to string")?;
-            let auth_user = auth_header_str.replace("Basic ", "");
-            info!("base64 decoding user from auth header: {:?}", auth_user);
-
-            let decoded_auth_user = BASE64_STANDARD
-                .decode(auth_user)
-                .context("Failed to decode user from auth header")?;
-            let decoded_auth_user = String::from_utf8(decoded_auth_user)
-                .context("Failed to convert auth header to string")?;
-
-            let user: Vec<&String> = config
-                .basic_auth
-                .par_iter()
-                .filter(|s| *s == &decoded_auth_user)
-                .collect();
-            if user.is_empty() {
-                return Err(AppError(
-                    StatusCode::FORBIDDEN,
-                    anyhow!("User does not have access"),
-                ));
-            }
-            assert!(
-                user.len() == 1,
-                "There should be only one user that matched the authorizatio header. Something is wrong if there are multiple..."
-            );
-
-            user[0]
-        }
-        None => {
-            return Err(AppError(
-                StatusCode::FORBIDDEN,
-                anyhow!("Missing authorization headers"),
-            ))
-        }
-    };
-
-    // Create a JWT for user
-    let key: Hmac<Sha256> = Hmac::new_from_slice(&Config::load().private_key.into_bytes())?;
-    let claim = JwtAccessToken {
-        user: user.to_string(),
-        expire: (Local::now() + Duration::hours(24)).into(),
-    };
-    let token_str = claim.sign_with_key(&key)?;
-
-    return Ok(token_str);
-}
 
 /// Search for a spending item by time and ID
 #[instrument(skip_all)]
@@ -247,7 +247,7 @@ async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> {
 async fn get_spending_item(
     Path((year, month, id)): Path<(String, Month, String)>,
 ) -> Result<Json<Option<SpendingItem>>, AppError> {
-    let db = DB::new(year)
+    let db = DB::<MonthlyBudget>::new(&year)
         .await
         .context("Failed to connect to database")?;
 
@@ -315,7 +315,7 @@ async fn update_spending_item(
     Path((year, month, id)): Path<(String, Month, String)>,
     Json(spending_item): Json<SpendingItem>,
 ) -> Result<(), AppError> {
-    let db = DB::new(year)
+    let db = DB::new(&year)
         .await
         .context("Failed to connect to database")?;
 

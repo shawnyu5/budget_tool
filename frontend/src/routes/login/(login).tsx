@@ -1,9 +1,14 @@
 import { action, redirect } from "@solidjs/router";
 import axios from "axios";
 import { createSignal, onMount } from "solid-js";
+import { saveNotificationSubscriptionHandler } from "~/client/sdk.gen";
 import ErrorComponent from "~/components/errorComponent";
+import { loadServerConfig } from "~/config";
+import { NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
+import { getNotificationSubscription } from "~/notification";
 import { basicAuthLogin, validateJTWToken } from "~/server";
+import { arrayBufferToBase64, getLocalAuthToken } from "~/utils";
 
 export default function Login() {
   const [userName, setUserName] = createSignal("");
@@ -15,7 +20,22 @@ export default function Login() {
 
   const onSubmit = action(async (_data: FormData) => {
     try {
-      await basicAuthLogin(userName(), password());
+      await basicAuthLogin(userName(), password()).then(async () => {
+        const subscription = await getNotificationSubscription();
+
+        if (subscription) {
+          console.log("Saving push notification subscription to backend");
+          const sdk = NewGraphQLSDK();
+          const subscriptionJson = subscription.toJSON();
+          sdk.saveSubscription({
+            subscription: {
+              auth: subscriptionJson.keys?.auth ?? "",
+              endpoint: subscriptionJson.endpoint ?? "",
+              p256Dh: subscriptionJson.keys?.p256dh ?? "",
+            },
+          });
+        }
+      });
       return redirect("/");
     } catch (e) {
       log.error(`Failed to login: ${e}`);

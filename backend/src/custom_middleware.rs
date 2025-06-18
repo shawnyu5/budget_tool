@@ -1,3 +1,4 @@
+use crate::{month::Month, routes::auth::decode_jwt};
 use anyhow::{anyhow, Context};
 use axum::{
     extract::{Path, Request},
@@ -5,14 +6,8 @@ use axum::{
     middleware::Next,
     response::IntoResponse,
 };
-use chrono::Utc;
 use common_axum::app_error_v2::AppError;
-use hmac::{digest::KeyInit, Hmac};
-use jwt::VerifyWithKey;
-use sha2::Sha256;
-use tracing::{error, info};
-
-use crate::{config::Config, month::Month, routes::JwtAccessToken};
+use tracing::{error, info, instrument};
 
 /// Checks the year in the path. Returns 400 if the year is invalid
 pub async fn check_valid_year(
@@ -28,6 +23,7 @@ pub async fn check_valid_year(
 }
 
 /// checks for the JWT token in the authorization header, and ensures it is not expired. If it is, return 401 unauthorized
+#[instrument(skip_all)]
 pub async fn check_auth_header(
     header: HeaderMap,
     request: Request,
@@ -57,30 +53,34 @@ pub async fn check_auth_header(
         }
     };
     info!("Got JWT token from authorization header: {jwt_token}");
-    let key: Hmac<Sha256> = Hmac::new_from_slice(&Config::load().private_key.into_bytes())
-        .context("Failed to parse private key")?;
-
     info!("Verifying JWT");
-    let claim: JwtAccessToken = match jwt_token.to_string().verify_with_key(&key) {
+    let claim = match decode_jwt(&jwt_token) {
         Ok(e) => e,
         Err(e) => {
-            error!("Failed to verify JWT token");
-            return Err(AppError(StatusCode::FORBIDDEN, e.into()));
+            error!("Failed to verify JWT token: {e}");
+            return Err(AppError(StatusCode::FORBIDDEN, e));
         }
     };
-    // // TODO: failing to verify token should return FORBIDDEN
-    // .context("Failed to verify JWT token")?;
+    // let claim: JwtAccessToken = match jwt_token.to_string().verify_with_key(&key) {
+    //     Ok(e) => e,
+    //     Err(e) => {
+    //         error!("Failed to verify JWT token");
+    //         return Err(AppError(StatusCode::FORBIDDEN, e.into()));
+    //     }
+    // };
     info!("JWT verified");
 
     info!("Checking JWT expiration");
-    if claim.expire < Utc::now() {
-        info!("JWT expired");
-        return Err(AppError(
-            StatusCode::UNAUTHORIZED,
-            anyhow!("JWT expired, please authenticate"),
-        ));
-    }
-    info!("JWT not expired. Expiration date on {}", claim.expire);
+    // if claim.exp < Utc::now() {
+    //     info!("JWT expired");
+    //     return Err(AppError(
+    //         StatusCode::UNAUTHORIZED,
+    //         anyhow!("JWT expired, please authenticate"),
+    //     ));
+    // }
+    info!("JWT not expired. Expiration date on {}", claim.exp);
+
+    // decode_jwt(&jwt_token);
 
     return Ok(next.run(request).await);
 }

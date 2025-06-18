@@ -1,5 +1,5 @@
 import { action } from "@solidjs/router";
-import { Accessor, createEffect, createSignal, Setter } from "solid-js";
+import { Accessor, createEffect, createSignal, Setter, Show } from "solid-js";
 import { SpendingItem } from "~/server";
 import ErrorComponent from "./errorComponent";
 
@@ -47,58 +47,60 @@ export function SpendingItemForm(props: {
     >
       <ErrorComponent message={errorMessage()} />
 
-      <label>Amount ($)</label>
-      <input
-        name="amount"
-        type="number"
-        step="0.01"
-        required
-        value={amount()}
-        onInput={(e: InputEvent) => {
-          const input = (e.target as HTMLInputElement).value;
-          setAmount(parseFloat(input));
-        }}
-      />
+      <Show when={props.spendingItem()} fallback={<p>Loading...</p>}>
+        <label>Amount ($)</label>
+        <input
+          name="amount"
+          type="number"
+          step="0.01"
+          required
+          value={amount()}
+          onInput={(e: InputEvent) => {
+            const input = (e.target as HTMLInputElement).value;
+            setAmount(parseFloat(input));
+          }}
+        />
 
-      <label>Date</label>
-      <input
-        name="date"
-        type="text"
-        required
-        value={date()}
-        onInput={(e: InputEvent) => {
-          const input = (e.target as HTMLInputElement).value;
-          setDate(input);
-        }}
-      />
+        <label>Date</label>
+        <input
+          name="date"
+          type="text"
+          required
+          value={date()}
+          onInput={(e: InputEvent) => {
+            const input = (e.target as HTMLInputElement).value;
+            setDate(input);
+          }}
+        />
 
-      <label>Description</label>
-      <input
-        name="description"
-        type="text"
-        required
-        value={description()}
-        onInput={(e: InputEvent) => {
-          const input = (e.target as HTMLInputElement).value;
-          setDescription(input);
-        }}
-      />
+        <label>Description</label>
+        <input
+          name="description"
+          type="text"
+          required
+          value={description()}
+          onInput={(e: InputEvent) => {
+            const input = (e.target as HTMLInputElement).value;
+            setDescription(input);
+          }}
+        />
 
-      <label>Notes</label>
-      <textarea
-        name="notes"
-        style="height: 100px"
-        // type="text"
-        value={notes()}
-        onInput={(e: InputEvent) => {
-          const input = (e.target as HTMLInputElement).value;
-          setNotes(input);
-        }}
-      />
+        <label>Notes</label>
+        <textarea
+          name="notes"
+          style="height: 100px"
+          // type="text"
+          value={notes()}
+          onInput={(e: InputEvent) => {
+            const input = (e.target as HTMLInputElement).value;
+            setNotes(input);
+          }}
+        />
 
-      <button class="button success" type="submit">
-        Save
-      </button>
+        <button class="button success" type="submit">
+          Save
+        </button>
+      </Show>
     </form>
   );
 }

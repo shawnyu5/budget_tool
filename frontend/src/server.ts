@@ -2,26 +2,40 @@
  * Functions for communicating with the backend server
  *
  */
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosResponse, AxiosStatic } from "axios";
 import { paths } from "./backend_schema";
-import { loadConfig } from "./config";
+import { loadLocalConfig } from "./config";
 import log from "./logger";
 import { useNavigate } from "@solidjs/router";
 import { getLocalAuthToken, setLocalAuthToken } from "./utils";
 import axiosRetry from "axios-retry";
-import Month from "./routes/spending-item/add/[year]/[month]";
+import { client } from "~/client/client.gen";
+import {
+  getMonthBudgetHandler,
+  saveNotificationSubscriptionHandler,
+} from "~/client/sdk.gen";
+import { Month, MonthlyBudget } from "./client/types.gen";
+
+// const axiosInstance = axios.create({
+//   baseURL: loadLocalConfig().backendUrl,
+// });
 
 axiosRetry(axios, {
   retries: 4,
   retryDelay: axiosRetry.exponentialDelay,
 });
 
+client.setConfig({
+  baseURL: loadLocalConfig().backendUrl,
+  axios: axios,
+});
+
 export type SpendingItem =
   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
 
-// The budget for a month
-export type MonthlyBudget =
-  paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"];
+// // The budget for a month
+// export type MonthlyBudget =
+// paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"];
 
 // The spending for a month
 export type MonthlySpending =
@@ -53,17 +67,23 @@ export enum MonthlyBudgetErrors {
  */
 export async function getMonthlyBudget(
   year: string,
-  month: string,
+  month: Month,
 ): Promise<MonthlyBudget> {
   try {
-    const response: AxiosResponse<MonthlyBudget> = await axios.get(
-      `${loadConfig().backendUrl}/budget/${year}/${month}`,
-      {
-        headers: {
-          Authorization: `Bearer ${getLocalAuthToken()}`,
-        },
+    const response = await getMonthBudgetHandler({
+      path: {
+        year,
+        month,
       },
-    );
+      headers: {
+        Authorization: `Bearer ${getLocalAuthToken()}`,
+      },
+    });
+
+    if (!response.data) {
+      throw new Error("No budget found");
+    }
+
     return response.data;
   } catch (e) {
     if (axios.isAxiosError(e)) {
@@ -93,7 +113,7 @@ export async function updateMonthlyBudget(
 ) {
   try {
     await axios.post(
-      `${loadConfig().backendUrl}/budget/${year}/${month}`,
+      `${loadLocalConfig().backendUrl}/budget/${year}/${month}`,
       monthlyBudget,
       {
         headers: {
@@ -134,7 +154,7 @@ export async function validateJTWToken() {
   const navigate = useNavigate();
   try {
     const response = await axios.get(
-      `${loadConfig().backendUrl}/auth/validate-token`,
+      `${loadLocalConfig().backendUrl}/auth/validate-token`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -159,7 +179,7 @@ export async function basicAuthLogin(userName: string, password: string) {
   const base64Encoded = btoa(`${userName}:${password}`);
   try {
     const response = await axios.post(
-      `${loadConfig().backendUrl}/login/basic`,
+      `${loadLocalConfig().backendUrl}/login/basic`,
       {},
       {
         headers: {
@@ -175,6 +195,21 @@ export async function basicAuthLogin(userName: string, password: string) {
   }
 }
 
+export async function saveNotificationSubscription(
+  subscription: PushSubscription,
+) {
+  const response = await saveNotificationSubscriptionHandler({
+    body: {
+      endpoint: subscription.endpoint,
+      keys: {
+        auth: String(subscription.getKey("auth")),
+        p256dh: String(subscription.getKey("p256dh")),
+      },
+      expirationTime: subscription.expirationTime,
+    },
+  });
+  return response
+}
 /**
  * Calculates the total spending for a month
  * @param monthlyBudget - the month's budget to calculate the total of
@@ -192,7 +227,7 @@ export function calculateTotalSpending(monthlyBudget: MonthlyBudget): number {
 
 export async function exportCSV(year: string, month: string): Promise<string> {
   const response = await axios.get(
-    `${loadConfig().backendUrl}/export/${year}/${month}/csv`,
+    `${loadLocalConfig().backendUrl}/export/${year}/${month}/csv`,
     {
       headers: {
         Authorization: `Bearer ${getLocalAuthToken()}`,
