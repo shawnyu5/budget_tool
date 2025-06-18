@@ -12,3 +12,13 @@ The following environment variables are required:
 - `private_key`: private key used for JWT auth
 - `vapid_public_key`: VAPID public key used to sign the notification by the client
 - `vapid_private_key`: VAPID private key used to verify notifications from the client
+
+The VAPID keys can be generated using the following JS:
+
+```js
+const webpush = require("web-push");
+const vapidKeys = webpush.generateVAPIDKeys();
+
+console.log("Public Key:", vapidKeys.publicKey); // base64url (65 bytes)
+console.log("Private Key:", vapidKeys.privateKey); // base64url
+```
