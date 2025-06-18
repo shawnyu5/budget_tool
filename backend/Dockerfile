@@ -10,7 +10,7 @@ FROM chef AS builder
 
 RUN apk add --no-cache perl make
 COPY --from=planner /app/recipe.json recipe.json
-COPY --from=planner app/vendor vendor
+COPY --from=planner /app/vendor vendor
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
