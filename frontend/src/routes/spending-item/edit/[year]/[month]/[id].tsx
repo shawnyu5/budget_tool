@@ -20,13 +20,7 @@ export default function () {
   const month = params.month;
   const navigate = useNavigate();
 
-  const [spendingItem, setSpendingItem] = createSignal<SpendingItem | null>({
-    id: params.id,
-    amount: 0,
-    date: "",
-    description: "",
-    notes: "",
-  });
+  const [spendingItem, setSpendingItem] = createSignal<SpendingItem | null>(null);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
 
   onMount(async () => {
@@ -102,7 +96,7 @@ export default function () {
       <Show when={errorMessage()}>
         <ErrorComponent message={errorMessage()} />
       </Show>
-      <SpendingItemForm spendingItem={spendingItem} onSubmit={onSubmit} />;
+      <SpendingItemForm spendingItem={spendingItem} onSubmit={onSubmit} />
     </div>
   );
 }

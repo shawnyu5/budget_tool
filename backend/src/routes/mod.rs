@@ -28,7 +28,7 @@ use utoipa_axum::router::OpenApiRouter;
 use utoipa_axum::routes;
 
 use crate::cron::init_all_user_crons;
-use crate::custom_middleware::{check_auth_header, check_valid_year};
+use crate::custom_middleware::check_auth_header;
 use crate::db::DBError;
 use crate::graphql::generate_graphql_schema;
 use crate::graphql::SchemaType;
