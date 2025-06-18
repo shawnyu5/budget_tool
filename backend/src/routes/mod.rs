@@ -44,7 +44,7 @@ pub fn app() -> Router {
             get_spending_item,
             update_spending_item
         })
-        .layer(middleware::from_fn(check_valid_year))
+        // .layer(middleware::from_fn(check_valid_year))
         .routes(routes!(validate_token))
         .routes(routes!(export_csv_handler))
         .layer(middleware::from_fn(check_auth_header))
@@ -260,6 +260,7 @@ async fn get_spending_item(
         }
     };
 
+    info!("Looking up spending item");
     let found = db
         .collection
         .find_one(filter)
