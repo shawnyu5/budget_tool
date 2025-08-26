@@ -1,6 +1,0 @@
-query getConfig {
-  config {
-    encryptionPublicKey
-    vapidPublicKey
-  }
-}

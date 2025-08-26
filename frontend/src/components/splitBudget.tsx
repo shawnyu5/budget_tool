@@ -11,13 +11,13 @@ export default function SplitBudget(props: {
   return (
     <div id="split-budget">
       <p>
-        <b>Shawn</b> ({props.monthlyBudget()?.budget.shawnPercentageAllocation}
+        <b>Shawn</b> ({props.monthlyBudget()?.budget?.shawnPercentageAllocation}
         %): $
         {round(
           calculatePercentage(
             (props.monthlyBudget()?.totalSpending ?? 0) -
               (props.monthlyBudget()?.overBudgetAmount ?? 0),
-            props.monthlyBudget()?.budget.shawnPercentageAllocation ?? 0,
+            props.monthlyBudget()?.budget?.shawnPercentageAllocation ?? 0,
           ) +
             (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2,
         )}
@@ -25,13 +25,13 @@ export default function SplitBudget(props: {
 
       <p>
         <b>Maggie</b> (
-        {props.monthlyBudget()?.budget.maggiePercentageAllocation}
+        {props.monthlyBudget()?.budget?.maggiePercentageAllocation}
         %): $
         {round(
           calculatePercentage(
             (props.monthlyBudget()?.totalSpending ?? 0) -
               (props.monthlyBudget()?.overBudgetAmount ?? 0),
-            props.monthlyBudget()?.budget.maggiePercentageAllocation ?? 0,
+            props.monthlyBudget()?.budget?.maggiePercentageAllocation ?? 0,
           ) +
             (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2,
         )}

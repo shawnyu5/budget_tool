@@ -9,7 +9,6 @@ import {
 } from "solid-js";
 import {
   getMonthlyBudget,
-  MonthlyBudget,
   MonthlyBudgetErrors,
   updateMonthlyBudget,
 } from "~/server";
@@ -18,6 +17,23 @@ import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
 import SuccessComponent from "~/components/successComponent";
 import { calculatePercentage, calculatePercentageOf, round } from "~/utils";
+import { NewGraphQLSDK } from "~/graphql";
+import {
+  GetMonthlyBudgetConfigQuery,
+  Month,
+  MonthlyBudget,
+} from "~/generated/graphql";
+
+async function getMonthlyBudgetSetting(
+  year: string,
+  month: Month,
+): Promise<GetMonthlyBudgetConfigQuery> {
+  const sdk = NewGraphQLSDK();
+  return await sdk.GetMonthlyBudgetConfig({
+    year: parseInt(year),
+    month: month,
+  });
+}
 
 export default function () {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -52,14 +68,20 @@ export default function () {
       }
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
       try {
-        const budget = await getMonthlyBudget(
-          searchParamSignal().year as string,
-          searchParamSignal().month as string,
-        );
+        const sdk = NewGraphQLSDK();
+        let budgetConfig = await sdk.GetMonthlyBudgetConfig({
+          year: parseInt(searchParamSignal().year as string),
+          month: searchParamSignal().month as Month,
+        });
+
+        // const budget = await getMonthlyBudget(
+        //   searchParamSignal().year as string,
+        //   searchParamSignal().month as Month,
+        // );
 
         // If fetching is successful, make sure the error message is gone
         setErrorMessage(null);
-        return budget;
+        return budgetConfig;
       } catch (e) {
         if (
           e == MonthlyBudgetErrors.RE_AUTH_NEEDED ||
@@ -248,7 +270,9 @@ export default function () {
                     budget: {
                       ...monthlyBudget()!.budget,
                       totalAllocation: round(totalBudget),
-                      maggieContributionAmount: round(totalBudget - shawnContribution),
+                      maggieContributionAmount: round(
+                        totalBudget - shawnContribution,
+                      ),
                       shawnContributionAmount: shawnContribution,
                     },
                   };

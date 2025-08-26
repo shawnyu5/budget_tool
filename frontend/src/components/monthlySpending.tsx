@@ -1,7 +1,6 @@
-import { AccessorWithLatest } from "@solidjs/router";
 import "./monthlySpending.css";
-import { createEffect, createSignal, Resource, Suspense } from "solid-js";
-import { MonthlyBudget } from "~/server";
+import { createEffect, createSignal, Resource } from "solid-js";
+import { MonthlyBudget } from "~/generated/graphql";
 import { round } from "~/utils";
 
 /**
@@ -14,12 +13,12 @@ import { round } from "~/utils";
 export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
+  console.log(props.monthlyBudget());
   const remainingBudget = () =>
     round(
-      (props.monthlyBudget()?.budget.totalAllocation ?? 0) -
+      (props.monthlyBudget()?.budget?.totalAllocation ?? 0) -
         (props.monthlyBudget()?.totalSpending ?? 0),
     );
-
   const [color, setColor] = createSignal("green");
 
   createEffect(() => {
@@ -36,7 +35,7 @@ export default function (props: {
       <h1 style={{ background: "yellow", color: color() }}>
         ${props.monthlyBudget()?.totalSpending}
       </h1>
-      <h1>/${props.monthlyBudget()?.budget.totalAllocation} -&nbsp;</h1>
+      <h1>/${props.monthlyBudget()?.budget?.totalAllocation} -&nbsp;</h1>
       <h1 style={{ color: color() }}>${remainingBudget()}</h1>
     </div>
   );

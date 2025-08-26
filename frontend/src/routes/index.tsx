@@ -11,8 +11,8 @@ import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import {
-  MonthlyBudgetErrors,
   getMonthlyBudget,
+  MonthlyBudgetErrors,
   updateMonthlyBudget,
 } from "~/server";
 import log from "~/logger";
@@ -20,49 +20,24 @@ import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import NavBar from "~/components/navBar";
 import axios from "axios";
-import { Month, MonthlyBudget } from "~/client";
+import { Month, MonthlyBudget } from "~/generated/graphql";
+import { handleGetMonthlyBudgetError } from "~/graphql";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
-  const [monthlyBudget, setMonthlyBudget] = createSignal<MonthlyBudget | null>(
-    null,
-  );
-  const navigate = useNavigate();
 
-  // const monthlyBudgetAsync = createAsync(
-  //   async () => {
-  //     if (!searchParamSignal().year || !searchParamSignal().month) {
-  //       return null;
-  //     }
-  //     log.info("Month / year has changed. Triggering createAsync");
-  //     log.info(`Fetching budget for month ${searchParamSignal().month}`);
-  //     try {
-  //       const budget = await getMonthlyBudget(
-  //         searchParamSignal().year as string,
-  //         searchParamSignal().month as string,
-  //       );
+  function setMonthlyBudget(budget: MonthlyBudget) {
+    mutate(budget);
+  }
 
-  //       // If fetching is successful, make sure the error message is gone
-  //       setErrorMessage(null);
-  //       return budget;
-  //     } catch (e) {
-  //       if (
-  //         e == MonthlyBudgetErrors.RE_AUTH_NEEDED ||
-  //         e == MonthlyBudgetErrors.FORBIDDEN
-  //       ) {
-  //         navigate("/login", { replace: true });
-  //       } else if (e == MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
-  //         setErrorMessage("Failed to fetch monthly budget...");
-  //       }
-  //     }
-  //     return null;
-  //   },
-  //   { initialValue: null },
+  // const [monthlyBudget, setMonthlyBudget] = createSignal<MonthlyBudget | null>(
+  //   null,
   // );
 
-  const [monthlyBudgetResource, { refetch }] = createResource(
+  const navigate = useNavigate();
+  const [monthlyBudgetResource, { refetch, mutate }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
       if (!searchParamSignal().year || !searchParamSignal().month) {
@@ -70,50 +45,45 @@ export default function Home() {
       }
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
       try {
-        const budget = await getMonthlyBudget(
+        const res = await getMonthlyBudget(
           searchParamSignal().year as string,
           searchParamSignal().month as Month,
         );
+        log.info(`Budget res: ${JSON.stringify(res)}`);
+        const err = handleGetMonthlyBudgetError(res, navigate);
+        setErrorMessage(err);
 
-        // If fetching is successful, make sure the error message is gone
-        setErrorMessage(null);
-        return budget;
-      } catch (e) {
-        if (
-          e == MonthlyBudgetErrors.RE_AUTH_NEEDED ||
-          e == MonthlyBudgetErrors.FORBIDDEN
-        ) {
-          navigate("/login", { replace: true });
-        } else if (e == MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
-          setErrorMessage("Failed to fetch monthly budget...");
+        const mb = res.monthlyBudget;
+        if (mb && mb.__typename == "MonthlyBudget") {
+          return mb as MonthlyBudget;
         }
-      }
+        return null;
+      } catch (e) {}
+      setErrorMessage("Something went wrong!");
       return null;
-    },
-    {
-      initialValue: null,
     },
   );
 
-  // monthlyBudget signal needs to be kept up to date with the resource. This is to ensure update logic functions correctly
-  createEffect(() => {
-    if (!monthlyBudgetResource()) return null;
-    setMonthlyBudget(monthlyBudgetResource()!);
-  });
+  // // monthlyBudget signal needs to be kept up to date with the resource. This is to ensure update logic functions correctly
+  // createEffect(() => {
+  //   if (!monthlyBudgetResource()) return null;
+  //   setMonthlyBudget(monthlyBudgetResource()!);
+  // });
 
   createEffect(async () => {
     // Only sync with backend if data changes. This also prevents making a round trip to the server on page load
-    if (!monthlyBudget() || monthlyBudget() == monthlyBudgetResource()) {
+    const budget = monthlyBudgetResource();
+    if (!budget || budget == monthlyBudgetResource()) {
       return;
     }
     log.info(
-      `Updating monthly budget in backend: ${JSON.stringify(monthlyBudget(), null, 3)}`,
+      `Updating monthly budget in backend: ${JSON.stringify(budget, null, 3)}`,
     );
     try {
       await updateMonthlyBudget(
         searchParam.year as string,
         searchParam.month as string,
-        monthlyBudget()!,
+        budget,
       );
     } catch (e) {
       // setErrorMessage("Failed to update monthly budget...");

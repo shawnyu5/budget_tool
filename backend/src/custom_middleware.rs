@@ -31,7 +31,6 @@ pub async fn check_auth_header(
 ) -> Result<impl IntoResponse, AppError> {
     let jwt_token = match header.get("authorization") {
         Some(auth_header) => {
-            info!("Auth header: {:?}", auth_header);
             let auth_header_str = auth_header
                 .to_str()
                 .context("Failed to convert authorization header to string")?;

@@ -1,3 +1,31 @@
+type Budget {
+	"""
+	Total allocated budget
+	"""
+	totalAllocation: Float!
+	"""
+	Shawn percentage allocation
+	"""
+	shawnPercentageAllocation: Float!
+	"""
+	Shawn contribution amount. The frontend is responsible for computing this value
+	"""
+	shawnContributionAmount: Float!
+	"""
+	Maggie percentage allocation
+	"""
+	maggiePercentageAllocation: Float!
+	"""
+	Maggie contribution amount. The frontend is responsible for computing this value
+	"""
+	maggieContributionAmount: Float!
+}
+
+type Circle {
+	area: Float!
+	scale(s: Float!): Shape!
+}
+
 """
 Frontend configuration
 """
@@ -11,6 +39,77 @@ type FrontendConfig {
 	"""
 	vapidPublicKey: String!
 }
+
+"""
+GraphQL error codes
+"""
+enum GraphQLErrorCode {
+	"""
+	When the user does not have the authorization
+	"""
+	FORBIDDEN
+	"""
+	Something went wrong on the server side. Typically response 500
+	"""
+	SERVER_ERROR
+	"""
+	Failed to fetch budget for some reason. Typically response 404
+	"""
+	FAILED_TO_FETCH_BUDGET
+}
+
+type GraphQLErrorObject {
+	code: GraphQLErrorCode!
+	message: String!
+}
+
+enum Month {
+	January
+	February
+	March
+	April
+	May
+	June
+	July
+	August
+	September
+	October
+	November
+	December
+}
+
+"""
+Budget details for single month
+"""
+type MonthlyBudget {
+	"""
+	The month
+	"""
+	month: Month!
+	"""
+	Budget details
+	"""
+	budget: Budget!
+	"""
+	Total spending for the month. Including any over budget amount
+	"""
+	totalSpending: Float!
+	"""
+	Amount over budget for the month. 0 means not over budget.
+	"""
+	overBudgetAmount: Float!
+	"""
+	List of spent items
+	"""
+	spending: [SpendingItem!]!
+	"""
+	The month it was carried over from
+	If the setting are not carried over from a previous month, this value will be empty
+	"""
+	carriedOverFrom: Month
+}
+
+union MonthlyBudgetResponse = MonthlyBudget | GraphQLErrorObject
 
 type MutationRoot {
 	"""
@@ -42,6 +141,47 @@ type QueryRoot {
 	Configuration for the frontend to consume
 	"""
 	config: FrontendConfig!
+	"""
+	Get the budget for a specific month in a year
+	
+	* `year`: the year
+	* `month`: the month
+	"""
+	monthlyBudget(year: Int!, month: Month!): MonthlyBudgetResponse!
+	shape: Shape!
+}
+
+union Shape = Circle | Square
+
+"""
+A single transaction
+"""
+type SpendingItem {
+	"""
+	A unique identifier
+	"""
+	id: String!
+	"""
+	The dollar amount
+	"""
+	amount: Float!
+	"""
+	The date
+	"""
+	date: String!
+	"""
+	Description of the purchase
+	"""
+	description: String!
+	"""
+	Additional notes
+	"""
+	notes: String
+}
+
+type Square {
+	area: Float!
+	scale(s: Float!): Shape!
 }
 
 input SubscriptionInput {

@@ -1,7 +1,14 @@
-use async_graphql::{Object, SimpleObject};
+use async_graphql::{ErrorExtensions, FieldResult, Object, Result, SimpleObject, Union};
 use base64::prelude::*;
+use tracing::{error, info, instrument};
 
-use crate::config::Config;
+use crate::{
+    config::Config,
+    db::{DBError, DB},
+    graphql::error::{Circle, GraphQLErrorCode, GraphQLErrorObject, Shape},
+    month::Month,
+    monthly_budget::MonthlyBudget,
+};
 
 /// Root of the graphql query
 #[derive(Default, Clone)]
@@ -16,10 +23,17 @@ pub struct FrontendConfig {
     vapid_public_key: String,
 }
 
+#[derive(Union)]
+enum MonthlyBudgetResponse {
+    MonthlyBudget(MonthlyBudget),
+    Error(GraphQLErrorObject),
+}
+
 #[Object]
 /// Root of the query
 impl QueryRoot {
     /// Configuration for the frontend to consume
+    #[instrument(skip_all)]
     async fn config(&self) -> FrontendConfig {
         let backend_config = Config::load();
 
@@ -27,5 +41,40 @@ impl QueryRoot {
             encryption_public_key: BASE64_STANDARD.encode(backend_config.public_key),
             vapid_public_key: backend_config.vapid_public_key,
         }
+    }
+
+    /// Get the budget for a specific month in a year
+    ///
+    /// * `year`: the year
+    /// * `month`: the month
+    #[instrument(skip_all)]
+    async fn monthly_budget(&self, year: u16, month: Month) -> MonthlyBudgetResponse {
+        // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
+        //     code: GraphQLErrorCode::ServerError,
+        //     message: "Ahhhh".to_string(),
+        // });
+        info!("Connecting to DB");
+        let db = DB::new(&year.to_string())
+            .await
+            .map_err(|e| e.extend_with(|_, e| e.set("reason", "AHHH")))
+            .unwrap();
+
+        match db.get_month_budget(month).await {
+            Ok(mut monthly_budget) => {
+                monthly_budget.update_calculations();
+                MonthlyBudgetResponse::MonthlyBudget(monthly_budget)
+            }
+            Err(e) => {
+                error!("Error querying db: {:?}", e);
+                MonthlyBudgetResponse::Error(GraphQLErrorObject {
+                    code: GraphQLErrorCode::ServerError,
+                    message: e.to_string(),
+                })
+            }
+        }
+    }
+
+    async fn shape(&self) -> Shape {
+        Shape::Circle(Circle { radius: 10.0 })
     }
 }

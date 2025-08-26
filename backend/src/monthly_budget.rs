@@ -1,3 +1,4 @@
+use async_graphql::SimpleObject;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
@@ -5,7 +6,7 @@ use utoipa::ToSchema;
 
 use crate::{month::Month, utils::calculate_percentage};
 /// Budget details for single month
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct MonthlyBudget {
     /// The month
@@ -98,7 +99,7 @@ impl MonthlyBudget {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct Budget {
     /// Total allocated budget
@@ -121,7 +122,7 @@ pub struct Budget {
 }
 
 /// A single transaction
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject)]
 #[serde(rename_all = "camelCase")]
 pub struct SpendingItem {
     /// A unique identifier

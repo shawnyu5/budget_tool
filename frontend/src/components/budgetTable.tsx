@@ -1,7 +1,8 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import { createEffect, createSignal, For, Resource, Show } from "solid-js";
+import { MonthlyBudget } from "~/generated/graphql";
 import log from "~/logger";
-import { MonthlyBudget, MonthlySpending, SpendingItem } from "~/server";
+import { MonthlySpending, SpendingItem } from "~/server";
 
 export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;

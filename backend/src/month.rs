@@ -3,6 +3,7 @@ use std::{
     ops::{Add, Sub},
 };
 
+use async_graphql::Enum;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::ToSchema;
@@ -13,19 +14,31 @@ pub enum MonthError {
     InvalidMonth,
 }
 
-#[derive(Debug, Deserialize, PartialEq, ToSchema, Clone, Serialize, Copy)]
+#[derive(Debug, Deserialize, PartialEq, ToSchema, Clone, Serialize, Copy, Enum, Eq)]
 pub enum Month {
+    #[graphql(name = "January")]
     January,
+    #[graphql(name = "February")]
     February,
+    #[graphql(name = "March")]
     March,
+    #[graphql(name = "April")]
     April,
+    #[graphql(name = "May")]
     May,
+    #[graphql(name = "June")]
     June,
+    #[graphql(name = "July")]
     July,
+    #[graphql(name = "August")]
     August,
+    #[graphql(name = "September")]
     September,
+    #[graphql(name = "October")]
     October,
+    #[graphql(name = "November")]
     November,
+    #[graphql(name = "December")]
     December,
 }
 

@@ -11,10 +11,14 @@ import { getLocalAuthToken, setLocalAuthToken } from "./utils";
 import axiosRetry from "axios-retry";
 import { client } from "~/client/client.gen";
 import {
-  getMonthBudgetHandler,
   saveNotificationSubscriptionHandler,
 } from "~/client/sdk.gen";
-import { Month, MonthlyBudget } from "./client/types.gen";
+import { NewGraphQLSDK } from "./graphql";
+import {
+  GetMonthBudgetQuery,
+  Month,
+  MonthlyBudget,
+} from "./generated/graphql";
 
 // const axiosInstance = axios.create({
 //   baseURL: loadLocalConfig().backendUrl,
@@ -43,6 +47,7 @@ export type MonthlySpending =
 
 /**
  * Errors that could happen when fetching the monthly budget
+ * @deprecated use GraphQlErrorCode instead
  */
 export enum MonthlyBudgetErrors {
   /**
@@ -68,35 +73,47 @@ export enum MonthlyBudgetErrors {
 export async function getMonthlyBudget(
   year: string,
   month: Month,
-): Promise<MonthlyBudget> {
-  try {
-    const response = await getMonthBudgetHandler({
-      path: {
-        year,
-        month,
-      },
-      headers: {
-        Authorization: `Bearer ${getLocalAuthToken()}`,
-      },
-    });
+): Promise<GetMonthBudgetQuery> {
+  const sdk = NewGraphQLSDK();
+  let response = await sdk.GetMonthBudget({
+    year: parseInt(year),
+    month: month,
+  });
 
-    if (!response.data) {
-      throw new Error("No budget found");
-    }
-
-    return response.data;
-  } catch (e) {
-    if (axios.isAxiosError(e)) {
-      if (e.response?.status == 404) {
-        return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
-      } else if (e.response?.status == 403) {
-        return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
-      } else if (e.response?.status == 401) {
-        return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
-      }
-    }
-    return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+  if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
+    const error = response.monthlyBudget.code;
+    return Promise.reject(error);
   }
+
+  return response;
+  // try {
+  //   const response = await getMonthBudgetHandler({
+  //     path: {
+  //       year,
+  //       month,
+  //     },
+  //     headers: {
+  //       Authorization: `Bearer ${getLocalAuthToken()}`,
+  //     },
+  //   });
+
+  //   if (!response.data) {
+  //     throw new Error("No budget found");
+  //   }
+
+  //   return response.data;
+  // } catch (e) {
+  //   if (axios.isAxiosError(e)) {
+  //     if (e.response?.status == 404) {
+  //       return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+  //     } else if (e.response?.status == 403) {
+  //       return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
+  //     } else if (e.response?.status == 401) {
+  //       return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
+  //     }
+  //   }
+  //   return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+  // }
 }
 
 /**
@@ -236,3 +253,4 @@ export async function exportCSV(year: string, month: string): Promise<string> {
   );
   return response.data;
 }
+

@@ -38,6 +38,7 @@ export const validateToken = <ThrowOnError extends boolean = false>(options?: Op
 
 /**
  * Get the budget information for a specific month
+ * @deprecated
  */
 export const getMonthBudgetHandler = <ThrowOnError extends boolean = false>(options: Options<GetMonthBudgetHandlerData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetMonthBudgetHandlerResponses, GetMonthBudgetHandlerErrors, ThrowOnError>({

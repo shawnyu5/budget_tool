@@ -44,7 +44,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get the budget information for a specific month */
+        /**
+         * Get the budget information for a specific month
+         * @deprecated
+         */
         get: operations["get_month_budget_handler"];
         put?: never;
         /** Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending`, and `overBudgetAmount` is up to date */
