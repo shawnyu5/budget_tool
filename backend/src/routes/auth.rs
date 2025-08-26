@@ -63,13 +63,20 @@ pub async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> 
     };
 
     let username = user.split(":").collect::<Vec<&str>>()[0].to_string();
+    let token = generate_jwt(&username);
+    return Ok(token);
+}
+
+/// Generate a JWT token, containing a user name
+///
+/// * `username`: the user name to embed into the token
+pub fn generate_jwt(username: &str) -> String {
     let key = EncodingKey::from_secret(&Config::load().private_key.into_bytes());
     let claim = JwtClaim {
-        username,
+        username: username.to_string(),
         exp: ((Utc::now() + Duration::hours(24)).timestamp() as usize),
     };
-    let token = encode(&Header::default(), &claim, &key).unwrap();
-    return Ok(token);
+    return encode(&Header::default(), &claim, &key).unwrap();
 }
 
 pub fn decode_jwt(jwt: &str) -> Result<JwtClaim> {
@@ -90,7 +97,6 @@ where
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         let jwt_token = match parts.headers.get("authorization") {
             Some(auth_header) => {
-                info!("Auth header: {:?}", auth_header);
                 let auth_header_str = auth_header
                     .to_str()
                     .context("Failed to convert authorization header to string")
@@ -102,7 +108,7 @@ where
                 auth_header_str.replace("Bearer ", "")
             }
             None => {
-                error!("Missing auth header");
+                error!("Missing auth header....");
                 return Err(StatusCode::FORBIDDEN);
             }
         };

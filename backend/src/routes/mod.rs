@@ -107,10 +107,16 @@ pub async fn app() -> Router {
 #[instrument(skip_all)]
 #[utoipa::path(get, path = "/graphql")]
 pub async fn graphql_playground() -> impl IntoResponse {
+    use crate::routes::auth::generate_jwt;
     use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+
     use axum::response::Html;
 
-    Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
+    let token = generate_jwt("dev-1234");
+    let auth_header = format!("Bearer {}", token);
+    Html(playground_source(
+        GraphQLPlaygroundConfig::new("/graphql").with_header("authorization", &auth_header),
+    ))
 }
 
 /// Handler for graphql requests
@@ -127,6 +133,7 @@ async fn graphql_handler(
 
 /// Get the budget information for a specific month
 #[instrument(skip_all)]
+#[deprecated = "Use the graphql query instead"]
 #[utoipa::path(
     get,
     path = "/budget/{year}/{month}",
