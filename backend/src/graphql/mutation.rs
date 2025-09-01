@@ -11,7 +11,7 @@ use crate::{
 };
 
 /// Root of the Mutation
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct MutationRoot;
 
 #[derive(InputObject)]

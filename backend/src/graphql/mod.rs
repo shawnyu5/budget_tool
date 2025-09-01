@@ -6,7 +6,7 @@ use tracing::info;
 
 use crate::graphql::{mutation::MutationRoot, query::QueryRoot};
 
-mod error;
+pub mod error;
 mod mutation;
 mod query;
 

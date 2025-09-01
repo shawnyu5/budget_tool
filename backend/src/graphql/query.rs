@@ -11,7 +11,7 @@ use crate::{
 };
 
 /// Root of the graphql query
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct QueryRoot;
 
 /// Frontend configuration
@@ -49,6 +49,7 @@ impl QueryRoot {
     /// * `month`: the month
     #[instrument(skip_all)]
     async fn monthly_budget(&self, year: u16, month: Month) -> MonthlyBudgetResponse {
+        // error!("Returning error!");
         // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
         //     code: GraphQLErrorCode::ServerError,
         //     message: "Ahhhh".to_string(),
