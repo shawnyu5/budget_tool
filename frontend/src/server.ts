@@ -3,6 +3,7 @@
  *
  */
 import axios from "axios";
+import { Navigator } from "@solidjs/router";
 import { paths } from "./backend_schema";
 import { loadLocalConfig } from "./config";
 import log from "./logger";
@@ -10,19 +11,9 @@ import { useNavigate } from "@solidjs/router";
 import { getLocalAuthToken, setLocalAuthToken } from "./utils";
 import axiosRetry from "axios-retry";
 import { client } from "~/client/client.gen";
-import {
-  saveNotificationSubscriptionHandler,
-} from "~/client/sdk.gen";
-import { NewGraphQLSDK } from "./graphql";
-import {
-  GetMonthBudgetQuery,
-  Month,
-  MonthlyBudget,
-} from "./generated/graphql";
-
-// const axiosInstance = axios.create({
-//   baseURL: loadLocalConfig().backendUrl,
-// });
+import { saveNotificationSubscriptionHandler } from "~/client/sdk.gen";
+import { handleGraphQLError, NewGraphQLSDK } from "./graphql";
+import { Month, MonthlyBudget } from "./generated/graphql";
 
 axiosRetry(axios, {
   retries: 4,
@@ -73,7 +64,8 @@ export enum MonthlyBudgetErrors {
 export async function getMonthlyBudget(
   year: string,
   month: Month,
-): Promise<GetMonthBudgetQuery> {
+  navigate: Navigator,
+): Promise<MonthlyBudget | null> {
   const sdk = NewGraphQLSDK();
   let response = await sdk.GetMonthBudget({
     year: parseInt(year),
@@ -81,40 +73,26 @@ export async function getMonthlyBudget(
   });
 
   if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
-    const error = response.monthlyBudget.code;
-    return Promise.reject(error);
+    const err = handleGraphQLError(response.monthlyBudget);
+    if (err) {
+      throw new Error(err);
+    }
   }
-
-  return response;
-  // try {
-  //   const response = await getMonthBudgetHandler({
-  //     path: {
-  //       year,
-  //       month,
-  //     },
-  //     headers: {
-  //       Authorization: `Bearer ${getLocalAuthToken()}`,
-  //     },
-  //   });
-
-  //   if (!response.data) {
-  //     throw new Error("No budget found");
-  //   }
-
-  //   return response.data;
-  // } catch (e) {
-  //   if (axios.isAxiosError(e)) {
-  //     if (e.response?.status == 404) {
-  //       return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
-  //     } else if (e.response?.status == 403) {
-  //       return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
-  //     } else if (e.response?.status == 401) {
-  //       return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
-  //     }
-  //   }
-  //   return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
-  // }
+  return response.monthlyBudget as MonthlyBudget;
 }
+
+// if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
+//     logger.info("Found graphql error");
+//     const err = response.monthlyBudget.code;
+//     if (err == GraphQlErrorCode.Forbidden) {
+//        navigate("/login", { replace: true });
+//        throw new Error("Forbidden, redirecting to login");
+//     } else if (GraphQlErrorCode.FailedToFetchBudget) {
+//        throw new Error("Failed to fetch monthly budget...");
+//     } else {
+//        throw new Error("Something went wrong!");
+//     }
+//  }
 
 /**
  * Updates the monthly budget for a specific year and month with a new budget
@@ -253,4 +231,3 @@ export async function exportCSV(year: string, month: string): Promise<string> {
   );
   return response.data;
 }
-

@@ -1,8 +1,8 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import axios from "axios";
 import { Accessor, createSignal, Setter } from "solid-js";
-import { MonthlyBudget } from "~/client";
 import { SpendingItemForm } from "~/components/spendingItemForm";
+import { Month, MonthlyBudget } from "~/generated/graphql";
 import log from "~/logger";
 import {
   getMonthlyBudget,
@@ -14,7 +14,7 @@ import { generateSpendingItemID } from "~/utils";
 export default function () {
   const params = useParams();
   const year = params.year;
-  const month = params.month;
+  const month = params.month as Month;
   const navigate = useNavigate();
   const jsDate = new Date();
   const [spendingItem] = createSignal<SpendingItem | null>({

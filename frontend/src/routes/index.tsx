@@ -20,21 +20,26 @@ import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import NavBar from "~/components/navBar";
 import axios from "axios";
-import { Month, MonthlyBudget } from "~/generated/graphql";
-import { handleGetMonthlyBudgetError } from "~/graphql";
+import {
+  Month,
+  MonthlyBudget,
+} from "~/generated/graphql";
+import { handleGraphQLHttpError } from "~/graphql";
+import { ClientError } from "graphql-request";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
 
+  /**
+   * Update the budget resource
+   * @param budget - the new budget
+   */
   function setMonthlyBudget(budget: MonthlyBudget) {
+    log.info("Mutating monthly budget");
     mutate(budget);
   }
-
-  // const [monthlyBudget, setMonthlyBudget] = createSignal<MonthlyBudget | null>(
-  //   null,
-  // );
 
   const navigate = useNavigate();
   const [monthlyBudgetResource, { refetch, mutate }] = createResource(
@@ -45,30 +50,24 @@ export default function Home() {
       }
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
       try {
-        const res = await getMonthlyBudget(
+        const monthlyBudget = await getMonthlyBudget(
           searchParamSignal().year as string,
           searchParamSignal().month as Month,
+          navigate,
         );
-        log.info(`Budget res: ${JSON.stringify(res)}`);
-        const err = handleGetMonthlyBudgetError(res, navigate);
-        setErrorMessage(err);
-
-        const mb = res.monthlyBudget;
-        if (mb && mb.__typename == "MonthlyBudget") {
-          return mb as MonthlyBudget;
+        return monthlyBudget;
+      } catch (e) {
+        console.log(e);
+        if (e instanceof ClientError) {
+          const err = handleGraphQLHttpError(e, navigate);
+          setErrorMessage(err);
+        } else if (e instanceof Error) {
+          setErrorMessage(e.message);
         }
         return null;
-      } catch (e) {}
-      setErrorMessage("Something went wrong!");
-      return null;
+      }
     },
   );
-
-  // // monthlyBudget signal needs to be kept up to date with the resource. This is to ensure update logic functions correctly
-  // createEffect(() => {
-  //   if (!monthlyBudgetResource()) return null;
-  //   setMonthlyBudget(monthlyBudgetResource()!);
-  // });
 
   createEffect(async () => {
     // Only sync with backend if data changes. This also prevents making a round trip to the server on page load

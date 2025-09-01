@@ -13,7 +13,6 @@ import { round } from "~/utils";
 export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
 }) {
-  console.log(props.monthlyBudget());
   const remainingBudget = () =>
     round(
       (props.monthlyBudget()?.budget?.totalAllocation ?? 0) -
