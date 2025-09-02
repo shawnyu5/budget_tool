@@ -20,10 +20,7 @@ import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import NavBar from "~/components/navBar";
 import axios from "axios";
-import {
-  Month,
-  MonthlyBudget,
-} from "~/generated/graphql";
+import { Month, MonthlyBudget } from "~/generated/graphql";
 import { handleGraphQLHttpError } from "~/graphql";
 import { ClientError } from "graphql-request";
 
@@ -49,23 +46,12 @@ export default function Home() {
         return null;
       }
       log.info(`Fetching budget for month ${searchParamSignal().month}`);
-      try {
-        const monthlyBudget = await getMonthlyBudget(
-          searchParamSignal().year as string,
-          searchParamSignal().month as Month,
-          navigate,
-        );
-        return monthlyBudget;
-      } catch (e) {
-        console.log(e);
-        if (e instanceof ClientError) {
-          const err = handleGraphQLHttpError(e, navigate);
-          setErrorMessage(err);
-        } else if (e instanceof Error) {
-          setErrorMessage(e.message);
-        }
-        return null;
-      }
+      const monthlyBudget = await getMonthlyBudget(
+        searchParamSignal().year as string,
+        searchParamSignal().month as Month,
+        navigate,
+      );
+      return monthlyBudget;
     },
   );
 

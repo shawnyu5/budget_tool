@@ -1,3 +1,5 @@
+use std::convert::Infallible;
+
 use anyhow::Result;
 use anyhow::{anyhow, Context};
 use axum::extract::FromRequestParts;
@@ -10,6 +12,7 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use tracing::{error, info, instrument};
 
+use crate::routes::MaybeJwt;
 use crate::{config::Config, routes::JwtClaim};
 
 #[instrument(skip_all)]
@@ -88,11 +91,11 @@ pub fn decode_jwt(jwt: &str) -> Result<JwtClaim> {
     return Ok(token_data.claims);
 }
 
-impl<S> FromRequestParts<S> for JwtClaim
+impl<S> FromRequestParts<S> for MaybeJwt
 where
     S: Send + Sync,
 {
-    type Rejection = StatusCode;
+    type Rejection = Infallible;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         let jwt_token = match parts.headers.get("authorization") {
@@ -103,13 +106,13 @@ where
                     .unwrap();
 
                 if !auth_header_str.contains("Bearer") {
-                    return Err(StatusCode::FORBIDDEN);
+                    return Ok(MaybeJwt(None));
                 }
                 auth_header_str.replace("Bearer ", "")
             }
             None => {
                 error!("Missing auth header....");
-                return Err(StatusCode::FORBIDDEN);
+                return Ok(MaybeJwt(None));
             }
         };
 
@@ -117,14 +120,10 @@ where
             Ok(e) => e,
             Err(e) => {
                 error!("Failed to verify JWT token: {e}");
-                return Err(StatusCode::FORBIDDEN);
+                return Ok(MaybeJwt(None));
             }
         };
 
-        return Ok(claim);
-        // parts.extensions.get::<JwtClaim>().cloned().ok_or_else(|| {
-        //     error!("Failed to exract JWT");
-        //     StatusCode::UNAUTHORIZED
-        // })
+        return Ok(MaybeJwt(Some(claim)));
     }
 }

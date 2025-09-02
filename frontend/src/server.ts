@@ -73,7 +73,7 @@ export async function getMonthlyBudget(
   });
 
   if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
-    const err = handleGraphQLError(response.monthlyBudget);
+    const err = handleGraphQLError(response.monthlyBudget, navigate);
     if (err) {
       throw new Error(err);
     }

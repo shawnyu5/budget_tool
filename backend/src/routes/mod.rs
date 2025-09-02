@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use anyhow::anyhow;
 use anyhow::Context;
 use async_graphql_axum::GraphQLRequest;
@@ -123,7 +125,7 @@ pub async fn graphql_playground() -> impl IntoResponse {
 #[instrument(skip_all)]
 #[utoipa::path(post, path = "/graphql")]
 async fn graphql_handler(
-    jwt: JwtClaim,
+    jwt: MaybeJwt,
     State(schema): State<SchemaType>,
     req: GraphQLRequest,
 ) -> GraphQLResponse {
@@ -225,6 +227,17 @@ pub struct JwtClaim {
     /// Username
     pub username: String,
     pub exp: usize,
+}
+
+/// An optional JWT token
+pub struct MaybeJwt(pub Option<JwtClaim>);
+
+impl Deref for MaybeJwt {
+    type Target = Option<JwtClaim>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
 // TODO: implement an access / refresh token system later

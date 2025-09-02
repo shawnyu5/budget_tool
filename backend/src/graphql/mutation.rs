@@ -7,7 +7,7 @@ use crate::{
         users::{User, USER_TABLE_NAME},
         DB,
     },
-    routes::JwtClaim,
+    routes::{JwtClaim, MaybeJwt},
 };
 
 /// Root of the Mutation
@@ -33,9 +33,17 @@ impl MutationRoot {
         subscription: SubscriptionInput,
     ) -> Result<User> {
         info!("Saving user subscription");
-        let jwt = ctx
-            .data::<JwtClaim>()
+        let maybe_jwt = ctx
+            .data::<MaybeJwt>()
             .expect("There should always be a JWT here!");
+        if maybe_jwt.is_none() {
+            panic!("JWT is invalid");
+            // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
+            //     code: GraphQLErrorCode::Forbidden,
+            //     message: "Missing or invalid JWT".to_string(),
+            // });
+        }
+        let jwt = maybe_jwt.as_ref().unwrap();
 
         // Tracks if we are updating an existing user in the DB
         let mut existing_user = true;

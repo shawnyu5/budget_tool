@@ -1,4 +1,4 @@
-use async_graphql::{ErrorExtensions, FieldResult, Object, Result, SimpleObject, Union};
+use async_graphql::{Context, ErrorExtensions, FieldResult, Object, Result, SimpleObject, Union};
 use base64::prelude::*;
 use tracing::{error, info, instrument};
 
@@ -8,6 +8,7 @@ use crate::{
     graphql::error::{Circle, GraphQLErrorCode, GraphQLErrorObject, Shape},
     month::Month,
     monthly_budget::MonthlyBudget,
+    routes::MaybeJwt,
 };
 
 /// Root of the graphql query
@@ -48,12 +49,28 @@ impl QueryRoot {
     /// * `year`: the year
     /// * `month`: the month
     #[instrument(skip_all)]
-    async fn monthly_budget(&self, year: u16, month: Month) -> MonthlyBudgetResponse {
+    async fn monthly_budget(
+        &self,
+        ctx: &Context<'_>,
+        year: u16,
+        month: Month,
+    ) -> MonthlyBudgetResponse {
         // error!("Returning error!");
         // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
         //     code: GraphQLErrorCode::ServerError,
         //     message: "Ahhhh".to_string(),
         // });
+        let jwt = ctx
+            .data::<MaybeJwt>()
+            .expect("Missing JWT in graphql context");
+
+        if jwt.is_none() {
+            return MonthlyBudgetResponse::Error(GraphQLErrorObject {
+                code: GraphQLErrorCode::Forbidden,
+                message: "Missing or invalid JWT".to_string(),
+            });
+        }
+
         info!("Connecting to DB");
         let db = DB::new(&year.to_string())
             .await

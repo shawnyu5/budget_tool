@@ -49,11 +49,16 @@ export function handleGraphQLHttpError(
  * Handles errors returned by graphQL it self
  * @param err - the graphql error returned
  */
-export function handleGraphQLError(err: GraphQlErrorObject): string | null {
+export function handleGraphQLError(
+  err: GraphQlErrorObject,
+  navigate: Navigator,
+): string | null {
   if (err.code == GraphQlErrorCode.FailedToFetchBudget) {
     return "Failed to fetch budget...";
   } else if (err.code == GraphQlErrorCode.ServerError) {
     return "Something went wrong on the server...";
+  } else if (err.code == GraphQlErrorCode.Forbidden) {
+    navigate("/login", { replace: true });
   }
   return null;
 }
