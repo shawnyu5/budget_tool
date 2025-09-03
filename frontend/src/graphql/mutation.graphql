@@ -11,3 +11,7 @@ mutation saveSubscription($subscription: SubscriptionInput!) {
     }
   }
 }
+
+# mutation updateMonthlyBudget {
+
+# }

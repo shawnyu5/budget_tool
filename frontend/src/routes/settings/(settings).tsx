@@ -8,7 +8,6 @@ import {
   Suspense,
 } from "solid-js";
 import {
-  getMonthlyBudget,
   MonthlyBudgetErrors,
   updateMonthlyBudget,
 } from "~/server";
@@ -35,7 +34,7 @@ async function getMonthlyBudgetSetting(
   });
 }
 
-export default function () {
+export default function Settings () {
   const [searchParam, _setSearchParam] = useSearchParams();
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);

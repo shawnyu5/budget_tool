@@ -21,8 +21,6 @@ import ErrorComponent from "~/components/errorComponent";
 import NavBar from "~/components/navBar";
 import axios from "axios";
 import { Month, MonthlyBudget } from "~/generated/graphql";
-import { handleGraphQLHttpError } from "~/graphql";
-import { ClientError } from "graphql-request";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -45,7 +43,9 @@ export default function Home() {
       if (!searchParamSignal().year || !searchParamSignal().month) {
         return null;
       }
-      log.info(`Fetching budget for month ${searchParamSignal().month}`);
+      log.info(
+        `[Resource] Fetching budget for month ${searchParamSignal().month}`,
+      );
       const monthlyBudget = await getMonthlyBudget(
         searchParamSignal().year as string,
         searchParamSignal().month as Month,
@@ -58,7 +58,7 @@ export default function Home() {
   createEffect(async () => {
     // Only sync with backend if data changes. This also prevents making a round trip to the server on page load
     const budget = monthlyBudgetResource();
-    if (!budget || budget == monthlyBudgetResource()) {
+    if (!budget) {
       return;
     }
     log.info(
@@ -71,7 +71,6 @@ export default function Home() {
         budget,
       );
     } catch (e) {
-      // setErrorMessage("Failed to update monthly budget...");
       if (axios.isAxiosError(e)) {
         if (e.response?.status == 404) {
           log.info("No budget recorded for this month");
@@ -116,7 +115,7 @@ export default function Home() {
           <br />
           <BudgetTable
             monthlyBudget={monthlyBudgetResource}
-            setMonthlyBudget={syncMonthlyBudgetWithServer}
+            setMonthlyBudget={setMonthlyBudget}
           />
         </Suspense>
       </ErrorBoundary>

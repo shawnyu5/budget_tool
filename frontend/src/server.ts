@@ -14,6 +14,7 @@ import { client } from "~/client/client.gen";
 import { saveNotificationSubscriptionHandler } from "~/client/sdk.gen";
 import { handleGraphQLError, NewGraphQLSDK } from "./graphql";
 import { Month, MonthlyBudget } from "./generated/graphql";
+import logger from "./logger";
 
 axiosRetry(axios, {
   retries: 4,

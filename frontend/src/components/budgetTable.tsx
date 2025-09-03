@@ -6,20 +6,12 @@ import { MonthlySpending, SpendingItem } from "~/server";
 
 export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
-  setMonthlyBudget: (monthlyBudget: MonthlyBudget) => Promise<void>;
+  setMonthlyBudget: (monthlyBudget: MonthlyBudget) => void;
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // If the table is being edited
   const [isEditing, setIsEditing] = createSignal(false);
-  // Spending for the current month. We need something we can edit, so we can remove a specific spending item from the table
-  const [monthlySpending, setMonthlySpending] =
-    createSignal<MonthlySpending | null>();
-
-  createEffect(() => {
-    log.info("Monthly budget has changed. Updating spending table");
-    setMonthlySpending(props.monthlyBudget()?.spending);
-  });
 
   /**
    * Removes a spending item from the table
@@ -29,11 +21,20 @@ export default function (props: {
     log.info(
       `Removing spending entry ID ${entry.id}, description: ${entry.description}`,
     );
+    const prev = props.monthlyBudget();
+    if (!prev) return;
 
-    const updatedSpending = (monthlySpending() ?? []).filter(
-      (spending) => spending.id != entry.id,
-    );
-    setMonthlySpending(updatedSpending);
+    let updated = {
+      ...prev,
+      spending: (prev.spending ?? []).filter((item) => item.id !== entry.id),
+    };
+
+    const updatedSpending = updated.spending.reduce((total, spending) => {
+      return total + spending.amount;
+    }, 0);
+    updated.totalSpending = updatedSpending
+
+    props.setMonthlyBudget(updated);
     log.info("Spending entry removed");
   };
 
@@ -76,9 +77,9 @@ export default function (props: {
 
           const updated: MonthlyBudget = {
             ...(props.monthlyBudget() as MonthlyBudget),
-            spending: monthlySpending() ?? [],
+            spending: props.monthlyBudget()?.spending ?? [],
           };
-          await props.setMonthlyBudget(updated);
+          props.setMonthlyBudget(updated);
         })}
         method="post"
       >
@@ -120,7 +121,7 @@ export default function (props: {
             </tr>
           </thead>
           <tbody>
-            <For each={monthlySpending()}>
+            <For each={props.monthlyBudget()?.spending ?? []}>
               {(entry) => {
                 return (
                   <tr
@@ -139,6 +140,9 @@ export default function (props: {
                       );
                     }}
                   >
+                    {
+                      // Delete button
+                    }
                     <Show when={isEditing()}>
                       <td>
                         <button
