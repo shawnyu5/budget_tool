@@ -29,6 +29,10 @@ futures = "0.3.31"
 chrono-tz = "0.10.3"
 
 
+[dev-dependencies]
+axum-test = "18.0.2"
+
+
 [dependencies.axum]
 version = "0.8.4"
 features = ["macros"]
