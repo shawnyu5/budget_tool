@@ -8,10 +8,9 @@
       "test": "playwright test",
       "test:ui": "playwright test --ui",
       "start": "vinxi start",
-      "openapi": "npx openapi-typescript ../backend/open_api_spec.json -o src/backend_schema.d.ts",
-      "openapi-sdk": "npx npx @hey-api/openapi-ts -f hey-api.config.ts",
+      "openapi": "npx npx @hey-api/openapi-ts -f hey-api.config.ts",
       "graphql": "graphql-codegen --config codegen.ts",
-      "codegen": "npm run openapi && npm run openapi-sdk && npm run graphql",
+      "codegen": "npm run openapi && npm run graphql",
       "version": "vinxi version"
    },
    "dependencies": {
