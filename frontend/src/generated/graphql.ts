@@ -17,8 +17,8 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
-export type Budget = {
-  __typename?: 'Budget';
+export type BudgetConfig = {
+  __typename?: 'BudgetConfig';
   /** Maggie contribution amount. The frontend is responsible for computing this value */
   maggieContributionAmount: Scalars['Float']['output'];
   /** Maggie percentage allocation */
@@ -29,6 +29,19 @@ export type Budget = {
   shawnPercentageAllocation: Scalars['Float']['output'];
   /** Total allocated budget */
   totalAllocation: Scalars['Float']['output'];
+};
+
+export type BudgetConfigInput = {
+  /** Maggie contribution amount. The frontend is responsible for computing this value */
+  maggieContributionAmount: Scalars['Float']['input'];
+  /** Maggie percentage allocation */
+  maggiePercentageAllocation: Scalars['Float']['input'];
+  /** Shawn contribution amount. The frontend is responsible for computing this value */
+  shawnContributionAmount: Scalars['Float']['input'];
+  /** Shawn percentage allocation */
+  shawnPercentageAllocation: Scalars['Float']['input'];
+  /** Total allocated budget */
+  totalAllocation: Scalars['Float']['input'];
 };
 
 export type Circle = {
@@ -86,7 +99,7 @@ export enum Month {
 export type MonthlyBudget = {
   __typename?: 'MonthlyBudget';
   /** Budget details */
-  budget: Budget;
+  budget: BudgetConfig;
   /**
    * The month it was carried over from
    * If the setting are not carried over from a previous month, this value will be empty
@@ -111,11 +124,18 @@ export type MutationRoot = {
    * The user is extracted from the JWT
    */
   saveSubscription: User;
+  /** Update the budget configuration for a specific month */
+  updateBudgetConfig: MonthlyBudgetResponse;
 };
 
 
 export type MutationRootSaveSubscriptionArgs = {
   subscription: SubscriptionInput;
+};
+
+
+export type MutationRootUpdateBudgetConfigArgs = {
+  inputs: UpdateBudgetConfigInput;
 };
 
 export type NotificationKeys = {
@@ -189,6 +209,15 @@ export type SubscriptionInput = {
   p256Dh: Scalars['String']['input'];
 };
 
+export type UpdateBudgetConfigInput = {
+  /** The new budget */
+  budgetConfig: BudgetConfigInput;
+  /** The month of the budget to update */
+  month: Month;
+  /** The year of the budget to update */
+  year: Scalars['String']['input'];
+};
+
 /** Represents a user */
 export type User = {
   __typename?: 'User';
@@ -212,7 +241,7 @@ export type GetMonthlyBudgetConfigQueryVariables = Exact<{
 }>;
 
 
-export type GetMonthlyBudgetConfigQuery = { __typename?: 'QueryRoot', monthlyBudget: { __typename?: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename?: 'MonthlyBudget', budget: { __typename?: 'Budget', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } } };
+export type GetMonthlyBudgetConfigQuery = { __typename?: 'QueryRoot', monthlyBudget: { __typename?: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename?: 'MonthlyBudget', budget: { __typename?: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } } };
 
 export type GetMonthBudgetQueryVariables = Exact<{
   year: Scalars['Int']['input'];
@@ -220,7 +249,7 @@ export type GetMonthBudgetQueryVariables = Exact<{
 }>;
 
 
-export type GetMonthBudgetQuery = { __typename?: 'QueryRoot', monthlyBudget: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename: 'MonthlyBudget', month: Month, totalSpending: number, overBudgetAmount: number, carriedOverFrom?: Month | null, spending: Array<{ __typename?: 'SpendingItem', id: string, amount: number, date: string, description: string, notes?: string | null }>, budget: { __typename?: 'Budget', totalAllocation: number, maggiePercentageAllocation: number, maggieContributionAmount: number, shawnPercentageAllocation: number, shawnContributionAmount: number } } };
+export type GetMonthBudgetQuery = { __typename?: 'QueryRoot', monthlyBudget: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename: 'MonthlyBudget', month: Month, totalSpending: number, overBudgetAmount: number, carriedOverFrom?: Month | null, spending: Array<{ __typename?: 'SpendingItem', id: string, amount: number, date: string, description: string, notes?: string | null }>, budget: { __typename?: 'BudgetConfig', totalAllocation: number, maggiePercentageAllocation: number, maggieContributionAmount: number, shawnPercentageAllocation: number, shawnContributionAmount: number } } };
 
 export type GetConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
