@@ -1,4 +1,4 @@
-type Budget {
+type BudgetConfig {
 	"""
 	Total allocated budget
 	"""
@@ -89,7 +89,7 @@ type MonthlyBudget {
 	"""
 	Budget details
 	"""
-	budget: Budget!
+	budget: BudgetConfig!
 	"""
 	Total spending for the month. Including any over budget amount
 	"""
@@ -117,6 +117,33 @@ type MutationRoot {
 	The user is extracted from the JWT
 	"""
 	saveSubscription(subscription: SubscriptionInput!): User!
+	"""
+	Update the budget configuration for a specific month
+	"""
+	updateBudgetConfig(inputs: UpdateBudgetConfigInput!): MonthlyBudgetResponse!
+}
+
+input MyObjInput {
+	"""
+	Total allocated budget
+	"""
+	totalAllocation: Float!
+	"""
+	Shawn percentage allocation
+	"""
+	shawnPercentageAllocation: Float!
+	"""
+	Shawn contribution amount. The frontend is responsible for computing this value
+	"""
+	shawnContributionAmount: Float!
+	"""
+	Maggie percentage allocation
+	"""
+	maggiePercentageAllocation: Float!
+	"""
+	Maggie contribution amount. The frontend is responsible for computing this value
+	"""
+	maggieContributionAmount: Float!
 }
 
 type NotificationKeys {
@@ -189,6 +216,21 @@ input SubscriptionInput {
 	p256Dh: String!
 	auth: String!
 	expirationTime: Int
+}
+
+input UpdateBudgetConfigInput {
+	"""
+	The year of the budget to update
+	"""
+	year: String!
+	"""
+	The month of the budget to update
+	"""
+	month: Month!
+	"""
+	The new budget
+	"""
+	budgetConfig: MyObjInput!
 }
 
 """

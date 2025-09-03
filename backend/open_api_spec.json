@@ -280,7 +280,11 @@
       "post": {
         "summary": "Handler for graphql requests",
         "operationId": "graphql_handler",
-        "responses": {}
+        "responses": {
+          "200": {
+            "description": "GraphQL response"
+          }
+        }
       }
     },
     "/login/basic": {
@@ -513,7 +517,7 @@
   },
   "components": {
     "schemas": {
-      "Budget": {
+      "BudgetConfig": {
         "type": "object",
         "required": [
           "totalAllocation",
@@ -590,7 +594,7 @@
         ],
         "properties": {
           "budget": {
-            "$ref": "#/components/schemas/Budget",
+            "$ref": "#/components/schemas/BudgetConfig",
             "description": "Budget details"
           },
           "carriedOverFrom": {
