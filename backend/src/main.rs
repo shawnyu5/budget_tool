@@ -1,18 +1,8 @@
 #![allow(clippy::needless_return)]
-mod config;
-mod cron;
-mod custom_middleware;
-mod db;
-mod graphql;
-mod month;
-mod monthly_budget;
-mod routes;
-mod utils;
-
 use anyhow::Result;
+use backend::config::Config;
+use backend::routes::app;
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
-use config::Config;
-use routes::app;
 use tokio::net::TcpListener;
 use tracing::info;
 

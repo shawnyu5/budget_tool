@@ -1,7 +1,7 @@
 //! Module for DB related operations
 
 use anyhow::{Context, Result};
-use mongodb::bson::doc;
+use mongodb::{bson::doc, options::ReplaceOptions, results::UpdateResult};
 use tracing::{debug, error, info};
 
 use crate::{
@@ -93,24 +93,28 @@ impl DB<MonthlyBudget> {
             }
         }
     }
+
+    /// Update the monthly budget for a specific month
+    ///
+    /// * `month`: the month to update
+    /// * `budget`: the new budget
+    pub async fn update_monthly_budget(
+        &self,
+        month: Month,
+        budget: &MonthlyBudget,
+    ) -> Result<UpdateResult> {
+        let filter = doc! {
+            "month": month.to_string(),
+        };
+        let options = ReplaceOptions::builder().upsert(true).build();
+        let result = self
+            .collection
+            .replace_one(filter, budget)
+            .with_options(options)
+            .await
+            .context("Failed to update monthly budget")?;
+        info!("Matched {} document(s)", result.matched_count);
+        info!("Modified {} document(s)", result.modified_count);
+        return Ok(result);
+    }
 }
-
-// pub async fn get_user(&self, username: &str) -> Result<(), DBError> {
-//     let collection = self.collection.clone();
-//     match collection
-//         .find_one(doc! {
-//             "user":username,
-//         })
-//         .await
-//         .context("Failed to perform db query")?
-//     {
-//         Some(user) => {
-//             // return Ok(user)
-//             dbg!(&user);
-//             return Ok(());
-//         }
-//         None => Err(DBError::DB(anyhow!("Failed to look for user"))),
-//     }
-
-//     return Ok(());
-// }

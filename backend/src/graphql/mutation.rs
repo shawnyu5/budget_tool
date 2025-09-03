@@ -7,7 +7,10 @@ use crate::{
         users::{User, USER_TABLE_NAME},
         DB,
     },
-    routes::{JwtClaim, MaybeJwt},
+    graphql::query::MonthlyBudgetResponse,
+    month::Month,
+    monthly_budget::BudgetConfig,
+    routes::MaybeJwt,
 };
 
 /// Root of the Mutation
@@ -22,6 +25,16 @@ pub struct SubscriptionInput {
     pub expiration_time: Option<usize>,
 }
 
+#[derive(InputObject)]
+pub struct UpdateBudgetConfigInput {
+    /// The year of the budget to update
+    pub year: String,
+    /// The month of the budget to update
+    pub month: Month,
+    /// The new budget
+    pub budget_config: BudgetConfig,
+}
+
 #[Object]
 impl MutationRoot {
     /// Save a notification subscription for a user
@@ -32,7 +45,6 @@ impl MutationRoot {
         ctx: &Context<'_>,
         subscription: SubscriptionInput,
     ) -> Result<User> {
-        info!("Saving user subscription");
         let maybe_jwt = ctx
             .data::<MaybeJwt>()
             .expect("There should always be a JWT here!");
@@ -44,6 +56,7 @@ impl MutationRoot {
             // });
         }
         let jwt = maybe_jwt.as_ref().unwrap();
+        info!("Saving user subscription");
 
         // Tracks if we are updating an existing user in the DB
         let mut existing_user = true;
@@ -72,5 +85,45 @@ impl MutationRoot {
             .context("Failed to update subscription info")?;
 
         Ok(user)
+    }
+
+    /// Update the budget configuration for a specific month
+    async fn update_budget_config(
+        &self,
+        ctx: &Context<'_>,
+        inputs: UpdateBudgetConfigInput,
+    ) -> Result<MonthlyBudgetResponse> {
+        let maybe_jwt = ctx
+            .data::<MaybeJwt>()
+            .expect("There should always be a JWT here!");
+        if maybe_jwt.is_none() {
+            panic!("JWT is invalid");
+            // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
+            //     code: GraphQLErrorCode::Forbidden,
+            //     message: "Missing or invalid JWT".to_string(),
+            // });
+        }
+        let jwt = maybe_jwt.as_ref().unwrap();
+
+        // If validation fails, dont bother doing anything else
+        // TODO: proper error handling for if validation fails
+        inputs.budget_config.validate();
+
+        let db = DB::new(&inputs.year)
+            .await
+            .context("Failed to connect to database")?;
+
+        let mut month_budget = db
+            .get_month_budget(inputs.month)
+            .await
+            .context("Failed to get month budget")?;
+
+        month_budget.budget = inputs.budget_config;
+        // budget.update_calculations();
+        db.update_monthly_budget(inputs.month, &month_budget)
+            .await
+            .context("Failed to update budget")?;
+
+        return Ok(MonthlyBudgetResponse::MonthlyBudget(month_budget));
     }
 }

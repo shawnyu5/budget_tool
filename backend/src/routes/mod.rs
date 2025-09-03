@@ -16,7 +16,6 @@ use common_axum::app_error_v2::AppError;
 use common_axum::axum::generate_open_api_spec_from_open_api;
 use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
 use mongodb::bson::doc;
-use mongodb::options::ReplaceOptions;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use simd_json::from_slice;
@@ -123,7 +122,13 @@ pub async fn graphql_playground() -> impl IntoResponse {
 
 /// Handler for graphql requests
 #[instrument(skip_all)]
-#[utoipa::path(post, path = "/graphql")]
+#[utoipa::path(
+    post,
+    path = "/graphql",
+    responses(
+        (status = 200, description = "GraphQL response"),
+    ),
+    )]
 async fn graphql_handler(
     jwt: MaybeJwt,
     State(schema): State<SchemaType>,
@@ -205,16 +210,17 @@ async fn update_budget_handler(
         .await
         .context("Failed to connect to database")?;
     body.update_calculations();
-    let filter = doc! {
-        "month": month.to_string()
-    };
-    let options = ReplaceOptions::builder().upsert(true).build();
-    let result = db
-        .collection
-        .replace_one(filter, body)
-        .with_options(options)
-        .await
-        .context("Failed to update monthly budget")?;
+    let result = db.update_monthly_budget(month, &body).await?;
+    // let filter = doc! {
+    //     "month": month.to_string()
+    // };
+    // let options = ReplaceOptions::builder().upsert(true).build();
+    // let result = db
+    //     .collection
+    //     .replace_one(filter, body)
+    //     .with_options(options)
+    //     .await
+    //     .context("Failed to update monthly budget")?;
 
     info!("Matched {} document(s)", result.matched_count);
     info!("Modified {} document(s)", result.modified_count);
@@ -226,7 +232,7 @@ async fn update_budget_handler(
 pub struct JwtClaim {
     /// Username
     pub username: String,
-    pub exp: usize,
+    pub exp: i64,
 }
 
 /// An optional JWT token

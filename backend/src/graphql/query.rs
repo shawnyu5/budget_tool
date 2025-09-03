@@ -25,7 +25,7 @@ pub struct FrontendConfig {
 }
 
 #[derive(Union)]
-enum MonthlyBudgetResponse {
+pub enum MonthlyBudgetResponse {
     MonthlyBudget(MonthlyBudget),
     Error(GraphQLErrorObject),
 }

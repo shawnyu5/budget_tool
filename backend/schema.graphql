@@ -21,6 +21,29 @@ type BudgetConfig {
 	maggieContributionAmount: Float!
 }
 
+input BudgetConfigInput {
+	"""
+	Total allocated budget
+	"""
+	totalAllocation: Float!
+	"""
+	Shawn percentage allocation
+	"""
+	shawnPercentageAllocation: Float!
+	"""
+	Shawn contribution amount. The frontend is responsible for computing this value
+	"""
+	shawnContributionAmount: Float!
+	"""
+	Maggie percentage allocation
+	"""
+	maggiePercentageAllocation: Float!
+	"""
+	Maggie contribution amount. The frontend is responsible for computing this value
+	"""
+	maggieContributionAmount: Float!
+}
+
 type Circle {
 	area: Float!
 	scale(s: Float!): Shape!
@@ -123,29 +146,6 @@ type MutationRoot {
 	updateBudgetConfig(inputs: UpdateBudgetConfigInput!): MonthlyBudgetResponse!
 }
 
-input MyObjInput {
-	"""
-	Total allocated budget
-	"""
-	totalAllocation: Float!
-	"""
-	Shawn percentage allocation
-	"""
-	shawnPercentageAllocation: Float!
-	"""
-	Shawn contribution amount. The frontend is responsible for computing this value
-	"""
-	shawnContributionAmount: Float!
-	"""
-	Maggie percentage allocation
-	"""
-	maggiePercentageAllocation: Float!
-	"""
-	Maggie contribution amount. The frontend is responsible for computing this value
-	"""
-	maggieContributionAmount: Float!
-}
-
 type NotificationKeys {
 	p256Dh: String!
 	auth: String!
@@ -230,7 +230,7 @@ input UpdateBudgetConfigInput {
 	"""
 	The new budget
 	"""
-	budgetConfig: MyObjInput!
+	budgetConfig: BudgetConfigInput!
 }
 
 """

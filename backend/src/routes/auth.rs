@@ -77,7 +77,10 @@ pub fn generate_jwt(username: &str) -> String {
     let key = EncodingKey::from_secret(&Config::load().private_key.into_bytes());
     let claim = JwtClaim {
         username: username.to_string(),
-        exp: ((Utc::now() + Duration::hours(24)).timestamp() as usize),
+        exp: (Utc::now().checked_add_signed(Duration::hours(24)))
+            .unwrap()
+            .timestamp(),
+        // exp: ((Utc::now() + Duration::hours(24)).timestamp() as usize),
     };
     return encode(&Header::default(), &claim, &key).unwrap();
 }
@@ -86,8 +89,6 @@ pub fn decode_jwt(jwt: &str) -> Result<JwtClaim> {
     let validation = Validation::new(jsonwebtoken::Algorithm::HS256);
     let key = DecodingKey::from_secret(&Config::load().private_key.into_bytes());
     let token_data = decode::<JwtClaim>(jwt, &key, &validation)?;
-    // dbg!(&token_data);
-
     return Ok(token_data.claims);
 }
 

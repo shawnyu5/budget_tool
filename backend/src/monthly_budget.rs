@@ -1,18 +1,20 @@
-use async_graphql::SimpleObject;
+use async_graphql::{InputObject, SimpleObject};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use tracing::debug;
 use utoipa::ToSchema;
 
 use crate::{month::Month, utils::calculate_percentage};
+
 /// Budget details for single month
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, InputObject)]
+#[graphql(input_name = "MonthlyBudgetInput")]
 #[serde(rename_all = "camelCase")]
 pub struct MonthlyBudget {
     /// The month
     pub month: Month,
     /// Budget details
-    pub budget: Budget,
+    pub budget: BudgetConfig,
     /// Total spending for the month. Including any over budget amount
     #[schema(required = true)]
     #[serde(default)]
@@ -99,9 +101,12 @@ impl MonthlyBudget {
     }
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject)]
+#[derive(
+    Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, InputObject,
+)]
+#[graphql(input_name = "BudgetConfigInput")]
 #[serde(rename_all = "camelCase")]
-pub struct Budget {
+pub struct BudgetConfig {
     /// Total allocated budget
     #[serde(alias = "total")]
     pub total_allocation: f64,
@@ -121,8 +126,18 @@ pub struct Budget {
     pub maggie_contribution_amount: f64,
 }
 
+impl BudgetConfig {
+    /// Validates the fields of the config. Returns any errors if the fields are incorrect
+    pub fn validate(&self) {
+        // todo!()
+    }
+}
+
 /// A single transaction
-#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject)]
+#[derive(
+    Default, Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, InputObject,
+)]
+#[graphql(input_name = "SpendingItemInput")]
 #[serde(rename_all = "camelCase")]
 pub struct SpendingItem {
     /// A unique identifier
