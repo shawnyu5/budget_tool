@@ -1,16 +1,7 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import "./settings.css";
-import {
-  createEffect,
-  createResource,
-  createSignal,
-  Show,
-  Suspense,
-} from "solid-js";
-import {
-  MonthlyBudgetErrors,
-  updateMonthlyBudget,
-} from "~/server";
+import { createResource, createSignal, Show, Suspense } from "solid-js";
+import { getMonthlyBudgetConfig, updateMonthlyBudgetConfig } from "~/server";
 import log from "~/logger";
 import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
@@ -18,9 +9,9 @@ import SuccessComponent from "~/components/successComponent";
 import { calculatePercentage, calculatePercentageOf, round } from "~/utils";
 import { NewGraphQLSDK } from "~/graphql";
 import {
+  BudgetConfig,
   GetMonthlyBudgetConfigQuery,
   Month,
-  MonthlyBudget,
 } from "~/generated/graphql";
 
 async function getMonthlyBudgetSetting(
@@ -34,98 +25,78 @@ async function getMonthlyBudgetSetting(
   });
 }
 
-export default function Settings () {
+export default function Settings() {
   const [searchParam, _setSearchParam] = useSearchParams();
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
-  const [monthlyBudget, _setMonthlyBudget] =
-    createSignal<MonthlyBudget | null>();
+  // const [monthlyBudget, _setMonthlyBudget] =
+  //   createSignal<MonthlyBudget | null>();
   const navigate = useNavigate();
   let hasUserModified = false;
 
-  const setMonthlyBudget = (monthlyBudget: MonthlyBudget | null) => {
-    if (
-      (monthlyBudget?.budget.maggiePercentageAllocation ?? 0) +
-        (monthlyBudget?.budget.shawnPercentageAllocation ?? 0) !=
-      100
-    ) {
-      setErrorMessage(
-        "Ah oh... The percentage allocations does not add up to 100%",
-      );
-      return;
-    }
-    setErrorMessage(null);
-    _setMonthlyBudget(monthlyBudget);
-  };
+  // const setMonthlyBudget = (monthlyBudget: MonthlyBudget | null) => {
+  //   if (
+  //     (monthlyBudget?.budget.maggiePercentageAllocation ?? 0) +
+  //       (monthlyBudget?.budget.shawnPercentageAllocation ?? 0) !=
+  //     100
+  //   ) {
+  //     setErrorMessage(
+  //       "Ah oh... The percentage allocations does not add up to 100%",
+  //     );
+  //     return;
+  //   }
+  //   setErrorMessage(null);
+  //   // _setMonthlyBudget(monthlyBudget);
+  // };
 
-  const [monthlyBudgetResource, { refetch }] = createResource(
+  const [monthlyBudgetConfigResource, { refetch, mutate }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
       if (!searchParamSignal().year || !searchParamSignal().month) {
         return;
       }
-      log.info(`Fetching budget for month ${searchParamSignal().month}`);
-      try {
-        const sdk = NewGraphQLSDK();
-        let budgetConfig = await sdk.GetMonthlyBudgetConfig({
-          year: parseInt(searchParamSignal().year as string),
-          month: searchParamSignal().month as Month,
-        });
+      log.info(`Fetching budget config for month ${searchParamSignal().month}`);
+      const budgetConfig = await getMonthlyBudgetConfig(
+        searchParamSignal().year as string,
+        searchParamSignal().month as Month,
+        navigate,
+      );
 
-        // const budget = await getMonthlyBudget(
-        //   searchParamSignal().year as string,
-        //   searchParamSignal().month as Month,
-        // );
-
-        // If fetching is successful, make sure the error message is gone
-        setErrorMessage(null);
-        return budgetConfig;
-      } catch (e) {
-        if (
-          e == MonthlyBudgetErrors.RE_AUTH_NEEDED ||
-          e == MonthlyBudgetErrors.FORBIDDEN
-        ) {
-          navigate("/login", { replace: true });
-        } else if (e == MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET) {
-          setErrorMessage("Failed to fetch monthly budget...");
-        }
-      }
-      // return await getMonthlyBudget(
-      //   searchParamSignal().year as string,
-      //   searchParamSignal().month as string,
-      // );
+      // If fetching is successful, make sure the error message is gone
+      setErrorMessage(null);
+      return budgetConfig;
     },
   );
 
-  createEffect(() => {
-    if (
-      !monthlyBudgetResource() ||
-      hasUserModified ||
-      monthlyBudget() == monthlyBudgetResource()
-    ) {
-      return;
-    }
+  // createEffect(() => {
+  //   if (
+  //     !monthlyBudgetConfigResource() ||
+  //     hasUserModified ||
+  //     monthlyBudget() == monthlyBudgetConfigResource()
+  //   ) {
+  //     return;
+  //   }
 
-    log.info(
-      `Updating monthly budget signal: ${JSON.stringify(monthlyBudgetResource(), null, 3)}`,
-    );
-    setMonthlyBudget(monthlyBudgetResource() ?? null);
-  });
+  //   log.info(
+  //     `Updating monthly budget signal: ${JSON.stringify(monthlyBudgetConfigResource(), null, 3)}`,
+  //   );
+  //   setMonthlyBudget(monthlyBudgetConfigResource() ?? null);
+  // });
 
   const handleSubmission = action(async () => {
     setErrorMessage(null);
     log.info(`Form submitted`);
     log.info(
-      `Shawn contribution: ${monthlyBudget()?.budget.shawnPercentageAllocation}`,
+      `Shawn contribution: ${monthlyBudgetConfigResource()?.shawnPercentageAllocation}`,
     );
     log.info(
-      `maggie contribution: ${monthlyBudget()?.budget.maggiePercentageAllocation}`,
+      `maggie contribution: ${monthlyBudgetConfigResource()?.maggiePercentageAllocation}`,
     );
 
     if (
-      (monthlyBudget()?.budget.maggiePercentageAllocation ?? 0) +
-        (monthlyBudget()?.budget.shawnPercentageAllocation ?? 0) !=
+      (monthlyBudgetConfigResource()?.maggiePercentageAllocation ?? 0) +
+        (monthlyBudgetConfigResource()?.shawnPercentageAllocation ?? 0) !=
       100
     ) {
       setErrorMessage(
@@ -134,17 +105,20 @@ export default function Settings () {
       return;
     }
     try {
-      await updateMonthlyBudget(
+      const updatedBudget = await updateMonthlyBudgetConfig(
         searchParam.year as string,
-        searchParam.month as string,
-        monthlyBudget()!,
+        searchParam.month as Month,
+        monthlyBudgetConfigResource()!,
+        navigate,
       );
       log.info(
-        `Updated budget resource in backend: ${JSON.stringify(monthlyBudget(), null, 3)}`,
+        `Updated budget resource in backend: ${JSON.stringify(monthlyBudgetConfigResource(), null, 3)}`,
       );
+      mutate(updatedBudget);
     } catch (e) {
       log.error("Failed to update budget: ", e);
       setErrorMessage("Failed to update settings... Please try again later...");
+      return
     }
 
     // setMonthlyBudget((prev) => {
@@ -176,7 +150,7 @@ export default function Settings () {
         <NavBar />
       </span>
       <div id="settings-form">
-        <Show when={monthlyBudget()} fallback="Loading...">
+        <Show when={monthlyBudgetConfigResource()} fallback="Loading...">
           <h2>Budget allocation</h2>
           <ErrorComponent message={errorMessage()} />
           <Show when={errorMessage() == null && successMessage()}>
@@ -191,18 +165,15 @@ export default function Settings () {
                 id="month-budget"
                 name="month-budget"
                 disabled
-                value={monthlyBudget()?.budget.totalAllocation}
+                value={monthlyBudgetConfigResource()?.totalAllocation}
                 onInput={(e: InputEvent) => {
                   hasUserModified = true;
                   const input = (e.target as HTMLInputElement).value;
-                  const updated: MonthlyBudget = {
-                    ...monthlyBudget()!,
-                    budget: {
-                      ...monthlyBudget()!.budget,
-                      totalAllocation: parseFloat(input),
-                    },
+                  const updated: BudgetConfig = {
+                    ...monthlyBudgetConfigResource()!,
+                    totalAllocation: parseFloat(input),
                   };
-                  setMonthlyBudget(updated);
+                  mutate(updated);
                 }}
                 required
               />
@@ -216,30 +187,28 @@ export default function Settings () {
                 name="shawn-contribution-percentage"
                 step="0.01"
                 placeholder="50"
-                value={monthlyBudget()?.budget.shawnPercentageAllocation}
+                value={monthlyBudgetConfigResource()?.shawnPercentageAllocation}
                 onInput={(e: InputEvent) => {
                   hasUserModified = true;
                   const input = e.target as HTMLInputElement;
                   const shawnPercentageContribution = parseFloat(input.value);
                   const maggiePercentageAllocation =
                     100 - shawnPercentageContribution;
-                  const updated: MonthlyBudget = {
-                    ...monthlyBudget()!,
-                    budget: {
-                      ...monthlyBudget()!.budget,
-                      shawnPercentageAllocation: shawnPercentageContribution,
-                      shawnContributionAmount: calculatePercentage(
-                        monthlyBudget()?.budget.totalAllocation ?? 0,
-                        shawnPercentageContribution,
-                      ),
-                      maggiePercentageAllocation: maggiePercentageAllocation,
-                      maggieContributionAmount: calculatePercentage(
-                        monthlyBudget()?.budget.totalAllocation ?? 0,
-                        maggiePercentageAllocation,
-                      ),
-                    },
+                  const updated: BudgetConfig = {
+                    ...monthlyBudgetConfigResource()!,
+                    ...monthlyBudgetConfigResource()!,
+                    shawnPercentageAllocation: shawnPercentageContribution,
+                    shawnContributionAmount: calculatePercentage(
+                      monthlyBudgetConfigResource()?.totalAllocation ?? 0,
+                      shawnPercentageContribution,
+                    ),
+                    maggiePercentageAllocation: maggiePercentageAllocation,
+                    maggieContributionAmount: calculatePercentage(
+                      monthlyBudgetConfigResource()?.totalAllocation ?? 0,
+                      maggiePercentageAllocation,
+                    ),
                   };
-                  setMonthlyBudget(updated);
+                  mutate(updated);
                 }}
                 required
               />
@@ -253,7 +222,9 @@ export default function Settings () {
                 name="shawn-contribution-amount"
                 step="0.01"
                 placeholder="50"
-                value={monthlyBudget()?.budget.shawnContributionAmount ?? 0}
+                value={
+                  monthlyBudgetConfigResource()?.shawnContributionAmount ?? 0
+                }
                 onInput={(e: InputEvent) => {
                   hasUserModified = true;
                   const input = e.target as HTMLInputElement;
@@ -261,21 +232,19 @@ export default function Settings () {
 
                   const totalBudget = calculatePercentageOf(
                     shawnContribution,
-                    monthlyBudget()?.budget.shawnPercentageAllocation ?? 0,
+                    monthlyBudgetConfigResource()?.shawnPercentageAllocation ??
+                      0,
                   );
 
-                  const updated: MonthlyBudget = {
-                    ...monthlyBudget()!,
-                    budget: {
-                      ...monthlyBudget()!.budget,
-                      totalAllocation: round(totalBudget),
-                      maggieContributionAmount: round(
-                        totalBudget - shawnContribution,
-                      ),
-                      shawnContributionAmount: shawnContribution,
-                    },
+                  const updated: BudgetConfig = {
+                    ...monthlyBudgetConfigResource()!,
+                    totalAllocation: round(totalBudget),
+                    maggieContributionAmount: round(
+                      totalBudget - shawnContribution,
+                    ),
+                    shawnContributionAmount: shawnContribution,
                   };
-                  setMonthlyBudget(updated);
+                  mutate(updated);
                 }}
                 required
               />
@@ -290,29 +259,28 @@ export default function Settings () {
                 id="maggie-contribution-percentage"
                 placeholder="50"
                 name="maggie-contribution-percentage"
-                value={monthlyBudget()?.budget.maggiePercentageAllocation}
+                value={
+                  monthlyBudgetConfigResource()?.maggiePercentageAllocation
+                }
                 onInput={(e: InputEvent) => {
                   hasUserModified = true;
                   const input = e.target as HTMLInputElement;
                   const contribution = parseFloat(input.value);
                   const shawnPercentageAllocation = 100 - contribution;
-                  const updated: MonthlyBudget = {
-                    ...monthlyBudget()!,
-                    budget: {
-                      ...monthlyBudget()!.budget,
-                      maggiePercentageAllocation: contribution,
-                      maggieContributionAmount: calculatePercentage(
-                        monthlyBudget()!.budget.totalAllocation,
-                        contribution,
-                      ),
-                      shawnPercentageAllocation: shawnPercentageAllocation,
-                      shawnContributionAmount: calculatePercentage(
-                        monthlyBudget()?.budget.totalAllocation ?? 0,
-                        shawnPercentageAllocation,
-                      ),
-                    },
+                  const updated: BudgetConfig = {
+                    ...monthlyBudgetConfigResource()!,
+                    maggiePercentageAllocation: contribution,
+                    maggieContributionAmount: calculatePercentage(
+                      monthlyBudgetConfigResource()?.totalAllocation ?? 0,
+                      contribution,
+                    ),
+                    shawnPercentageAllocation: shawnPercentageAllocation,
+                    shawnContributionAmount: calculatePercentage(
+                      monthlyBudgetConfigResource()?.totalAllocation ?? 0,
+                      shawnPercentageAllocation,
+                    ),
                   };
-                  setMonthlyBudget(updated);
+                  mutate(updated);
                 }}
                 required
               />
@@ -326,7 +294,9 @@ export default function Settings () {
                 name="maggie-contribution-amount"
                 step="0.01"
                 placeholder="50"
-                value={monthlyBudget()?.budget.maggieContributionAmount ?? 0}
+                value={
+                  monthlyBudgetConfigResource()?.maggieContributionAmount ?? 0
+                }
                 onInput={(e: InputEvent) => {
                   hasUserModified = true;
 
@@ -334,19 +304,17 @@ export default function Settings () {
                   const maggiecontribution = parseFloat(input.value);
                   const totalBudget = calculatePercentageOf(
                     maggiecontribution,
-                    monthlyBudget()?.budget.maggiePercentageAllocation ?? 0,
+                    monthlyBudgetConfigResource()?.maggiePercentageAllocation ??
+                      0,
                   );
 
-                  const updated: MonthlyBudget = {
-                    ...monthlyBudget()!,
-                    budget: {
-                      ...monthlyBudget()!.budget,
-                      totalAllocation: round(totalBudget),
-                      maggieContributionAmount: maggiecontribution,
-                      shawnContributionAmount: totalBudget - maggiecontribution,
-                    },
+                  const updated: BudgetConfig = {
+                    ...monthlyBudgetConfigResource()!,
+                    totalAllocation: round(totalBudget),
+                    maggieContributionAmount: maggiecontribution,
+                    shawnContributionAmount: totalBudget - maggiecontribution,
                   };
-                  setMonthlyBudget(updated);
+                  mutate(updated);
                 }}
                 required
               />

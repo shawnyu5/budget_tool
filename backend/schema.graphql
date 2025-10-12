@@ -44,11 +44,6 @@ input BudgetConfigInput {
 	maggieContributionAmount: Float!
 }
 
-type Circle {
-	area: Float!
-	scale(s: Float!): Shape!
-}
-
 """
 Frontend configuration
 """
@@ -132,6 +127,8 @@ type MonthlyBudget {
 	carriedOverFrom: Month
 }
 
+union MonthlyBudgetConfigResponse = BudgetConfig | GraphQLErrorObject
+
 union MonthlyBudgetResponse = MonthlyBudget | GraphQLErrorObject
 
 type MutationRoot {
@@ -143,7 +140,7 @@ type MutationRoot {
 	"""
 	Update the budget configuration for a specific month
 	"""
-	updateBudgetConfig(inputs: UpdateBudgetConfigInput!): MonthlyBudgetResponse!
+	updateBudgetConfig(inputs: UpdateBudgetConfigInput!): MonthlyBudgetConfigResponse!
 }
 
 type NotificationKeys {
@@ -175,10 +172,8 @@ type QueryRoot {
 	* `month`: the month
 	"""
 	monthlyBudget(year: Int!, month: Month!): MonthlyBudgetResponse!
-	shape: Shape!
+	monthlyBudgetConfig(year: Int!, month: Month!): MonthlyBudgetConfigResponse!
 }
-
-union Shape = Circle | Square
 
 """
 A single transaction
@@ -204,11 +199,6 @@ type SpendingItem {
 	Additional notes
 	"""
 	notes: String
-}
-
-type Square {
-	area: Float!
-	scale(s: Float!): Shape!
 }
 
 input SubscriptionInput {

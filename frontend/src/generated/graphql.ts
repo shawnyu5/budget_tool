@@ -44,17 +44,6 @@ export type BudgetConfigInput = {
   totalAllocation: Scalars['Float']['input'];
 };
 
-export type Circle = {
-  __typename?: 'Circle';
-  area: Scalars['Float']['output'];
-  scale: Shape;
-};
-
-
-export type CircleScaleArgs = {
-  s: Scalars['Float']['input'];
-};
-
 /** Frontend configuration */
 export type FrontendConfig = {
   __typename?: 'FrontendConfig';
@@ -115,6 +104,8 @@ export type MonthlyBudget = {
   totalSpending: Scalars['Float']['output'];
 };
 
+export type MonthlyBudgetConfigResponse = BudgetConfig | GraphQlErrorObject;
+
 export type MonthlyBudgetResponse = GraphQlErrorObject | MonthlyBudget;
 
 export type MutationRoot = {
@@ -125,7 +116,7 @@ export type MutationRoot = {
    */
   saveSubscription: User;
   /** Update the budget configuration for a specific month */
-  updateBudgetConfig: MonthlyBudgetResponse;
+  updateBudgetConfig: MonthlyBudgetConfigResponse;
 };
 
 
@@ -164,7 +155,7 @@ export type QueryRoot = {
    * * `month`: the month
    */
   monthlyBudget: MonthlyBudgetResponse;
-  shape: Shape;
+  monthlyBudgetConfig: MonthlyBudgetConfigResponse;
 };
 
 
@@ -174,7 +165,12 @@ export type QueryRootMonthlyBudgetArgs = {
   year: Scalars['Int']['input'];
 };
 
-export type Shape = Circle | Square;
+
+/** Root of the query */
+export type QueryRootMonthlyBudgetConfigArgs = {
+  month: Month;
+  year: Scalars['Int']['input'];
+};
 
 /** A single transaction */
 export type SpendingItem = {
@@ -189,17 +185,6 @@ export type SpendingItem = {
   id: Scalars['String']['output'];
   /** Additional notes */
   notes?: Maybe<Scalars['String']['output']>;
-};
-
-export type Square = {
-  __typename?: 'Square';
-  area: Scalars['Float']['output'];
-  scale: Shape;
-};
-
-
-export type SquareScaleArgs = {
-  s: Scalars['Float']['input'];
 };
 
 export type SubscriptionInput = {
@@ -235,13 +220,20 @@ export type SaveSubscriptionMutationVariables = Exact<{
 
 export type SaveSubscriptionMutation = { __typename?: 'MutationRoot', saveSubscription: { __typename?: 'User', username: string, notificationSubscription: { __typename?: 'NotificationSubscription', endpoint: string, expirationTime?: number | null, keys: { __typename?: 'NotificationKeys', p256Dh: string, auth: string } } } };
 
+export type UpdateMonthlyBudgetConfigMutationVariables = Exact<{
+  inputs: UpdateBudgetConfigInput;
+}>;
+
+
+export type UpdateMonthlyBudgetConfigMutation = { __typename?: 'MutationRoot', updateBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename?: 'GraphQLErrorObject' } };
+
 export type GetMonthlyBudgetConfigQueryVariables = Exact<{
   year: Scalars['Int']['input'];
   month: Month;
 }>;
 
 
-export type GetMonthlyBudgetConfigQuery = { __typename?: 'QueryRoot', monthlyBudget: { __typename?: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename?: 'MonthlyBudget', budget: { __typename?: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } } };
+export type GetMonthlyBudgetConfigQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } };
 
 export type GetMonthBudgetQueryVariables = Exact<{
   year: Scalars['Int']['input'];
@@ -272,19 +264,33 @@ export const SaveSubscriptionDocument = gql`
   }
 }
     `;
+export const UpdateMonthlyBudgetConfigDocument = gql`
+    mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
+  updateBudgetConfig(inputs: $inputs) {
+    ... on BudgetConfig {
+      __typename
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+  }
+}
+    `;
 export const GetMonthlyBudgetConfigDocument = gql`
     query GetMonthlyBudgetConfig($year: Int!, $month: Month!) {
-  monthlyBudget(year: $year, month: $month) {
-    ... on MonthlyBudget {
-      budget {
-        totalAllocation
-        shawnPercentageAllocation
-        shawnContributionAmount
-        maggiePercentageAllocation
-        maggieContributionAmount
-      }
+  monthlyBudgetConfig(year: $year, month: $month) {
+    ... on BudgetConfig {
+      __typename
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
     }
     ... on GraphQLErrorObject {
+      __typename
       code
       message
     }
@@ -342,6 +348,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   return {
     saveSubscription(variables: SaveSubscriptionMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SaveSubscriptionMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<SaveSubscriptionMutation>({ document: SaveSubscriptionDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'saveSubscription', 'mutation', variables);
+    },
+    UpdateMonthlyBudgetConfig(variables: UpdateMonthlyBudgetConfigMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetConfigMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetConfigMutation>({ document: UpdateMonthlyBudgetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudgetConfig', 'mutation', variables);
     },
     GetMonthlyBudgetConfig(variables: GetMonthlyBudgetConfigQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetMonthlyBudgetConfigQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetMonthlyBudgetConfigQuery>({ document: GetMonthlyBudgetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetMonthlyBudgetConfig', 'query', variables);

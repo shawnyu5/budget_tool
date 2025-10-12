@@ -4,10 +4,10 @@ use tracing::{error, info, instrument};
 
 use crate::{
     config::Config,
-    db::{DBError, DB},
-    graphql::error::{Circle, GraphQLErrorCode, GraphQLErrorObject, Shape},
+    db::DB,
+    graphql::error::{GraphQLErrorCode, GraphQLErrorObject},
     month::Month,
-    monthly_budget::MonthlyBudget,
+    monthly_budget::{BudgetConfig, MonthlyBudget},
     routes::MaybeJwt,
 };
 
@@ -27,6 +27,12 @@ pub struct FrontendConfig {
 #[derive(Union)]
 pub enum MonthlyBudgetResponse {
     MonthlyBudget(MonthlyBudget),
+    Error(GraphQLErrorObject),
+}
+
+#[derive(Union)]
+pub enum MonthlyBudgetConfigResponse {
+    MonthlyBudgetConfig(BudgetConfig),
     Error(GraphQLErrorObject),
 }
 
@@ -92,7 +98,40 @@ impl QueryRoot {
         }
     }
 
-    async fn shape(&self) -> Shape {
-        Shape::Circle(Circle { radius: 10.0 })
+    #[instrument(skip_all)]
+    async fn monthly_budget_config(
+        &self,
+        ctx: &Context<'_>,
+        year: u16,
+        month: Month,
+    ) -> MonthlyBudgetConfigResponse {
+        let jwt = ctx
+            .data::<MaybeJwt>()
+            .expect("There should always be a graphql token here");
+
+        if jwt.is_none() {
+            error!("Invalid JWT, returning graphql error");
+            return MonthlyBudgetConfigResponse::Error(GraphQLErrorObject {
+                code: GraphQLErrorCode::Forbidden,
+                message: "Invalid JWT".to_string(),
+            });
+        }
+
+        info!("Connecting to DB");
+        let db = DB::new(&year.to_string()).await.unwrap();
+
+        match db.get_month_budget(month).await {
+            Ok(mut monthly_budget) => {
+                monthly_budget.update_calculations();
+                MonthlyBudgetConfigResponse::MonthlyBudgetConfig(monthly_budget.budget)
+            }
+            Err(e) => {
+                error!("Error querying db: {:?}", e);
+                MonthlyBudgetConfigResponse::Error(GraphQLErrorObject {
+                    code: GraphQLErrorCode::ServerError,
+                    message: e.to_string(),
+                })
+            }
+        }
     }
 }
