@@ -12,6 +12,15 @@ mutation saveSubscription($subscription: SubscriptionInput!) {
   }
 }
 
-# mutation updateMonthlyBudget {
-
-# }
+mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
+  updateBudgetConfig(inputs: $inputs) {
+    ... on BudgetConfig {
+      __typename
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+  }
+}

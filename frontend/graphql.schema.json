@@ -206,67 +206,6 @@
         "possibleTypes": null
       },
       {
-        "kind": "OBJECT",
-        "name": "Circle",
-        "description": null,
-        "isOneOf": null,
-        "fields": [
-          {
-            "name": "area",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "Float",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "scale",
-            "description": null,
-            "args": [
-              {
-                "name": "s",
-                "description": null,
-                "type": {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": {
-                    "kind": "SCALAR",
-                    "name": "Float",
-                    "ofType": null
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "UNION",
-                "name": "Shape",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
-        "inputFields": null,
-        "interfaces": [],
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
         "kind": "SCALAR",
         "name": "Float",
         "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).",
@@ -604,6 +543,28 @@
       },
       {
         "kind": "UNION",
+        "name": "MonthlyBudgetConfigResponse",
+        "description": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": [
+          {
+            "kind": "OBJECT",
+            "name": "BudgetConfig",
+            "ofType": null
+          },
+          {
+            "kind": "OBJECT",
+            "name": "GraphQLErrorObject",
+            "ofType": null
+          }
+        ]
+      },
+      {
+        "kind": "UNION",
         "name": "MonthlyBudgetResponse",
         "description": null,
         "isOneOf": null,
@@ -689,7 +650,7 @@
               "name": null,
               "ofType": {
                 "kind": "UNION",
-                "name": "MonthlyBudgetResponse",
+                "name": "MonthlyBudgetConfigResponse",
                 "ofType": null
               }
             },
@@ -874,15 +835,48 @@
             "deprecationReason": null
           },
           {
-            "name": "shape",
+            "name": "monthlyBudgetConfig",
             "description": null,
-            "args": [],
+            "args": [
+              {
+                "name": "month",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "ENUM",
+                    "name": "Month",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "year",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
             "type": {
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
                 "kind": "UNION",
-                "name": "Shape",
+                "name": "MonthlyBudgetConfigResponse",
                 "ofType": null
               }
             },
@@ -894,28 +888,6 @@
         "interfaces": [],
         "enumValues": null,
         "possibleTypes": null
-      },
-      {
-        "kind": "UNION",
-        "name": "Shape",
-        "description": null,
-        "isOneOf": null,
-        "fields": null,
-        "inputFields": null,
-        "interfaces": null,
-        "enumValues": null,
-        "possibleTypes": [
-          {
-            "kind": "OBJECT",
-            "name": "Circle",
-            "ofType": null
-          },
-          {
-            "kind": "OBJECT",
-            "name": "Square",
-            "ofType": null
-          }
-        ]
       },
       {
         "kind": "OBJECT",
@@ -995,67 +967,6 @@
               "kind": "SCALAR",
               "name": "String",
               "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
-        "inputFields": null,
-        "interfaces": [],
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "OBJECT",
-        "name": "Square",
-        "description": null,
-        "isOneOf": null,
-        "fields": [
-          {
-            "name": "area",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "Float",
-                "ofType": null
-              }
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "scale",
-            "description": null,
-            "args": [
-              {
-                "name": "s",
-                "description": null,
-                "type": {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": {
-                    "kind": "SCALAR",
-                    "name": "Float",
-                    "ofType": null
-                  }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              }
-            ],
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "UNION",
-                "name": "Shape",
-                "ofType": null
-              }
             },
             "isDeprecated": false,
             "deprecationReason": null

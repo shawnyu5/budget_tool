@@ -1,10 +1,7 @@
-use async_graphql::{
-    Enum, Error, ErrorExtensions, Object, Pos, Response, ServerError, SimpleObject, Union,
-};
-use axum::{http::StatusCode, response::IntoResponse, Json};
+use async_graphql::{Enum, Error, ErrorExtensions, Object, Pos, Response, SimpleObject, Union};
+use axum::{response::IntoResponse, Json};
 use serde::Serialize;
 use thiserror::Error;
-use tracing::info;
 
 #[derive(SimpleObject, Debug, Serialize)]
 pub struct GraphQLErrorObject {
@@ -46,46 +43,4 @@ impl IntoResponse for GraphQLErrorObject {
         let resp = Response::from_errors(vec![graphql_err]);
         return Json(resp).into_response();
     }
-}
-
-pub struct Circle {
-    pub radius: f32,
-}
-
-#[Object]
-impl Circle {
-    async fn area(&self) -> f32 {
-        std::f32::consts::PI * self.radius * self.radius
-    }
-
-    async fn scale(&self, s: f32) -> Shape {
-        Circle {
-            radius: self.radius * s,
-        }
-        .into()
-    }
-}
-
-pub struct Square {
-    pub width: f32,
-}
-
-#[Object]
-impl Square {
-    async fn area(&self) -> f32 {
-        self.width * self.width
-    }
-
-    async fn scale(&self, s: f32) -> Shape {
-        Square {
-            width: self.width * s,
-        }
-        .into()
-    }
-}
-
-#[derive(Union)]
-pub enum Shape {
-    Circle(Circle),
-    Square(Square),
 }

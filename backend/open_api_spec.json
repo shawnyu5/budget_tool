@@ -38,7 +38,7 @@
         "operationId": "validate_token",
         "responses": {
           "200": {
-            "description": "The request spending item was Successfully updated"
+            "description": "The JWT token is still valid"
           },
           "401": {
             "description": "Authenication token expired. Please reauthenicate",
@@ -158,7 +158,7 @@
           {
             "name": "year",
             "in": "path",
-            "description": "The year which to get the budget of",
+            "description": "The year which to update the budget of",
             "required": true,
             "schema": {
               "type": "string"
@@ -167,7 +167,7 @@
           {
             "name": "month",
             "in": "path",
-            "description": "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`",
+            "description": "The month's budget to update. The first letter of the month's name is expected to the captalized. ie `January`",
             "required": true,
             "schema": {
               "$ref": "#/components/schemas/Month"
@@ -186,14 +186,7 @@
         },
         "responses": {
           "200": {
-            "description": "Successfully updated the month's budget",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MonthlyBudget"
-                }
-              }
-            }
+            "description": "Successfully updated the month's budget"
           },
           "401": {
             "description": "Authenication token expired. Please reauthenicate",

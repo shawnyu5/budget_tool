@@ -7,7 +7,7 @@ use crate::{
         users::{User, USER_TABLE_NAME},
         DB,
     },
-    graphql::query::MonthlyBudgetResponse,
+    graphql::query::{MonthlyBudgetConfigResponse, MonthlyBudgetResponse},
     month::Month,
     monthly_budget::BudgetConfig,
     routes::MaybeJwt,
@@ -92,7 +92,7 @@ impl MutationRoot {
         &self,
         ctx: &Context<'_>,
         inputs: UpdateBudgetConfigInput,
-    ) -> Result<MonthlyBudgetResponse> {
+    ) -> Result<MonthlyBudgetConfigResponse> {
         let maybe_jwt = ctx
             .data::<MaybeJwt>()
             .expect("There should always be a JWT here!");
@@ -107,7 +107,7 @@ impl MutationRoot {
 
         // If validation fails, dont bother doing anything else
         // TODO: proper error handling for if validation fails
-        inputs.budget_config.validate();
+        // inputs.budget_config.validate();
 
         let db = DB::new(&inputs.year)
             .await
@@ -124,6 +124,8 @@ impl MutationRoot {
             .await
             .context("Failed to update budget")?;
 
-        return Ok(MonthlyBudgetResponse::MonthlyBudget(month_budget));
+        return Ok(MonthlyBudgetConfigResponse::MonthlyBudgetConfig(
+            month_budget.budget,
+        ));
     }
 }

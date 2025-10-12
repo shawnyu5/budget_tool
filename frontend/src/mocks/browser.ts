@@ -1,6 +1,7 @@
 import { setupWorker } from "msw/browser";
-import { handlers } from "./handlers";
+import { httpHandlers } from "./httpHandlers";
+import { graphqlHandlers } from "./graphqlHandlers";
 
 // Create a mock worker that will intercept the requests
-export const worker = setupWorker(...handlers);
+export const worker = setupWorker(...httpHandlers, ...graphqlHandlers);
 

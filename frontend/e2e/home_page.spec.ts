@@ -64,5 +64,7 @@ test("Displays correct spending item", async ({ page }) => {
     `$100${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}Test descriptionTest notes`,
     { ignoreCase: true },
   );
-  await expect(rows.nth(1)).toContainText(`$100${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}Test description 2Test notes 2`)
+  await expect(rows.nth(1)).toContainText(
+    `$100${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}Test description 2Test notes 2`,
+  );
 });
