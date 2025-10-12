@@ -163,7 +163,7 @@ export type ValidateTokenError = ValidateTokenErrors[keyof ValidateTokenErrors];
 
 export type ValidateTokenResponses = {
     /**
-     * The request spending item was Successfully updated
+     * The JWT token is still valid
      */
     200: unknown;
 };
@@ -218,11 +218,11 @@ export type UpdateBudgetHandlerData = {
     body: MonthlyBudget;
     path: {
         /**
-         * The year which to get the budget of
+         * The year which to update the budget of
          */
         year: string;
         /**
-         * The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`
+         * The month's budget to update. The first letter of the month's name is expected to the captalized. ie `January`
          */
         month: Month;
     };
@@ -251,10 +251,8 @@ export type UpdateBudgetHandlerResponses = {
     /**
      * Successfully updated the month's budget
      */
-    200: MonthlyBudget;
+    200: unknown;
 };
-
-export type UpdateBudgetHandlerResponse = UpdateBudgetHandlerResponses[keyof UpdateBudgetHandlerResponses];
 
 export type ExportCsvHandlerData = {
     body?: never;

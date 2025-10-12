@@ -37,10 +37,10 @@ export default function () {
 
     log.info("Submitting form");
     try {
-      const monthlyBudget = await getMonthlyBudget(year, month);
+      const monthlyBudget = await getMonthlyBudget(year, month, navigate);
       const updatedBudget: MonthlyBudget = {
         ...monthlyBudget,
-        spending: [updatedSpendingItem, ...monthlyBudget.spending],
+        spending: [updatedSpendingItem, ...monthlyBudget?.spending],
       };
 
       await updateMonthlyBudget(year, month, updatedBudget);

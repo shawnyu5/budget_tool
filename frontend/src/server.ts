@@ -13,7 +13,12 @@ import axiosRetry from "axios-retry";
 import { client } from "~/client/client.gen";
 import { saveNotificationSubscriptionHandler } from "~/client/sdk.gen";
 import { handleGraphQLError, NewGraphQLSDK } from "./graphql";
-import { Month, MonthlyBudget } from "./generated/graphql";
+import {
+  BudgetConfig,
+  BudgetConfigInput,
+  Month,
+  MonthlyBudget,
+} from "./generated/graphql";
 import logger from "./logger";
 
 axiosRetry(axios, {
@@ -82,6 +87,31 @@ export async function getMonthlyBudget(
   return response.monthlyBudget as MonthlyBudget;
 }
 
+export async function getMonthlyBudgetConfig(
+  year: string,
+  month: Month,
+  navigate: Navigator,
+): Promise<BudgetConfig> {
+  const sdk = NewGraphQLSDK();
+  let response = await sdk.GetMonthlyBudgetConfig({
+    year: parseInt(year),
+    month,
+  });
+  // __AUTO_GENERATED_PRINT_VAR_START__
+  console.log(
+    "getMonthlyBudgetConfig response:",
+    JSON.stringify(response, null, 3),
+  ); // __AUTO_GENERATED_PRINT_VAR_END__
+
+  if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
+    const err = handleGraphQLError(response.monthlyBudgetConfig, navigate);
+    if (err) {
+      throw new Error(err);
+    }
+  }
+  return response.monthlyBudgetConfig as BudgetConfig;
+}
+
 // if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
 //     logger.info("Found graphql error");
 //     const err = response.monthlyBudget.code;
@@ -105,8 +135,9 @@ export async function getMonthlyBudget(
 export async function updateMonthlyBudget(
   year: string,
   month: string,
-  monthlyBudget: MonthlyBudget,
+  monthlyBudget: MonthlyBudget | null,
 ) {
+  if (!monthlyBudget) return;
   try {
     await axios.post(
       `${loadLocalConfig().backendUrl}/budget/${year}/${month}`,
@@ -130,11 +161,44 @@ export async function updateMonthlyBudget(
         return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
       }
     }
-    log.info(`Failed to get monthly budget`);
+    log.info(`Failed to get monthly budget: ${e}`);
     return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
   }
 }
 
+/**
+ * Updates the budget config for a specific month
+ */
+export async function updateMonthlyBudgetConfig(
+  year: string,
+  month: Month,
+  budgetConfig: BudgetConfig,
+  navigate: Navigator,
+): Promise<BudgetConfig> {
+  const sdk = NewGraphQLSDK();
+  const budgetConfigInput: BudgetConfigInput = {
+    totalAllocation: budgetConfig.totalAllocation,
+    maggieContributionAmount: budgetConfig.maggieContributionAmount,
+    maggiePercentageAllocation: budgetConfig.maggiePercentageAllocation,
+    shawnContributionAmount: budgetConfig.shawnContributionAmount,
+    shawnPercentageAllocation: budgetConfig.shawnPercentageAllocation,
+  };
+  const response = await sdk.UpdateMonthlyBudgetConfig({
+    inputs: {
+      year,
+      month,
+      budgetConfig: budgetConfigInput,
+    },
+  });
+
+  if (response.updateBudgetConfig.__typename == "GraphQLErrorObject") {
+    const err = handleGraphQLError(response.updateBudgetConfig, navigate);
+    if (err) {
+      throw new Error(err);
+    }
+  }
+  return response.updateBudgetConfig as BudgetConfig;
+}
 /**
  * Validate the JWT token with the server. If the token is invalid or expired, redirect to `/login`
  */

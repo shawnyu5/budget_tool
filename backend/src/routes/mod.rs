@@ -192,14 +192,14 @@ async fn get_month_budget_handler(
     ),
     path = "/budget/{year}/{month}",
     responses(
-        (status = 200, description = "Successfully updated the month's budget", body = MonthlyBudget),
+        (status = 200, description = "Successfully updated the month's budget"),
         (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
         (status = 403, description = "Authenication failed", body = String),
         (status = 500, description = "Failed to update the month's budget", body = String),
     ),
     params(
-        ("year" = String, description = "The year which to get the budget of"),
-        ("month" = Month, description = "The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`")
+        ("year" = String, description = "The year which to update the budget of"),
+        ("month" = Month, description = "The month's budget to update. The first letter of the month's name is expected to the captalized. ie `January`")
     )
 )]
 async fn update_budget_handler(
@@ -434,7 +434,7 @@ async fn update_spending_item(
     get,
     path = "/auth/validate-token",
     responses(
-        (status = 200, description = "The request spending item was Successfully updated"),
+        (status = 200, description = "The JWT token is still valid"),
         (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
         (status = 403, description = "Authenication failed", body = String),
         (status = 500, description = "Failed to get update spending item", body = String),

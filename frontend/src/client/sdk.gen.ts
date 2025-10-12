@@ -53,7 +53,6 @@ export const getMonthBudgetHandler = <ThrowOnError extends boolean = false>(opti
  */
 export const updateBudgetHandler = <ThrowOnError extends boolean = false>(options: Options<UpdateBudgetHandlerData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<UpdateBudgetHandlerResponses, UpdateBudgetHandlerErrors, ThrowOnError>({
-        responseType: 'json',
         url: '/budget/{year}/{month}',
         ...options,
         headers: {

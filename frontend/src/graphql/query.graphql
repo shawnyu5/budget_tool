@@ -1,16 +1,16 @@
 # Get monthly budget configuration
 query GetMonthlyBudgetConfig($year: Int!, $month: Month!) {
-  monthlyBudget(year: $year, month: $month) {
-    ... on MonthlyBudget {
-      budget {
-        totalAllocation
-        shawnPercentageAllocation
-        shawnContributionAmount
-        maggiePercentageAllocation
-        maggieContributionAmount
-      }
+  monthlyBudgetConfig(year: $year, month: $month) {
+    ... on BudgetConfig {
+      __typename
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
     }
     ... on GraphQLErrorObject {
+      __typename
       code
       message
     }
