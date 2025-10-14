@@ -40,7 +40,7 @@
       "@graphql-codegen/typescript": "4.1.6",
       "@graphql-codegen/typescript-graphql-request": "^6.3.0",
       "@hey-api/client-fetch": "^0.13.1",
-      "@hey-api/openapi-ts": "^0.72.2",
+      "@hey-api/openapi-ts": "^0.85.2",
       "@playwright/test": "^1.49.1",
       "@types/node": "^22.10.2",
       "msw": "^2.7.0"
