@@ -56,8 +56,8 @@ async fn test_update_budget_config() {
                     }
                 }
             ) {
-                ... on MonthlyBudget {
-                    totalSpending
+                ... on BudgetConfig {
+                    totalAllocation
                 }
                 ...on GraphQLErrorObject {
                     message
@@ -75,4 +75,3 @@ async fn test_update_budget_config() {
         "GraphQL query should not produce error"
     );
 }
-
