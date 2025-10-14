@@ -97,11 +97,6 @@ export async function getMonthlyBudgetConfig(
     year: parseInt(year),
     month,
   });
-  // __AUTO_GENERATED_PRINT_VAR_START__
-  console.log(
-    "getMonthlyBudgetConfig response:",
-    JSON.stringify(response, null, 3),
-  ); // __AUTO_GENERATED_PRINT_VAR_END__
 
   if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
     const err = handleGraphQLError(response.monthlyBudgetConfig, navigate);
