@@ -7,7 +7,7 @@ use crate::{
         users::{User, USER_TABLE_NAME},
         DB,
     },
-    graphql::query::{MonthlyBudgetConfigResponse, MonthlyBudgetResponse},
+    graphql::query::MonthlyBudgetConfigResponse,
     month::Month,
     monthly_budget::BudgetConfig,
     routes::MaybeJwt,
