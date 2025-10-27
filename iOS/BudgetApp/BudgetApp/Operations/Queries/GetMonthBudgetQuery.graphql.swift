@@ -4,7 +4,7 @@
 @_exported import ApolloAPI
 @_spi(Execution) @_spi(Unsafe) import ApolloAPI
 
-extension BudgetApp {
+extension Backend {
   struct GetMonthBudgetQuery: GraphQLQuery {
     static let operationName: String = "GetMonthBudget"
     static let operationDocument: ApolloAPI.OperationDocument = .init(
@@ -28,11 +28,11 @@ extension BudgetApp {
       "month": month
     ] }
 
-    struct Data: BudgetApp.SelectionSet {
+    struct Data: Backend.SelectionSet {
       let __data: DataDict
       init(_dataDict: DataDict) { __data = _dataDict }
 
-      static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.QueryRoot }
+      static var __parentType: any ApolloAPI.ParentType { Backend.Objects.QueryRoot }
       static var __selections: [ApolloAPI.Selection] { [
         .field("monthlyBudget", MonthlyBudget.self, arguments: [
           "year": .variable("year"),
@@ -52,11 +52,11 @@ extension BudgetApp {
       /// MonthlyBudget
       ///
       /// Parent Type: `MonthlyBudgetResponse`
-      struct MonthlyBudget: BudgetApp.SelectionSet {
+      struct MonthlyBudget: Backend.SelectionSet {
         let __data: DataDict
         init(_dataDict: DataDict) { __data = _dataDict }
 
-        static var __parentType: any ApolloAPI.ParentType { BudgetApp.Unions.MonthlyBudgetResponse }
+        static var __parentType: any ApolloAPI.ParentType { Backend.Unions.MonthlyBudgetResponse }
         static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
           .inlineFragment(AsMonthlyBudget.self),
@@ -72,18 +72,18 @@ extension BudgetApp {
         /// MonthlyBudget.AsMonthlyBudget
         ///
         /// Parent Type: `MonthlyBudget`
-        struct AsMonthlyBudget: BudgetApp.InlineFragment {
+        struct AsMonthlyBudget: Backend.InlineFragment {
           let __data: DataDict
           init(_dataDict: DataDict) { __data = _dataDict }
 
           typealias RootEntityType = GetMonthBudgetQuery.Data.MonthlyBudget
-          static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.MonthlyBudget }
+          static var __parentType: any ApolloAPI.ParentType { Backend.Objects.MonthlyBudget }
           static var __selections: [ApolloAPI.Selection] { [
-            .field("month", GraphQLEnum<BudgetApp.Month>.self),
+            .field("month", GraphQLEnum<Backend.Month>.self),
             .field("totalSpending", Double.self),
             .field("overBudgetAmount", Double.self),
             .field("spending", [Spending].self),
-            .field("carriedOverFrom", GraphQLEnum<BudgetApp.Month>?.self),
+            .field("carriedOverFrom", GraphQLEnum<Backend.Month>?.self),
             .field("budget", Budget.self),
           ] }
           static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -92,7 +92,7 @@ extension BudgetApp {
           ] }
 
           /// The month
-          var month: GraphQLEnum<BudgetApp.Month> { __data["month"] }
+          var month: GraphQLEnum<Backend.Month> { __data["month"] }
           /// Total spending for the month. Including any over budget amount
           var totalSpending: Double { __data["totalSpending"] }
           /// Amount over budget for the month. 0 means not over budget.
@@ -101,18 +101,18 @@ extension BudgetApp {
           var spending: [Spending] { __data["spending"] }
           /// The month it was carried over from
           /// If the setting are not carried over from a previous month, this value will be empty
-          var carriedOverFrom: GraphQLEnum<BudgetApp.Month>? { __data["carriedOverFrom"] }
+          var carriedOverFrom: GraphQLEnum<Backend.Month>? { __data["carriedOverFrom"] }
           /// Budget details
           var budget: Budget { __data["budget"] }
 
           /// MonthlyBudget.AsMonthlyBudget.Spending
           ///
           /// Parent Type: `SpendingItem`
-          struct Spending: BudgetApp.SelectionSet {
+          struct Spending: Backend.SelectionSet {
             let __data: DataDict
             init(_dataDict: DataDict) { __data = _dataDict }
 
-            static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.SpendingItem }
+            static var __parentType: any ApolloAPI.ParentType { Backend.Objects.SpendingItem }
             static var __selections: [ApolloAPI.Selection] { [
               .field("__typename", String.self),
               .field("id", String.self),
@@ -140,11 +140,11 @@ extension BudgetApp {
           /// MonthlyBudget.AsMonthlyBudget.Budget
           ///
           /// Parent Type: `BudgetConfig`
-          struct Budget: BudgetApp.SelectionSet {
+          struct Budget: Backend.SelectionSet {
             let __data: DataDict
             init(_dataDict: DataDict) { __data = _dataDict }
 
-            static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.BudgetConfig }
+            static var __parentType: any ApolloAPI.ParentType { Backend.Objects.BudgetConfig }
             static var __selections: [ApolloAPI.Selection] { [
               .field("__typename", String.self),
               .field("totalAllocation", Double.self),
@@ -173,14 +173,14 @@ extension BudgetApp {
         /// MonthlyBudget.AsGraphQLErrorObject
         ///
         /// Parent Type: `GraphQLErrorObject`
-        struct AsGraphQLErrorObject: BudgetApp.InlineFragment {
+        struct AsGraphQLErrorObject: Backend.InlineFragment {
           let __data: DataDict
           init(_dataDict: DataDict) { __data = _dataDict }
 
           typealias RootEntityType = GetMonthBudgetQuery.Data.MonthlyBudget
-          static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.GraphQLErrorObject }
+          static var __parentType: any ApolloAPI.ParentType { Backend.Objects.GraphQLErrorObject }
           static var __selections: [ApolloAPI.Selection] { [
-            .field("code", GraphQLEnum<BudgetApp.GraphQLErrorCode>.self),
+            .field("code", GraphQLEnum<Backend.GraphQLErrorCode>.self),
             .field("message", String.self),
           ] }
           static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -188,7 +188,7 @@ extension BudgetApp {
             GetMonthBudgetQuery.Data.MonthlyBudget.AsGraphQLErrorObject.self
           ] }
 
-          var code: GraphQLEnum<BudgetApp.GraphQLErrorCode> { __data["code"] }
+          var code: GraphQLEnum<Backend.GraphQLErrorCode> { __data["code"] }
           var message: String { __data["message"] }
         }
       }

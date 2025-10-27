@@ -3,42 +3,42 @@
 
 import ApolloAPI
 
-protocol BudgetApp_SelectionSet: ApolloAPI.SelectionSet & ApolloAPI.RootSelectionSet
-where Schema == BudgetApp.SchemaMetadata {}
+protocol Backend_SelectionSet: ApolloAPI.SelectionSet & ApolloAPI.RootSelectionSet
+where Schema == Backend.SchemaMetadata {}
 
-protocol BudgetApp_InlineFragment: ApolloAPI.SelectionSet & ApolloAPI.InlineFragment
-where Schema == BudgetApp.SchemaMetadata {}
+protocol Backend_InlineFragment: ApolloAPI.SelectionSet & ApolloAPI.InlineFragment
+where Schema == Backend.SchemaMetadata {}
 
-protocol BudgetApp_MutableSelectionSet: ApolloAPI.MutableRootSelectionSet
-where Schema == BudgetApp.SchemaMetadata {}
+protocol Backend_MutableSelectionSet: ApolloAPI.MutableRootSelectionSet
+where Schema == Backend.SchemaMetadata {}
 
-protocol BudgetApp_MutableInlineFragment: ApolloAPI.MutableSelectionSet & ApolloAPI.InlineFragment
-where Schema == BudgetApp.SchemaMetadata {}
+protocol Backend_MutableInlineFragment: ApolloAPI.MutableSelectionSet & ApolloAPI.InlineFragment
+where Schema == Backend.SchemaMetadata {}
 
-extension BudgetApp {
-  typealias SelectionSet = BudgetApp_SelectionSet
+extension Backend {
+  typealias SelectionSet = Backend_SelectionSet
 
-  typealias InlineFragment = BudgetApp_InlineFragment
+  typealias InlineFragment = Backend_InlineFragment
 
-  typealias MutableSelectionSet = BudgetApp_MutableSelectionSet
+  typealias MutableSelectionSet = Backend_MutableSelectionSet
 
-  typealias MutableInlineFragment = BudgetApp_MutableInlineFragment
+  typealias MutableInlineFragment = Backend_MutableInlineFragment
 
   enum SchemaMetadata: ApolloAPI.SchemaMetadata {
     static let configuration: any ApolloAPI.SchemaConfiguration.Type = SchemaConfiguration.self
 
     static func objectType(forTypename typename: String) -> ApolloAPI.Object? {
       switch typename {
-      case "BudgetConfig": return BudgetApp.Objects.BudgetConfig
-      case "FrontendConfig": return BudgetApp.Objects.FrontendConfig
-      case "GraphQLErrorObject": return BudgetApp.Objects.GraphQLErrorObject
-      case "MonthlyBudget": return BudgetApp.Objects.MonthlyBudget
-      case "MutationRoot": return BudgetApp.Objects.MutationRoot
-      case "NotificationKeys": return BudgetApp.Objects.NotificationKeys
-      case "NotificationSubscription": return BudgetApp.Objects.NotificationSubscription
-      case "QueryRoot": return BudgetApp.Objects.QueryRoot
-      case "SpendingItem": return BudgetApp.Objects.SpendingItem
-      case "User": return BudgetApp.Objects.User
+      case "BudgetConfig": return Backend.Objects.BudgetConfig
+      case "FrontendConfig": return Backend.Objects.FrontendConfig
+      case "GraphQLErrorObject": return Backend.Objects.GraphQLErrorObject
+      case "MonthlyBudget": return Backend.Objects.MonthlyBudget
+      case "MutationRoot": return Backend.Objects.MutationRoot
+      case "NotificationKeys": return Backend.Objects.NotificationKeys
+      case "NotificationSubscription": return Backend.Objects.NotificationSubscription
+      case "QueryRoot": return Backend.Objects.QueryRoot
+      case "SpendingItem": return Backend.Objects.SpendingItem
+      case "User": return Backend.Objects.User
       default: return nil
       }
     }

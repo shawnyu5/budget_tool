@@ -3,7 +3,7 @@
 
 @_spi(Internal) import ApolloAPI
 
-extension BudgetApp {
+extension Backend {
   enum Month: String, EnumType {
     case january = "January"
     case february = "February"

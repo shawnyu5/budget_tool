@@ -3,7 +3,7 @@
 
 import ApolloAPI
 
-extension BudgetApp.Objects {
+extension Backend.Objects {
   /// Budget details for single month
   static let MonthlyBudget = ApolloAPI.Object(
     typename: "MonthlyBudget",

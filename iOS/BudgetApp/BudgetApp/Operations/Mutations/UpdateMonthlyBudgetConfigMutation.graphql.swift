@@ -4,7 +4,7 @@
 @_exported import ApolloAPI
 @_spi(Execution) @_spi(Unsafe) import ApolloAPI
 
-extension BudgetApp {
+extension Backend {
   struct UpdateMonthlyBudgetConfigMutation: GraphQLMutation {
     static let operationName: String = "UpdateMonthlyBudgetConfig"
     static let operationDocument: ApolloAPI.OperationDocument = .init(
@@ -20,11 +20,11 @@ extension BudgetApp {
 
     @_spi(Unsafe) public var __variables: Variables? { ["inputs": inputs] }
 
-    struct Data: BudgetApp.SelectionSet {
+    struct Data: Backend.SelectionSet {
       let __data: DataDict
       init(_dataDict: DataDict) { __data = _dataDict }
 
-      static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.MutationRoot }
+      static var __parentType: any ApolloAPI.ParentType { Backend.Objects.MutationRoot }
       static var __selections: [ApolloAPI.Selection] { [
         .field("updateBudgetConfig", UpdateBudgetConfig.self, arguments: ["inputs": .variable("inputs")]),
       ] }
@@ -38,11 +38,11 @@ extension BudgetApp {
       /// UpdateBudgetConfig
       ///
       /// Parent Type: `MonthlyBudgetConfigResponse`
-      struct UpdateBudgetConfig: BudgetApp.SelectionSet {
+      struct UpdateBudgetConfig: Backend.SelectionSet {
         let __data: DataDict
         init(_dataDict: DataDict) { __data = _dataDict }
 
-        static var __parentType: any ApolloAPI.ParentType { BudgetApp.Unions.MonthlyBudgetConfigResponse }
+        static var __parentType: any ApolloAPI.ParentType { Backend.Unions.MonthlyBudgetConfigResponse }
         static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
           .inlineFragment(AsBudgetConfig.self),
@@ -56,12 +56,12 @@ extension BudgetApp {
         /// UpdateBudgetConfig.AsBudgetConfig
         ///
         /// Parent Type: `BudgetConfig`
-        struct AsBudgetConfig: BudgetApp.InlineFragment {
+        struct AsBudgetConfig: Backend.InlineFragment {
           let __data: DataDict
           init(_dataDict: DataDict) { __data = _dataDict }
 
           typealias RootEntityType = UpdateMonthlyBudgetConfigMutation.Data.UpdateBudgetConfig
-          static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.BudgetConfig }
+          static var __parentType: any ApolloAPI.ParentType { Backend.Objects.BudgetConfig }
           static var __selections: [ApolloAPI.Selection] { [
             .field("totalAllocation", Double.self),
             .field("shawnPercentageAllocation", Double.self),

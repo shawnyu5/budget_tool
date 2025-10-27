@@ -1,5 +1,5 @@
 {
-   "schemaNamespace": "BudgetApp",
+   "schemaNamespace": "Backend",
    "input": {
       "operationSearchPaths": [
          "**/*.graphql"

@@ -3,7 +3,7 @@
 
 import ApolloAPI
 
-extension BudgetApp.Objects {
+extension Backend.Objects {
   /// Represents a user
   static let User = ApolloAPI.Object(
     typename: "User",

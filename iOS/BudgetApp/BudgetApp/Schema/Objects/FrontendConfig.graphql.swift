@@ -3,7 +3,7 @@
 
 import ApolloAPI
 
-extension BudgetApp.Objects {
+extension Backend.Objects {
   /// Frontend configuration
   static let FrontendConfig = ApolloAPI.Object(
     typename: "FrontendConfig",

@@ -3,7 +3,7 @@
 
 @_spi(Internal) @_spi(Unsafe) import ApolloAPI
 
-extension BudgetApp {
+extension Backend {
   struct UpdateBudgetConfigInput: InputObject {
     private(set) var __data: InputDict
 

@@ -3,12 +3,12 @@
 
 import ApolloAPI
 
-extension BudgetApp.Unions {
+extension Backend.Unions {
   static let MonthlyBudgetResponse = Union(
     name: "MonthlyBudgetResponse",
     possibleTypes: [
-      BudgetApp.Objects.MonthlyBudget.self,
-      BudgetApp.Objects.GraphQLErrorObject.self
+      Backend.Objects.MonthlyBudget.self,
+      Backend.Objects.GraphQLErrorObject.self
     ]
   )
 }

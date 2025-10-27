@@ -4,7 +4,7 @@
 @_exported import ApolloAPI
 @_spi(Execution) @_spi(Unsafe) import ApolloAPI
 
-extension BudgetApp {
+extension Backend {
   struct SaveSubscriptionMutation: GraphQLMutation {
     static let operationName: String = "saveSubscription"
     static let operationDocument: ApolloAPI.OperationDocument = .init(
@@ -20,11 +20,11 @@ extension BudgetApp {
 
     @_spi(Unsafe) public var __variables: Variables? { ["subscription": subscription] }
 
-    struct Data: BudgetApp.SelectionSet {
+    struct Data: Backend.SelectionSet {
       let __data: DataDict
       init(_dataDict: DataDict) { __data = _dataDict }
 
-      static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.MutationRoot }
+      static var __parentType: any ApolloAPI.ParentType { Backend.Objects.MutationRoot }
       static var __selections: [ApolloAPI.Selection] { [
         .field("saveSubscription", SaveSubscription.self, arguments: ["subscription": .variable("subscription")]),
       ] }
@@ -39,11 +39,11 @@ extension BudgetApp {
       /// SaveSubscription
       ///
       /// Parent Type: `User`
-      struct SaveSubscription: BudgetApp.SelectionSet {
+      struct SaveSubscription: Backend.SelectionSet {
         let __data: DataDict
         init(_dataDict: DataDict) { __data = _dataDict }
 
-        static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.User }
+        static var __parentType: any ApolloAPI.ParentType { Backend.Objects.User }
         static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
           .field("username", String.self),
@@ -61,11 +61,11 @@ extension BudgetApp {
         /// SaveSubscription.NotificationSubscription
         ///
         /// Parent Type: `NotificationSubscription`
-        struct NotificationSubscription: BudgetApp.SelectionSet {
+        struct NotificationSubscription: Backend.SelectionSet {
           let __data: DataDict
           init(_dataDict: DataDict) { __data = _dataDict }
 
-          static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.NotificationSubscription }
+          static var __parentType: any ApolloAPI.ParentType { Backend.Objects.NotificationSubscription }
           static var __selections: [ApolloAPI.Selection] { [
             .field("__typename", String.self),
             .field("endpoint", String.self),
@@ -83,11 +83,11 @@ extension BudgetApp {
           /// SaveSubscription.NotificationSubscription.Keys
           ///
           /// Parent Type: `NotificationKeys`
-          struct Keys: BudgetApp.SelectionSet {
+          struct Keys: Backend.SelectionSet {
             let __data: DataDict
             init(_dataDict: DataDict) { __data = _dataDict }
 
-            static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.NotificationKeys }
+            static var __parentType: any ApolloAPI.ParentType { Backend.Objects.NotificationKeys }
             static var __selections: [ApolloAPI.Selection] { [
               .field("__typename", String.self),
               .field("p256Dh", String.self),

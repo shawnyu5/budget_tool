@@ -3,7 +3,7 @@
 
 import ApolloAPI
 
-extension BudgetApp.Objects {
+extension Backend.Objects {
   /// Stuff the browser sends to do the notification handshake
   static let NotificationSubscription = ApolloAPI.Object(
     typename: "NotificationSubscription",

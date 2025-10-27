@@ -3,7 +3,7 @@
 
 @_spi(Internal) import ApolloAPI
 
-extension BudgetApp {
+extension Backend {
   /// GraphQL error codes
   enum GraphQLErrorCode: String, EnumType {
     /// When the user does not have the authorization

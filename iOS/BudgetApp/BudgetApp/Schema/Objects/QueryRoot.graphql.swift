@@ -3,7 +3,7 @@
 
 import ApolloAPI
 
-extension BudgetApp.Objects {
+extension Backend.Objects {
   /// Root of the query
   static let QueryRoot = ApolloAPI.Object(
     typename: "QueryRoot",

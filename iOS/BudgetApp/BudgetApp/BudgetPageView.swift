@@ -9,11 +9,22 @@ import Apollo
 import Foundation
 import SwiftUI
 
-let apolloClient = ApolloClient(url: URL(string: "http://localhost:4000/graphql")!)
+let apolloClient = ApolloClient(url: URL(string: "http://localhost:8000/graphql")!)
 
 struct BudgetPageView: View {
     // If the add expense view is being shown right now
     @State private var showingAddExpenseItem = false
+
+    func loadData() async {
+        print("LOADING DATAAA")
+        do {
+            let response = try await apolloClient.fetch(query: Backend.GetConfigQuery())
+            print(response.data?.config)
+        } catch {
+            print("Error fetching stuff: \(error.localizedDescription)")
+        }
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -46,6 +57,8 @@ struct BudgetPageView: View {
                         Text("\($0)")
                     }
                 }
+            }.task {
+                await loadData()
             }
             .toolbar {
                 Button("Add Expense item", systemImage: "plus") {

@@ -3,7 +3,7 @@
 
 import ApolloAPI
 
-extension BudgetApp.Objects {
+extension Backend.Objects {
   /// A single transaction
   static let SpendingItem = ApolloAPI.Object(
     typename: "SpendingItem",

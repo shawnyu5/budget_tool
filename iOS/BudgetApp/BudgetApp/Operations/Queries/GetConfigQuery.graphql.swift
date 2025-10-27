@@ -4,7 +4,7 @@
 @_exported import ApolloAPI
 @_spi(Execution) @_spi(Unsafe) import ApolloAPI
 
-extension BudgetApp {
+extension Backend {
   struct GetConfigQuery: GraphQLQuery {
     static let operationName: String = "getConfig"
     static let operationDocument: ApolloAPI.OperationDocument = .init(
@@ -14,11 +14,11 @@ extension BudgetApp {
 
     public init() {}
 
-    struct Data: BudgetApp.SelectionSet {
+    struct Data: Backend.SelectionSet {
       let __data: DataDict
       init(_dataDict: DataDict) { __data = _dataDict }
 
-      static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.QueryRoot }
+      static var __parentType: any ApolloAPI.ParentType { Backend.Objects.QueryRoot }
       static var __selections: [ApolloAPI.Selection] { [
         .field("config", Config.self),
       ] }
@@ -32,11 +32,11 @@ extension BudgetApp {
       /// Config
       ///
       /// Parent Type: `FrontendConfig`
-      struct Config: BudgetApp.SelectionSet {
+      struct Config: Backend.SelectionSet {
         let __data: DataDict
         init(_dataDict: DataDict) { __data = _dataDict }
 
-        static var __parentType: any ApolloAPI.ParentType { BudgetApp.Objects.FrontendConfig }
+        static var __parentType: any ApolloAPI.ParentType { Backend.Objects.FrontendConfig }
         static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
           .field("encryptionPublicKey", String.self),
