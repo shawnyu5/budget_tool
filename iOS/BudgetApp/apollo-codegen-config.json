@@ -1,0 +1,27 @@
+{
+   "schemaNamespace": "BudgetApp",
+   "input": {
+      "operationSearchPaths": [
+         "**/*.graphql"
+      ],
+      "schemaSearchPaths": [
+         "../../backend/schema.graphql"
+      ]
+   },
+   "output": {
+      "testMocks": {
+         "none": {}
+      },
+      "schemaTypes": {
+         "path": "./BudgetApp",
+         "moduleType": {
+            "embeddedInTarget": {
+               "name": "target"
+            }
+         }
+      },
+      "operations": {
+         "inSchemaModule": {}
+      }
+   }
+}
