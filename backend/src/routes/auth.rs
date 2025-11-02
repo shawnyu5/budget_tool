@@ -10,7 +10,7 @@ use chrono::{Duration, Utc};
 use common_axum::app_error_v2::AppError;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use tracing::{error, instrument};
+use tracing::{error, instrument, warn};
 
 use crate::routes::MaybeJwt;
 use crate::{config::Config, routes::JwtClaim};
@@ -112,7 +112,7 @@ where
                 auth_header_str.replace("Bearer ", "")
             }
             None => {
-                error!("Missing auth header....");
+                warn!("Missing auth header....");
                 return Ok(MaybeJwt(None));
             }
         };

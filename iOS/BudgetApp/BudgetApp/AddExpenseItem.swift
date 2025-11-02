@@ -67,7 +67,9 @@ struct AddExpenseItem: View {
                 DatePicker("Date", selection: $date, displayedComponents: [.date])
 
                 TextField("Amount", value: $amount, format: .currency(code: Locale.current.identifier))
+                #if os(iOS)
                     .keyboardType(.decimalPad)
+                #endif
 
                 TextEditor(text: $description)
                     .frame(height: 200)

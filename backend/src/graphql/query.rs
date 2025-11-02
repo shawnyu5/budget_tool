@@ -66,11 +66,14 @@ impl QueryRoot {
         //     code: GraphQLErrorCode::ServerError,
         //     message: "Ahhhh".to_string(),
         // });
+        info!("Checking for JWT");
         let jwt = ctx
             .data::<MaybeJwt>()
             .expect("Missing JWT in graphql context");
 
+        info!("Validating JWT");
         if jwt.is_none() {
+            error!("Invalid JWT, returning Forbidden error response");
             return MonthlyBudgetResponse::Error(GraphQLErrorObject {
                 code: GraphQLErrorCode::Forbidden,
                 message: "Missing or invalid JWT".to_string(),

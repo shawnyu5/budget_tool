@@ -2,7 +2,7 @@
    "schemaNamespace": "Backend",
    "input": {
       "operationSearchPaths": [
-         "**/*.graphql"
+         "graphql/*.graphql"
       ],
       "schemaSearchPaths": [
          "../../backend/schema.graphql"

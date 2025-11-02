@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		197F98362EAF020D0091C276 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = 197F98352EAF020D0091C276 /* Apollo */; };
+		7AB75F0D889278F3E662B07B /* AuthorizationInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */; };
 		8BF7346A1713EA6AFBCDA674 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD22AAA46A15E5EC90954C99 /* Network.swift */; };
 		958EB34163AEA2D5BB3059AD /* BudgetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB26C99858F2B5DA45617A4 /* BudgetViewModel.swift */; };
 /* End PBXBuildFile section */
@@ -34,6 +35,7 @@
 		19EFA77F2EAE7ACA000B2CD3 /* BudgetAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgetAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		19EFA7892EAE7ACA000B2CD3 /* BudgetAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgetAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FB26C99858F2B5DA45617A4 /* BudgetViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BudgetViewModel.swift; sourceTree = "<group>"; };
+		BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthorizationInterceptor.swift; sourceTree = "<group>"; };
 		CD22AAA46A15E5EC90954C99 /* Network.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -113,8 +115,14 @@
 			children = (
 				1FB26C99858F2B5DA45617A4 /* BudgetViewModel.swift */,
 			);
-			name = ViewModel;
 			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		31225642AE733E1487EF229B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		79F0D503E4F3FF2DC2962D46 /* BudgetApp */ = {
@@ -122,6 +130,7 @@
 			children = (
 				BF1FBAFE104FF46D4AEC51D4 /* Network */,
 				23B9B67157E8488E67890986 /* ViewModel */,
+				31225642AE733E1487EF229B /* Views */,
 			);
 			path = BudgetApp;
 			sourceTree = "<group>";
@@ -130,8 +139,8 @@
 			isa = PBXGroup;
 			children = (
 				CD22AAA46A15E5EC90954C99 /* Network.swift */,
+				BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */,
 			);
-			name = Network;
 			path = Network;
 			sourceTree = "<group>";
 		};
@@ -281,6 +290,7 @@
 			files = (
 				8BF7346A1713EA6AFBCDA674 /* Network.swift in Sources */,
 				958EB34163AEA2D5BB3059AD /* BudgetViewModel.swift in Sources */,
+				7AB75F0D889278F3E662B07B /* AuthorizationInterceptor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

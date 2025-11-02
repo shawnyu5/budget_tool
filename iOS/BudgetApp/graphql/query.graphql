@@ -20,7 +20,6 @@ query GetMonthlyBudgetConfig($year: Int!, $month: Month!) {
 # Get the budget for a specific month
 query GetMonthBudget($year: Int!, $month: Month!) {
   monthlyBudget(year: $year, month: $month) {
-    __typename
     ... on MonthlyBudget {
       __typename
       month
