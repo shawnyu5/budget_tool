@@ -1,5 +1,5 @@
 {
-  "originHash" : "931440278103ba39b2d835f2c346aeb873ebcb4ff41767ce2ae24e250b359dbe",
+  "originHash" : "7804e56c5d020f89c16b8159cc978c096fc1bf1898af7e454152e77cac10db8d",
   "pins" : [
     {
       "identity" : "apollo-ios",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "af622b00ab873f4011877064d6aa78e20e86ef19",
         "version" : "2.0.2"
+      }
+    },
+    {
+      "identity" : "keychainaccess?utm_source=chatgpt.com",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/kishikawakatsumi/KeychainAccess?utm_source=chatgpt.com",
+      "state" : {
+        "branch" : "master",
+        "revision" : "e0c7eebc5a4465a3c4680764f26b7a61f567cdaf"
       }
     }
   ],

@@ -1,0 +1,10 @@
+//
+//  Debug.xcconfig
+//  BudgetApp
+//
+//  Created by Shawn Yu on 2025-11-17.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+API_URL = http:/$()/localhost:8000

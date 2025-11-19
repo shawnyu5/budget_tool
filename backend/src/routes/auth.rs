@@ -35,7 +35,7 @@ pub async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> 
             let auth_user = auth_header_str.replace("Basic ", "");
             let decoded_auth_user = BASE64_STANDARD
                 .decode(auth_user)
-                .context("Failed to decode user from auth header")?;
+                .context("Failed to base64 decode user from auth header")?;
             let decoded_auth_user = String::from_utf8(decoded_auth_user)
                 .context("Failed to convert auth header to string")?;
 
