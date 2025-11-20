@@ -11,13 +11,16 @@
 		195F71442ECC08D400B8D6AD /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 195F71432ECC08D400B8D6AD /* Debug.xcconfig */; };
 		195F71462ECC08E800B8D6AD /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 195F71452ECC08E800B8D6AD /* Release.xcconfig */; };
 		197F98362EAF020D0091C276 /* Apollo in Frameworks */ = {isa = PBXBuildFile; productRef = 197F98352EAF020D0091C276 /* Apollo */; };
-		471F58FDD2C5A99AA294D237 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F003E290D147A5FC627BC09 /* Keychain.swift */; };
+		19DEC5582ECEB3ED00C8E13F /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 19DEC5572ECEB3ED00C8E13F /* Logging */; };
 		6AA9E23E999F013E55B70043 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38025D2232155360ABD12026 /* LoginView.swift */; };
 		7AB75F0D889278F3E662B07B /* AuthorizationInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */; };
 		8BF7346A1713EA6AFBCDA674 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD22AAA46A15E5EC90954C99 /* Network.swift */; };
 		92374D96CA7E27EF221108DF /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */; };
 		958EB34163AEA2D5BB3059AD /* BudgetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FB26C99858F2B5DA45617A4 /* BudgetViewModel.swift */; };
 		A55568107A9E803DDF1FC142 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B0641ACC12E1F09CE2DD9A /* Config.swift */; };
+		B48FBEFC2EAEC15DE267143D /* NetworkInterseptorProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA69EE2527BC9F123CBA36E /* NetworkInterseptorProvider.swift */; };
+		CBE4B0B85853552EBBDE15D8 /* Apollo+Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF3045261A0EECEC9B86E4 /* Apollo+Setup.swift */; };
+		DC3BBE69BA3D98436EAD74A7 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E934CC52D4D72E742184A072 /* AuthManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,15 +48,17 @@
 		19EFA7892EAE7ACA000B2CD3 /* BudgetAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BudgetAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FB26C99858F2B5DA45617A4 /* BudgetViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BudgetViewModel.swift; sourceTree = "<group>"; };
 		38025D2232155360ABD12026 /* LoginView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		5F003E290D147A5FC627BC09 /* Keychain.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		81B0641ACC12E1F09CE2DD9A /* Config.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthorizationInterceptor.swift; sourceTree = "<group>"; };
+		CAA69EE2527BC9F123CBA36E /* NetworkInterseptorProvider.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = NetworkInterseptorProvider.swift; sourceTree = "<group>"; };
 		CD22AAA46A15E5EC90954C99 /* Network.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
+		DCEF3045261A0EECEC9B86E4 /* Apollo+Setup.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = "Apollo+Setup.swift"; sourceTree = "<group>"; };
+		E934CC52D4D72E742184A072 /* AuthManager.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1930EFBE2ECD4EAB001F1964 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		1930EFBE2ECD4EAB001F1964 /* Exceptions for "BudgetApp" folder in "BudgetApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -66,7 +71,7 @@
 		19EFA7722EAE7AC9000B2CD3 /* BudgetApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				1930EFBE2ECD4EAB001F1964 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				1930EFBE2ECD4EAB001F1964 /* Exceptions for "BudgetApp" folder in "BudgetApp" target */,
 			);
 			path = BudgetApp;
 			sourceTree = "<group>";
@@ -88,6 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				19DEC5582ECEB3ED00C8E13F /* Logging in Frameworks */,
 				1930EFC12ECD58AC001F1964 /* KeychainAccess in Frameworks */,
 				197F98362EAF020D0091C276 /* Apollo in Frameworks */,
 			);
@@ -139,6 +145,7 @@
 			children = (
 				1FB26C99858F2B5DA45617A4 /* BudgetViewModel.swift */,
 				937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */,
+				E934CC52D4D72E742184A072 /* AuthManager.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -165,7 +172,6 @@
 				23B9B67157E8488E67890986 /* ViewModel */,
 				31225642AE733E1487EF229B /* Views */,
 				81B0641ACC12E1F09CE2DD9A /* Config.swift */,
-				5F003E290D147A5FC627BC09 /* Keychain.swift */,
 			);
 			path = BudgetApp;
 			sourceTree = "<group>";
@@ -175,6 +181,8 @@
 			children = (
 				CD22AAA46A15E5EC90954C99 /* Network.swift */,
 				BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */,
+				DCEF3045261A0EECEC9B86E4 /* Apollo+Setup.swift */,
+				CAA69EE2527BC9F123CBA36E /* NetworkInterseptorProvider.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -209,6 +217,7 @@
 			packageProductDependencies = (
 				197F98352EAF020D0091C276 /* Apollo */,
 				1930EFC02ECD58AC001F1964 /* KeychainAccess */,
+				19DEC5572ECEB3ED00C8E13F /* Logging */,
 			);
 			productName = BudgetApp;
 			productReference = 19EFA7702EAE7AC9000B2CD3 /* BudgetApp.app */;
@@ -290,7 +299,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				197F98342EAF020D0091C276 /* XCRemoteSwiftPackageReference "apollo-ios" */,
-				1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */,
+				1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+				19DEC5562ECEB3ED00C8E13F /* XCRemoteSwiftPackageReference "swift-log" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 19EFA7712EAE7AC9000B2CD3 /* Products */;
@@ -341,7 +351,9 @@
 				6AA9E23E999F013E55B70043 /* LoginView.swift in Sources */,
 				92374D96CA7E27EF221108DF /* LoginViewModel.swift in Sources */,
 				A55568107A9E803DDF1FC142 /* Config.swift in Sources */,
-				471F58FDD2C5A99AA294D237 /* Keychain.swift in Sources */,
+				DC3BBE69BA3D98436EAD74A7 /* AuthManager.swift in Sources */,
+				CBE4B0B85853552EBBDE15D8 /* Apollo+Setup.swift in Sources */,
+				B48FBEFC2EAEC15DE267143D /* NetworkInterseptorProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -717,7 +729,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */ = {
+		1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess?utm_source=chatgpt.com";
 			requirement = {
@@ -733,18 +745,31 @@
 				minimumVersion = 2.0.2;
 			};
 		};
+		19DEC5562ECEB3ED00C8E13F /* XCRemoteSwiftPackageReference "swift-log" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-log";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.6.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		1930EFC02ECD58AC001F1964 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */;
+			package = 1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
 			productName = KeychainAccess;
 		};
 		197F98352EAF020D0091C276 /* Apollo */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 197F98342EAF020D0091C276 /* XCRemoteSwiftPackageReference "apollo-ios" */;
 			productName = Apollo;
+		};
+		19DEC5572ECEB3ED00C8E13F /* Logging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 19DEC5562ECEB3ED00C8E13F /* XCRemoteSwiftPackageReference "swift-log" */;
+			productName = Logging;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

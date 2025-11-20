@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct LoginView: View {
+    @Environment(AuthManager.self) private var auth: AuthManager
     @State private var username: String = ""
     @State private var password: String = ""
     @State private var isSecure: Bool = true
-    /// Whether the user has successfully logged in
-    @State private var isLoggedIn: Bool = false
+    @State private var navigationPath = NavigationPath()
+
     var showAlert: Binding<Bool> {
         Binding(
             get: { alertMessage != nil },
@@ -17,7 +18,7 @@ struct LoginView: View {
     var viewModel = LoginviewModel()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             VStack(spacing: 20) {
                 // Title
                 Text("Login")
@@ -64,8 +65,7 @@ struct LoginView: View {
                             switch await viewModel.login(username: username, password: password) {
                             case let .success(token):
                                 print("success!")
-                                setJWTToken(token)
-                                isLoggedIn = true
+                                auth.saveToken(token)
 
                             case let .failure(error):
                                 print("Failed to login")
@@ -107,13 +107,24 @@ struct LoginView: View {
                 Spacer()
             }
             .padding()
-            .navigationDestination(isPresented: $isLoggedIn) {
-                BudgetPageView()
+            .navigationDestination(isPresented:
+                Binding(
+                    get: { auth.isAuthenticated },
+                    set: { auth.isAuthenticated = $0 }
+                )) {
+                    BudgetPageView(auth: auth)
+                        .navigationBarBackButtonHidden(true)
+            }
+            .onAppear {
+                if auth.isAuthenticated {
+                    BudgetPageView(auth: auth)
+                        .navigationBarBackButtonHidden(true)
+                }
             }
         }
     }
 }
 
 #Preview {
-    LoginView()
+    LoginView().environment(AuthManager())
 }

@@ -10,7 +10,7 @@ use chrono::{Duration, Utc};
 use common_axum::app_error_v2::AppError;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use tracing::{error, instrument, warn};
+use tracing::{error, info, instrument, warn};
 
 use crate::routes::MaybeJwt;
 use crate::{config::Config, routes::JwtClaim};
@@ -98,7 +98,9 @@ where
 {
     type Rejection = Infallible;
 
+    #[instrument(skip_all)]
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        info!("Extracting JWT from Authorization header");
         let jwt_token = match parts.headers.get("authorization") {
             Some(auth_header) => {
                 let auth_header_str = auth_header
@@ -117,8 +119,13 @@ where
             }
         };
 
+        info!("Validating JWT");
         let claim = match decode_jwt(&jwt_token) {
-            Ok(e) => e,
+            Ok(e) => {
+                // TODO: need to make sure jwt is not expired
+                info!("JWT exipration time: {time}", time = e.exp);
+                e
+            }
             Err(e) => {
                 error!("Failed to verify JWT token: {e}");
                 return Ok(MaybeJwt(None));

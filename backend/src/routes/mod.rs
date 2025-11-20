@@ -6,6 +6,7 @@ use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use axum::body;
 use axum::extract::State;
+use axum::http::HeaderMap;
 use axum::http::StatusCode;
 use axum::middleware;
 use axum::response::IntoResponse;
@@ -35,6 +36,7 @@ use crate::graphql::generate_graphql_schema;
 use crate::graphql::SchemaType;
 use crate::monthly_budget::MonthlyBudget;
 use crate::monthly_budget::SpendingItem;
+use crate::routes::auth::decode_jwt;
 use crate::routes::auth::{__path_basic_auth_handler, basic_auth_handler};
 use crate::routes::notification::{
     __path_save_notification_subscription_handler, save_notification_subscription_handler,
@@ -74,6 +76,7 @@ pub async fn app() -> Router {
         })
         // .layer(middleware::from_fn(check_valid_year))
         .routes(routes!(validate_token))
+        .routes(routes!(validate_token_v2))
         .routes(routes!(export_csv_handler))
         .layer(middleware::from_fn(check_auth_header))
         .routes(routes!(graphql_handler))
@@ -430,6 +433,7 @@ async fn update_spending_item(
 }
 
 /// Validate the JWT token in the header.
+/// Um I kinda forgot to implement this route. So this route will always return true
 #[utoipa::path(
     get,
     path = "/auth/validate-token",
@@ -442,6 +446,32 @@ async fn update_spending_item(
 )]
 async fn validate_token() -> &'static str {
     return "success";
+}
+
+/// Validate the JWT token in the header fr this time.
+#[utoipa::path(
+    get,
+    path = "/auth/validate-token/v2",
+    responses(
+        (status = 200, description = "The JWT token is still valid"),
+        (status = 403, description = "JWT has expired", body = String),
+    ),
+)]
+async fn validate_token_v2(header: HeaderMap) -> StatusCode {
+    let auth_header = header.get("Authorization");
+    match auth_header {
+        Some(header) => {
+            match decode_jwt(
+                header
+                    .to_str()
+                    .expect("Failed to convert auth header JWT to string"),
+            ) {
+                Ok(_) => return StatusCode::OK,
+                Err(_) => return StatusCode::FORBIDDEN,
+            }
+        }
+        None => return StatusCode::FORBIDDEN,
+    }
 }
 
 /// Gets the spending items in csv form. If converting budget information to CSV fails at any point, partial data will not be returned

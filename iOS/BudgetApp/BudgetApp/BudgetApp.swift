@@ -1,15 +1,24 @@
 //
-//  BudgetAppApp.swift
+//  BudgetApp.swift
 //  BudgetApp
 //
 //  Created by Shawn Yu on 2025-10-26.
 //
 
-import SwiftUI
+import OSLog
 import SwiftData
+import SwiftUI
+
+let logger = Logger()
 
 @main
-struct BudgetAppApp: App {
+struct BudgetApp: App {
+    @State var auth = AuthManager()
+
+    init() {
+        logger.info("App started")
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -26,7 +35,16 @@ struct BudgetAppApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(auth)
         }
         .modelContainer(sharedModelContainer)
     }
+}
+
+private func setupLogging() {
+    // LoggingSystem.bootstrap { label in
+    //     var handler = StreamLogHandler.standardOutput(label: label)
+    //     handler.logLevel = .debug
+    //     return handler
+    // }
 }

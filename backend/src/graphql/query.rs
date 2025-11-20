@@ -1,5 +1,8 @@
+use std::time::Duration;
+
 use async_graphql::{Context, ErrorExtensions, FieldResult, Object, Result, SimpleObject, Union};
 use base64::prelude::*;
+use tokio::time::{self, sleep};
 use tracing::{error, info, instrument};
 
 use crate::{
@@ -71,7 +74,6 @@ impl QueryRoot {
             .data::<MaybeJwt>()
             .expect("Missing JWT in graphql context");
 
-        info!("Validating JWT");
         if jwt.is_none() {
             error!("Invalid JWT, returning Forbidden error response");
             return MonthlyBudgetResponse::Error(GraphQLErrorObject {
@@ -81,11 +83,21 @@ impl QueryRoot {
         }
 
         info!("Connecting to DB");
-        let db = DB::new(&year.to_string())
-            .await
-            .map_err(|e| e.extend_with(|_, e| e.set("reason", "AHHH")))
-            .unwrap();
+        // info!("Sleeping");
+        // sleep(Duration::from_secs(3)).await;
+        // info!("woke up");
+        let db = match DB::new(&year.to_string()).await {
+            Ok(db) => db,
+            Err(err) => {
+                error!("Failed to connect to DB: {err}");
+                return MonthlyBudgetResponse::Error(GraphQLErrorObject {
+                    code: GraphQLErrorCode::ServerError,
+                    message: "Failed to connect to DB".to_string(),
+                });
+            }
+        };
 
+        info!("Connected to DB");
         match db.get_month_budget(month).await {
             Ok(mut monthly_budget) => {
                 monthly_budget.update_calculations();

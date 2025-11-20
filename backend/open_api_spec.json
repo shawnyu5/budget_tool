@@ -34,7 +34,7 @@
     },
     "/auth/validate-token": {
       "get": {
-        "summary": "Validate the JWT token in the header.",
+        "summary": "Validate the JWT token in the header.\nUm I kinda forgot to implement this route. So this route will always return true",
         "operationId": "validate_token",
         "responses": {
           "200": {
@@ -62,6 +62,27 @@
           },
           "500": {
             "description": "Failed to get update spending item",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/validate-token/v2": {
+      "get": {
+        "summary": "Validate the JWT token in the header fr this time.",
+        "operationId": "validate_token_v2",
+        "responses": {
+          "200": {
+            "description": "The JWT token is still valid"
+          },
+          "403": {
+            "description": "JWT has expired",
             "content": {
               "text/plain": {
                 "schema": {

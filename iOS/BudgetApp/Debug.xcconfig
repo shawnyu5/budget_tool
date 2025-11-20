@@ -8,3 +8,4 @@
 // Configuration settings file format documentation can be found at:
 // https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
 API_URL = http:/$()/localhost:8000
+// API_URL = http:/$()/192.168.2.230:8000
