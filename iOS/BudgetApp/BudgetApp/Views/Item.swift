@@ -1,5 +1,5 @@
 //
-//  Item.swift
+//  BudgetItem.swift
 //  BudgetApp
 //
 //  Created by Shawn Yu on 2025-10-26.
@@ -11,7 +11,7 @@ import SwiftData
 @Model
 final class Item {
     var timestamp: Date
-    
+
     init(timestamp: Date) {
         self.timestamp = timestamp
     }

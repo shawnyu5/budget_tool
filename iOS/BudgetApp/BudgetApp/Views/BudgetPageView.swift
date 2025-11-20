@@ -1,5 +1,5 @@
 //
-//  BudgetView.swift
+//  BudgetPageView.swift
 //  BudgetApp
 //
 //  Created by Shawn Yu on 2025-10-26.
@@ -22,6 +22,10 @@ struct BudgetPageView: View {
     // @State private var hasLoaded = false
     // If the add expense view is being shown right now
     @State private var showingAddExpenseItem = false
+    /// If we are displaying `selectedItem`'s details
+    @State private var showingItemDetails = false
+    /// The selected item to display details of
+    @State private var selectedItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?
 
     var body: some View {
         NavigationStack {
@@ -57,7 +61,19 @@ struct BudgetPageView: View {
                     Section(header: Label("Expenses", systemImage: "list.bullet")) {
                         ForEach(viewModel.budgetItems?.spending ?? [], id: \.id) {
                             item in
-                            Text(item.description)
+                            Button(action: {
+                                selectedItem = item
+                                showingItemDetails = true
+
+                            }) {
+                                Text(item.description)
+                                    .onTapGesture {
+                                        selectedItem = item
+                                        showingItemDetails = true
+                                    }
+                            }
+                            .buttonStyle(.plain)
+                            // // On tap of this item, open a sheet showing more details
                         }
                     }
                 }
@@ -65,9 +81,14 @@ struct BudgetPageView: View {
                     Button("Add Expense item", systemImage: "plus") {
                         showingAddExpenseItem = true
                     }
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.automatic)
                 }
                 .sheet(isPresented: $showingAddExpenseItem) {
-                    AddExpenseItem()
+                    ExpenseItemView(title: "Add Expense Item", expenseItem: nil) { _ in }
+                }
+                .sheet(isPresented: $showingItemDetails) {
+                    ExpenseItemView(title: "Edit expense item", expenseItem: nil) { _ in }
                 }
             }
         }
