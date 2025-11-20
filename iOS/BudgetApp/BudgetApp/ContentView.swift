@@ -13,19 +13,11 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             if auth.isAuthenticated {
-                BudgetPageView(auth: auth)
+                MainTabView()
             } else {
                 LoginView()
             }
         }
-        // TabView {
-        //     Tab("Budget", systemImage: "square.stack") {
-        //         LoginView()
-        //     }
-        //     Tab("Settings", systemImage: "gear") {
-        //         Text("Settings pageeee")
-        //     }
-        // }
     }
 }
 

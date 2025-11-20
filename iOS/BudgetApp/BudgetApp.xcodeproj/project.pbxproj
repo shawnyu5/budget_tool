@@ -21,6 +21,7 @@
 		B48FBEFC2EAEC15DE267143D /* NetworkInterseptorProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA69EE2527BC9F123CBA36E /* NetworkInterseptorProvider.swift */; };
 		CBE4B0B85853552EBBDE15D8 /* Apollo+Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF3045261A0EECEC9B86E4 /* Apollo+Setup.swift */; };
 		DC3BBE69BA3D98436EAD74A7 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E934CC52D4D72E742184A072 /* AuthManager.swift */; };
+		F0EA868830497EA97541DA41 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93AA395652C56CD396DF75F /* MainTabView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +51,7 @@
 		38025D2232155360ABD12026 /* LoginView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		81B0641ACC12E1F09CE2DD9A /* Config.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
+		A93AA395652C56CD396DF75F /* MainTabView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = MainTabView.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthorizationInterceptor.swift; sourceTree = "<group>"; };
 		CAA69EE2527BC9F123CBA36E /* NetworkInterseptorProvider.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = NetworkInterseptorProvider.swift; sourceTree = "<group>"; };
 		CD22AAA46A15E5EC90954C99 /* Network.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
@@ -58,7 +60,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1930EFBE2ECD4EAB001F1964 /* Exceptions for "BudgetApp" folder in "BudgetApp" target */ = {
+		1930EFBE2ECD4EAB001F1964 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -71,7 +73,7 @@
 		19EFA7722EAE7AC9000B2CD3 /* BudgetApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				1930EFBE2ECD4EAB001F1964 /* Exceptions for "BudgetApp" folder in "BudgetApp" target */,
+				1930EFBE2ECD4EAB001F1964 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
 			path = BudgetApp;
 			sourceTree = "<group>";
@@ -154,6 +156,7 @@
 			isa = PBXGroup;
 			children = (
 				38025D2232155360ABD12026 /* LoginView.swift */,
+				A93AA395652C56CD396DF75F /* MainTabView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -299,7 +302,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				197F98342EAF020D0091C276 /* XCRemoteSwiftPackageReference "apollo-ios" */,
-				1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+				1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */,
 				19DEC5562ECEB3ED00C8E13F /* XCRemoteSwiftPackageReference "swift-log" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -354,6 +357,7 @@
 				DC3BBE69BA3D98436EAD74A7 /* AuthManager.swift in Sources */,
 				CBE4B0B85853552EBBDE15D8 /* Apollo+Setup.swift in Sources */,
 				B48FBEFC2EAEC15DE267143D /* NetworkInterseptorProvider.swift in Sources */,
+				F0EA868830497EA97541DA41 /* MainTabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -729,7 +733,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
+		1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess?utm_source=chatgpt.com";
 			requirement = {
@@ -758,7 +762,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		1930EFC02ECD58AC001F1964 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
+			package = 1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */;
 			productName = KeychainAccess;
 		};
 		197F98352EAF020D0091C276 /* Apollo */ = {
