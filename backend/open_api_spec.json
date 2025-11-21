@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "budget-tool backend",
+    "title": "budget-tool_backend",
     "version": "0.2.0"
   },
   "paths": {
@@ -246,6 +246,26 @@
       "get": {
         "summary": "Gets the spending items in csv form. If converting budget information to CSV fails at any point, partial data will not be returned",
         "operationId": "export_csv_handler",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "description": "The year the spending item is in",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "in": "path",
+            "description": "The month the spending item is in",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Month"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Spending items in CSV format",
@@ -352,7 +372,11 @@
           },
           "required": true
         },
-        "responses": {},
+        "responses": {
+          "200": {
+            "description": "Notification sent successfully"
+          }
+        },
         "deprecated": true
       }
     },
@@ -370,7 +394,11 @@
           },
           "required": true
         },
-        "responses": {}
+        "responses": {
+          "200": {
+            "description": "Notification sent successfully"
+          }
+        }
       }
     },
     "/spending-item/{year}/{month}/{id}": {

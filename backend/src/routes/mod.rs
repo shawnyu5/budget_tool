@@ -86,7 +86,7 @@ pub async fn app() -> Router {
         .routes(routes!(app_version))
         .split_for_parts();
 
-    api_spec.info.title = "budget-tool backend".to_string();
+    api_spec.info.title = "budget-tool_backend".to_string();
     api_spec.info.description = None;
     api_spec.info.contact = None;
     api_spec.info.license = None;
@@ -479,6 +479,10 @@ async fn validate_token_v2(header: HeaderMap) -> StatusCode {
 #[utoipa::path(
     get,
     path = "/export/{year}/{month}/csv",
+    params(
+        ("year" = String, description = "The year the spending item is in"),
+        ("month" = Month, description = "The month the spending item is in"),
+    ),
     responses(
         (status = 200, description = "Spending items in CSV format", body = String),
         (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
