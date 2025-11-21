@@ -12,26 +12,26 @@ import SwiftUI
 /// Home page to display Budget
 @MainActor
 struct BudgetPageView: View {
-    init(auth: AuthManager) {
-        _viewModel = State(wrappedValue: BudgetViewModel(token: auth.token))
+    @Environment(AuthManager.self) private var auth: AuthManager
+
+    init() {
+        _viewModel = State(wrappedValue: BudgetViewModel())
     }
 
-    @Environment(AuthManager.self) private var auth: AuthManager
     @State private var viewModel: BudgetViewModel
-    // /// If this is the first load
-    // @State private var hasLoaded = false
-    // If the add expense view is being shown right now
+    /// If the add expense view is being shown right now
     @State private var showingAddExpenseItem = false
     /// If we are displaying `selectedItem`'s details
     @State private var showingItemDetails = false
     /// The selected item to display details of
     @State private var selectedItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?
 
+    /// Task for fetching budget
+    @State private var fetchTask: Task<Void, Never>? = nil
+
     var body: some View {
         NavigationStack {
-            if viewModel.isLoading {
-                ProgressView("Loading...")
-            } else if let error = viewModel.errorMessage {
+            if let error = viewModel.errorMessage {
                 // Display error
                 Text(error)
                     .foregroundColor(.red)
@@ -40,21 +40,25 @@ struct BudgetPageView: View {
             } else {
                 List {
                     Section(header: Label("Budget", systemImage: "creditcard")) {
-                        HStack {
-                            Text("$10/200").font(.title)
-                        }
+                        if viewModel.isLoading {
+                            ProgressView("Loading...")
+                        } else {
+                            HStack {
+                                Text("$10/200").font(.title)
+                            }
 
-                        HStack {
-                            Text("Shawn").bold()
-                            Text("(60%): $100")
-                        }
-                        .padding(.leading)
+                            HStack {
+                                Text("Shawn").bold()
+                                Text("(60%): $100")
+                            }
+                            .padding(.leading)
 
-                        HStack {
-                            Text("Maggie").bold()
-                            Text("(40%): $80")
+                            HStack {
+                                Text("Maggie").bold()
+                                Text("(40%): $80")
+                            }
+                            .padding(.leading)
                         }
-                        .padding(.leading)
                     }
                     .padding(.vertical, 4)
 
@@ -73,7 +77,6 @@ struct BudgetPageView: View {
                                     }
                             }
                             .buttonStyle(.plain)
-                            // // On tap of this item, open a sheet showing more details
                         }
                     }
                 }
@@ -94,17 +97,29 @@ struct BudgetPageView: View {
         }
         .task {
             print("Fetching budget in view...")
+            await loadBudget()
+        }
+        .refreshable {
+            print("Refreshing")
+            await loadBudget()
+        }
+    }
+
+    private func loadBudget() async {
+        // Cancel previous fetch if still running
+        fetchTask?.cancel()
+        fetchTask = Task {
             await viewModel.fetchBudget(year: 2025, month: .april)
+
             if viewModel.errorCode == Backend.GraphQLErrorCode.forbidden {
                 auth.isAuthenticated = false
             }
-        }
-        .refreshable {
-            await viewModel.fetchBudget(year: 2025, month: .april)
+            // // Handle real errors
+            // print("Budget fetch error: \(error)")
         }
     }
 }
 
 #Preview {
-    BudgetPageView(auth: AuthManager()).environment(AuthManager())
+    BudgetPageView().environment(AuthManager.shared)
 }

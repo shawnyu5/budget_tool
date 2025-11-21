@@ -112,12 +112,12 @@ struct LoginView: View {
                     get: { auth.isAuthenticated },
                     set: { auth.isAuthenticated = $0 }
                 )) {
-                    BudgetPageView(auth: auth)
+                    BudgetPageView()
                         .navigationBarBackButtonHidden(true)
             }
             .onAppear {
                 if auth.isAuthenticated {
-                    BudgetPageView(auth: auth)
+                    BudgetPageView()
                         .navigationBarBackButtonHidden(true)
                 }
             }
@@ -126,5 +126,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView().environment(AuthManager())
+    LoginView().environment(AuthManager.shared)
 }

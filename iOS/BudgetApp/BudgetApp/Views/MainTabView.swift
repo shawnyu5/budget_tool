@@ -6,13 +6,13 @@ struct MainTabView: View {
 
     var body: some View {
         TabView {
-            BudgetPageView(auth: AuthManager())
+            BudgetPageView()
                 .tabItem {
                     Label("Budget", systemImage: "square.stack")
                 }
 
             // TODO: add settings page
-            BudgetPageView(auth: AuthManager())
+            BudgetPageView()
                 // SttingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")

@@ -13,7 +13,7 @@ let logger = Logger()
 
 @main
 struct BudgetApp: App {
-    @State var auth = AuthManager()
+    @State var auth = AuthManager.shared
 
     init() {
         logger.info("App started")

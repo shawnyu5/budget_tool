@@ -23,5 +23,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .environment(AuthManager())
+        .environment(AuthManager.shared)
 }

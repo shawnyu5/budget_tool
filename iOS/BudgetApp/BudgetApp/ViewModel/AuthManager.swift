@@ -3,15 +3,17 @@ import SwiftUI
 
 @Observable
 final class AuthManager {
+    static let shared = AuthManager()
+
+    private init() {
+        loadToken()
+    }
+
     /// If the user is logged in
     /// The login page will be shown if this is false
     var isAuthenticated = false
     /// The JWT token
     var token: String?
-
-    init() {
-        loadToken()
-    }
 
     func loadToken() {
         if let saved = getJWTToken() {

@@ -5,20 +5,16 @@ import Logging
 import OSLog
 
 struct AuthorizationInterceptor: HTTPInterceptor {
-    let token: String?
     func intercept(
         request: URLRequest,
         next: NextHTTPInterceptorFunction
     ) async throws -> HTTPResponse {
+        print("Calling interceptor")
         var request = request
-        if let token {
+        if let token = getJWTToken() {
             print("Added JWT token in interceptor: \(token)")
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        // if let token = getJWTToken() {
-        //     print("Added JWT token in interceptor: \(token)")
-        //     request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        // }
         do {
             let response = try await next(request)
             print("Interceptor response: \(response.response.statusCode)")
@@ -27,6 +23,5 @@ struct AuthorizationInterceptor: HTTPInterceptor {
             print("Caught interceptor error: \(error)")
             throw error
         }
-        // return try await next(request)
     }
 }
