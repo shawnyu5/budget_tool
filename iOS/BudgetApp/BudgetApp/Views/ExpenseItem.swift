@@ -51,17 +51,20 @@ struct ExpenseItemView: View {
     let onSubmit: (Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending) -> Void
 
     // Local editable state
-    @State private var description: String
-    @State private var amount: Double
-    @State private var date: Date
-    @State private var notes: String
+    @State private var description = ""
+    @State private var amount = 0.0
+    @State private var date: Date = .init()
+    @State private var notes = ""
     // When to dismiss this view
     @Environment(\.dismiss) var dismiss
+
+    /// Create an Expense item view to display an expense item
     init(
         title: String,
         expenseItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?,
         onSubmit: @escaping (Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending) -> Void
     ) {
+        print("GOt expense item \(expenseItem)")
         self.title = title
         self.expenseItem = expenseItem
 
@@ -75,6 +78,15 @@ struct ExpenseItemView: View {
         _date = State(initialValue: formatter.date(from: expenseItem?.date ?? "") ?? Date())
         _notes = State(initialValue: expenseItem?.notes ?? "")
         self.onSubmit = onSubmit
+    }
+
+    /// Create an empty Expense item view, used for inputting new expense items
+    init(title: String,
+         onSubmit: @escaping (Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending) -> Void)
+    {
+        self.title = title
+        self.onSubmit = onSubmit
+        expenseItem = nil
     }
 
     var body: some View {

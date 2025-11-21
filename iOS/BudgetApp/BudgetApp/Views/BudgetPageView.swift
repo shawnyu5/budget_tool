@@ -22,7 +22,7 @@ struct BudgetPageView: View {
     /// If the add expense view is being shown right now
     @State private var showingAddExpenseItem = false
     /// If we are displaying `selectedItem`'s details
-    @State private var showingItemDetails = false
+    // @State private var showingItemDetails = false
     /// The selected item to display details of
     @State private var selectedItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?
 
@@ -67,14 +67,14 @@ struct BudgetPageView: View {
                             item in
                             Button(action: {
                                 selectedItem = item
-                                showingItemDetails = true
+                                // showingItemDetails = true
 
                             }) {
                                 Text(item.description)
-                                    .onTapGesture {
-                                        selectedItem = item
-                                        showingItemDetails = true
-                                    }
+                                // .onTapGesture {
+                                //     selectedItem = item
+                                //     showingItemDetails = true
+                                // }
                             }
                             .buttonStyle(.plain)
                         }
@@ -88,10 +88,16 @@ struct BudgetPageView: View {
                     .buttonBorderShape(.automatic)
                 }
                 .sheet(isPresented: $showingAddExpenseItem) {
-                    ExpenseItemView(title: "Add Expense Item", expenseItem: nil) { _ in }
+                    ExpenseItemView(title: "Add Expense Item") { _ in }
+                        .onAppear {
+                            print("Showing add expense item sheet")
+                        }
                 }
-                .sheet(isPresented: $showingItemDetails) {
-                    ExpenseItemView(title: "Edit expense item", expenseItem: nil) { _ in }
+                .sheet(item: $selectedItem) { item in
+                    ExpenseItemView(title: "Edit expense item", expenseItem: item) { _ in }
+                        .onAppear {
+                            print("SHEET: selected item: \(item)")
+                        }
                 }
             }
         }
@@ -114,11 +120,11 @@ struct BudgetPageView: View {
             if viewModel.errorCode == Backend.GraphQLErrorCode.forbidden {
                 auth.isAuthenticated = false
             }
-            // // Handle real errors
-            // print("Budget fetch error: \(error)")
         }
     }
 }
+
+extension Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending: Identifiable {}
 
 #Preview {
     BudgetPageView().environment(AuthManager.shared)
