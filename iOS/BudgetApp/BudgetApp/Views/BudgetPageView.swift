@@ -14,14 +14,21 @@ import SwiftUI
 struct BudgetPageView: View {
     @Environment(AuthManager.self) private var auth: AuthManager
 
+    /// By default display the budget for the current month
     init() {
         _viewModel = State(wrappedValue: BudgetViewModel())
     }
 
+    init(year selectedYear: Int32, month selectedMonth: Backend.Month) {
+        self.init()
+        self.selectedYear = selectedYear
+        self.selectedMonth = selectedMonth
+    }
+
     /// The current selected year to get the budget of
-    @State private var selectedYear: Int32 = .init(Calendar.current.component(.year, from: Date()))
+    var selectedYear: Int32 = .init(Calendar.current.component(.year, from: Date()))
     /// The current selected month to get the budget of
-    @State private var selectedMonth: Backend.Month = {
+    var selectedMonth: Backend.Month = {
         let formatter = DateFormatter()
         formatter.dateFormat = "LLLL"
         let monthName = formatter.string(from: Date()).lowercased()
@@ -89,21 +96,24 @@ struct BudgetPageView: View {
                             }
                             .buttonStyle(.plain)
                         }
+                        .onDelete(perform: { IndexSet in
+                            // TODO: delete item using new graphql API
+                        })
                     }
                 }
                 .toolbar {
                     ToolbarItemGroup(placement: .navigationBarTrailing) {
-                        Picker("Year", selection: $selectedYear) {
-                            ForEach([selectedYear - 1, selectedYear, selectedYear + 1], id: \.self) { option in
-                                Text(String(option))
-                            }
-                        }
-
-                        Picker("Month", selection: $selectedMonth) {
-                            ForEach(Backend.Month.allCases, id: \.self) { month in
-                                Text(month.rawValue).tag(month)
-                            }
-                        }
+                        // Picker("Year", selection: $selectedYear) {
+                        //     ForEach([selectedYear - 1, selectedYear, selectedYear + 1], id: \.self) { option in
+                        //         Text(String(option))
+                        //     }
+                        // }
+                        //
+                        // Picker("Month", selection: $selectedMonth) {
+                        //     ForEach(Backend.Month.allCases, id: \.self) { month in
+                        //         Text(month.rawValue).tag(month)
+                        //     }
+                        // }
                         Button("Add Expense item", systemImage: "plus") {
                             showingAddExpenseItem = true
                         }

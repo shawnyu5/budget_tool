@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		126D92990F9953A23829C25F /* SettingsPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E983F39B992738E0080E234 /* SettingsPageView.swift */; };
+		19149232841685411B43FC92 /* SettingsPageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FCAE6F960A1E478477CD517 /* SettingsPageViewModel.swift */; };
 		1930EFC12ECD58AC001F1964 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 1930EFC02ECD58AC001F1964 /* KeychainAccess */; };
 		195F71442ECC08D400B8D6AD /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 195F71432ECC08D400B8D6AD /* Debug.xcconfig */; };
 		195F71462ECC08E800B8D6AD /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 195F71452ECC08E800B8D6AD /* Release.xcconfig */; };
@@ -56,6 +58,8 @@
 		253FE113C4CC46915FF3FF3B /* HttpClient.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
 		38025D2232155360ABD12026 /* LoginView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		4C5DF3C92CAA279A30B30F4B /* openapi-generator-config.yml */ = {isa = PBXFileReference; explicitFileType = text.yaml; path = "openapi-generator-config.yml"; sourceTree = "<group>"; };
+		6E983F39B992738E0080E234 /* SettingsPageView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = SettingsPageView.swift; path = SettingsPageView.swift; sourceTree = "<group>"; };
+		7FCAE6F960A1E478477CD517 /* SettingsPageViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = SettingsPageViewModel.swift; path = SettingsPageViewModel.swift; sourceTree = "<group>"; };
 		81B0641ACC12E1F09CE2DD9A /* Config.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		A93AA395652C56CD396DF75F /* MainTabView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -160,6 +164,7 @@
 				937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */,
 				E934CC52D4D72E742184A072 /* AuthManager.swift */,
 				253FE113C4CC46915FF3FF3B /* HttpClient.swift */,
+				7FCAE6F960A1E478477CD517 /* SettingsPageViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -169,6 +174,7 @@
 			children = (
 				38025D2232155360ABD12026 /* LoginView.swift */,
 				A93AA395652C56CD396DF75F /* MainTabView.swift */,
+				6E983F39B992738E0080E234 /* SettingsPageView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -389,6 +395,8 @@
 				D26D99F953548C0E0A9282DB /* openapi-generator-config.yml in Sources */,
 				C9E6DF7E5116BD0CE28D6AA2 /* HttpClient.swift in Sources */,
 				C31B071A75500BD4550C7DDB /* Backend+Extension.swift in Sources */,
+				126D92990F9953A23829C25F /* SettingsPageView.swift in Sources */,
+				19149232841685411B43FC92 /* SettingsPageViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
