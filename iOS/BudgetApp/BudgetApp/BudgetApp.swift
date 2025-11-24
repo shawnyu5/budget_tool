@@ -13,10 +13,11 @@ let logger = Logger()
 
 @main
 struct BudgetApp: App {
-    @State var auth = AuthManager.shared
+    @State var auth = AuthManager()
 
     init() {
         logger.info("App started")
+        Network.shared.auth = auth
     }
 
     // var sharedModelContainer: ModelContainer = {

@@ -6,17 +6,21 @@ struct MainTabView: View {
 
     var body: some View {
         TabView {
-            BudgetPageView()
-                .tabItem {
-                    Label("Budget", systemImage: "square.stack")
-                }
+            NavigationStack {
+                BudgetPageView()
+            }
+            .tabItem {
+                Label("Budget", systemImage: "square.stack")
+            }
 
-            // TODO: add settings page
-            BudgetPageView()
+            NavigationStack {
+                // TODO: add settings page
+                BudgetPageView()
                 // SttingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gear")
-                }
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gear")
+            }
         }
     }
 }

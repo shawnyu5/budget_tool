@@ -18,6 +18,17 @@ struct BudgetPageView: View {
         _viewModel = State(wrappedValue: BudgetViewModel())
     }
 
+    /// The current selected year to get the budget of
+    @State private var selectedYear: Int32 = .init(Calendar.current.component(.year, from: Date()))
+    /// The current selected month to get the budget of
+    @State private var selectedMonth: Backend.Month = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "LLLL"
+        let monthName = formatter.string(from: Date()).lowercased()
+        let str = Backend.Month.from(string: monthName)
+        return Backend.Month.from(string: monthName) ?? .january
+    }()
+
     @State private var viewModel: BudgetViewModel
     /// If the add expense view is being shown right now
     @State private var showingAddExpenseItem = false
@@ -30,7 +41,7 @@ struct BudgetPageView: View {
     @State private var fetchTask: Task<Void, Never>? = nil
 
     var body: some View {
-        NavigationStack {
+        VStack {
             if let error = viewModel.errorMessage {
                 // Display error
                 Text(error)
@@ -81,24 +92,26 @@ struct BudgetPageView: View {
                     }
                 }
                 .toolbar {
-                    Button("Add Expense item", systemImage: "plus") {
-                        showingAddExpenseItem = true
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
+                        Picker("Year", selection: $selectedYear) {
+                            ForEach([selectedYear - 1, selectedYear, selectedYear + 1], id: \.self) { option in
+                                Text(String(option))
+                            }
+                        }
+
+                        Picker("Month", selection: $selectedMonth) {
+                            ForEach(Backend.Month.allCases, id: \.self) { month in
+                                Text(month.rawValue).tag(month)
+                            }
+                        }
+                        Button("Add Expense item", systemImage: "plus") {
+                            showingAddExpenseItem = true
+                        }
+                        .buttonStyle(.glass)
+                        .buttonBorderShape(.automatic)
                     }
-                    .buttonStyle(.glass)
-                    .buttonBorderShape(.automatic)
                 }
-                .sheet(isPresented: $showingAddExpenseItem) {
-                    ExpenseItemView(title: "Add Expense Item") { _ in }
-                        .onAppear {
-                            print("Showing add expense item sheet")
-                        }
-                }
-                .sheet(item: $selectedItem) { item in
-                    ExpenseItemView(title: "Edit expense item", expenseItem: item) { _ in }
-                        .onAppear {
-                            print("SHEET: selected item: \(item)")
-                        }
-                }
+                // .toolbar {}
             }
         }
         .task {
@@ -109,14 +122,47 @@ struct BudgetPageView: View {
             print("Refreshing")
             await loadBudget()
         }
+        .onChange(of: selectedYear) {
+            Task {
+                await loadBudget()
+            }
+        }
+        .onChange(of: selectedMonth) {
+            Task {
+                await loadBudget()
+            }
+        }
+        .sheet(isPresented: $showingAddExpenseItem) {
+            ExpenseItemView(title: "Add Expense Item") { expenseItem in
+                // TODO: call backend to add expense item via new graphql endpoint
+                // let selectedYearString = String(self.selectedYear)
+                // let path = Operations.UpdateBudgetHandler.Input.Path(year: selectedYearString, month: self.selectedMonth).self
+                // let path = Operations.UpdateBudgetHandler.Input.Path(year: selectedYearString, month: .april)
+                // let body = Operations.UpdateBudgetHandler.Input.Body.json(
+                //     Components.Schemas.MonthlyBudget(month: self.selectedMonth, spending: [expenseItem])
+                // )
+                // Network.shared.http.updateBudgetHandler(path: path, body: body)
+                // Network.shared.http.updateBudgetHandler(body: .json(Components.Schemas.MonthlyBudget(month: self.selectedMonth, spending: [self.$selectedItem])))
+                // Network.shared.http.updateBudgetHandler(expenseItem)
+                await loadBudget()
+            }
+            .onAppear {
+                print("Showing add expense item sheet")
+            }
+        }
+        .sheet(item: $selectedItem) { item in
+            ExpenseItemView(title: "Edit expense item", expenseItem: item) { _ in }
+                .onAppear {
+                    print("SHEET: selected item: \(item)")
+                }
+        }
     }
 
     private func loadBudget() async {
         // Cancel previous fetch if still running
         fetchTask?.cancel()
-        fetchTask = Task {
-            await viewModel.fetchBudget(year: 2025, month: .april)
-
+        fetchTask = Task { @MainActor in
+            await viewModel.fetchBudget(year: selectedYear, month: selectedMonth)
             if viewModel.errorCode == Backend.GraphQLErrorCode.forbidden {
                 auth.isAuthenticated = false
             }
@@ -127,5 +173,5 @@ struct BudgetPageView: View {
 extension Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending: Identifiable {}
 
 #Preview {
-    BudgetPageView().environment(AuthManager.shared)
+    BudgetPageView().environment(AuthManager())
 }

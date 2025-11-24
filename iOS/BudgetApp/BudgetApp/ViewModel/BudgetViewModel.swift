@@ -63,6 +63,7 @@ final class BudgetViewModel {
                 errorMessage = error.message
                 if let errorCode = errorCode, let errorMessage = errorMessage {
                     print("Got error code: \(errorCode): \(errorMessage)")
+                    self.errorCode = errorCode
                 }
 
                 /* print("Got error: \(errorCode): \(errorMessage)") */

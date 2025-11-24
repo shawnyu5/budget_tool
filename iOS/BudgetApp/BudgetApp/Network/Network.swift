@@ -7,7 +7,7 @@ import OpenAPIURLSession
 /// Shared class for handling all networking operations in the app
 final class Network {
     static let shared = Network()
-    let auth = AuthManager.shared
+    var auth: AuthManager!
 
     private init() {}
     /// Shared singleton graphql client

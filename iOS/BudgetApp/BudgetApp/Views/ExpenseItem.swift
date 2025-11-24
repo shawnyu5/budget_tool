@@ -40,6 +40,8 @@ class Expenses {
     }
 }
 
+typealias onSubmitFunc = (Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending) async -> Void
+
 /// Display a single expense item
 struct ExpenseItemView: View {
     /// Title of the view
@@ -48,7 +50,7 @@ struct ExpenseItemView: View {
     var expenseItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?
 
     /// Closure called when the view is submitted, with the updated Spending item passed to it
-    let onSubmit: (Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending) -> Void
+    let onSubmit: onSubmitFunc
 
     // Local editable state
     @State private var description = ""
@@ -59,12 +61,14 @@ struct ExpenseItemView: View {
     @Environment(\.dismiss) var dismiss
 
     /// Create an Expense item view to display an expense item
+    /// - title: the title of the view
+    /// - expenseItem: the expense item to display in the view
+    /// - onSubmit: to be called when the view is saved
     init(
         title: String,
         expenseItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?,
-        onSubmit: @escaping (Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending) -> Void
+        onSubmit: @escaping onSubmitFunc
     ) {
-        print("GOt expense item \(expenseItem)")
         self.title = title
         self.expenseItem = expenseItem
 
@@ -81,8 +85,10 @@ struct ExpenseItemView: View {
     }
 
     /// Create an empty Expense item view, used for inputting new expense items
+    /// - title: the title of the view
+    /// - onSubmit: to be called when the view is saved
     init(title: String,
-         onSubmit: @escaping (Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending) -> Void)
+         onSubmit: @escaping onSubmitFunc)
     {
         self.title = title
         self.onSubmit = onSubmit
@@ -100,16 +106,23 @@ struct ExpenseItemView: View {
                     .keyboardType(.decimalPad)
                 #endif
 
-                TextEditor(text: $notes)
-                    .frame(height: 200)
+                VStack {
+                    Text("Notes")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    TextEditor(text: $notes)
+                        .frame(height: 200)
+                }
             }
             .navigationTitle(title)
             .toolbar {
                 Button("Save") {
-                    // TODO: save expense item
-                    // let item = ExpenseItem(amount: amount, date: date, description: description, Notes: notes)
-                    // expenses.items.append(item)
-                    dismiss()
+                    Task {
+                        // At this point, there must be an expense item
+                        await self.onSubmit(self.expenseItem!)
+                        dismiss()
+                    }
                 }
             }
         }
