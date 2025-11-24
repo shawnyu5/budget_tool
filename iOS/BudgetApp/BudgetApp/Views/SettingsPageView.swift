@@ -3,11 +3,26 @@ import SwiftUI
 @MainActor
 struct SettingsPageView: View {
     @Environment(AuthManager.self) private var auth: AuthManager
-    @State var shawnContributionPercentage = "50.0"
-    @State var shawnContributionAmount = "50.0"
 
-    @State var maggieContributionPercentage = "50.0"
-    @State var maggieContributionAmount = "50.0"
+    /// The current selected year to get the budget of
+    var selectedYear: Int32 = .init(Calendar.current.component(.year, from: Date()))
+    /// The current selected month to get the budget of
+    var selectedMonth: Backend.Month = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "LLLL"
+        let monthName = formatter.string(from: Date()).lowercased()
+        let str = Backend.Month.from(string: monthName)
+        return Backend.Month.from(string: monthName) ?? .january
+    }()
+
+    @State private var shawnContributionPercentage = "50.0"
+    @State private var shawnContributionAmount = "50.0"
+    @State private var maggieContributionPercentage = "50.0"
+    @State private var maggieContributionAmount = "50.0"
+
+    @State private var viewModel = SettingsPageViewModel()
+    /// Task for fetching budget
+    @State private var fetchTask: Task<Void, Never>? = nil
 
     var body: some View {
         VStack {
@@ -16,7 +31,7 @@ struct SettingsPageView: View {
                 Text("Total budget")
                     .font(.subheadline)
 
-                Text("12334")
+                Text(String(viewModel.budgetConfig?.totalAllocation ?? 0.0))
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(5)
 
@@ -45,6 +60,31 @@ struct SettingsPageView: View {
                     TextField("$", text: $maggieContributionAmount)
                 }
             }
+        }
+        .task {
+            print("Fetching budget in view")
+            await loadSettings()
+        }
+        .refreshable {
+            print("Refreshing")
+            await loadSettings()
+        }
+    }
+
+    private func loadSettings() async {
+        // Cancel previous fetch if still running
+        fetchTask?.cancel()
+        fetchTask = Task { @MainActor in
+            await viewModel.fetchSettings(year: selectedYear, month: selectedMonth)
+            if viewModel.errorCode == Backend.GraphQLErrorCode.forbidden {
+                auth.isAuthenticated = false
+            }
+
+            self.shawnContributionPercentage = String(viewModel.budgetConfig?.shawnPercentageAllocation ?? 0.0)
+            self.shawnContributionAmount = String(viewModel.budgetConfig?.shawnContributionAmount ?? 0.0)
+
+            self.maggieContributionAmount = String(viewModel.budgetConfig?.maggieContributionAmount ?? 0.0)
+            self.maggieContributionPercentage = String(viewModel.budgetConfig?.maggiePercentageAllocation ?? 0.0)
         }
     }
 }
