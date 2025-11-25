@@ -9,7 +9,7 @@ extension Backend {
     static let operationName: String = "UpdateMonthlyBudgetConfig"
     static let operationDocument: ApolloAPI.OperationDocument = .init(
       definition: .init(
-        #"mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) { updateBudgetConfig(inputs: $inputs) { __typename ... on BudgetConfig { __typename totalAllocation shawnPercentageAllocation shawnContributionAmount maggiePercentageAllocation maggieContributionAmount } } }"#
+        #"mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) { updateBudgetConfig(inputs: $inputs) { __typename ... on BudgetConfig { __typename totalAllocation shawnPercentageAllocation shawnContributionAmount maggiePercentageAllocation maggieContributionAmount } ... on GraphQLErrorObject { __typename code message } } }"#
       ))
 
     public var inputs: UpdateBudgetConfigInput
@@ -46,12 +46,14 @@ extension Backend {
         static var __selections: [ApolloAPI.Selection] { [
           .field("__typename", String.self),
           .inlineFragment(AsBudgetConfig.self),
+          .inlineFragment(AsGraphQLErrorObject.self),
         ] }
         static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
           UpdateMonthlyBudgetConfigMutation.Data.UpdateBudgetConfig.self
         ] }
 
         var asBudgetConfig: AsBudgetConfig? { _asInlineFragment() }
+        var asGraphQLErrorObject: AsGraphQLErrorObject? { _asInlineFragment() }
 
         /// UpdateBudgetConfig.AsBudgetConfig
         ///
@@ -84,6 +86,28 @@ extension Backend {
           var maggiePercentageAllocation: Double { __data["maggiePercentageAllocation"] }
           /// Maggie contribution amount. The frontend is responsible for computing this value
           var maggieContributionAmount: Double { __data["maggieContributionAmount"] }
+        }
+
+        /// UpdateBudgetConfig.AsGraphQLErrorObject
+        ///
+        /// Parent Type: `GraphQLErrorObject`
+        struct AsGraphQLErrorObject: Backend.InlineFragment {
+          let __data: DataDict
+          init(_dataDict: DataDict) { __data = _dataDict }
+
+          typealias RootEntityType = UpdateMonthlyBudgetConfigMutation.Data.UpdateBudgetConfig
+          static var __parentType: any ApolloAPI.ParentType { Backend.Objects.GraphQLErrorObject }
+          static var __selections: [ApolloAPI.Selection] { [
+            .field("code", GraphQLEnum<Backend.GraphQLErrorCode>.self),
+            .field("message", String.self),
+          ] }
+          static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+            UpdateMonthlyBudgetConfigMutation.Data.UpdateBudgetConfig.self,
+            UpdateMonthlyBudgetConfigMutation.Data.UpdateBudgetConfig.AsGraphQLErrorObject.self
+          ] }
+
+          var code: GraphQLEnum<Backend.GraphQLErrorCode> { __data["code"] }
+          var message: String { __data["message"] }
         }
       }
     }

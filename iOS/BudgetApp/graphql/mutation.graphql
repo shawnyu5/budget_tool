@@ -22,5 +22,10 @@ mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
       maggiePercentageAllocation
       maggieContributionAmount
     }
+    ... on GraphQLErrorObject {
+      __typename
+      code
+      message
+    }
   }
 }

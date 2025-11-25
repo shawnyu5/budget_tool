@@ -16,6 +16,7 @@
 		19DEC5582ECEB3ED00C8E13F /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 19DEC5572ECEB3ED00C8E13F /* Logging */; };
 		19DEC69B2ECFDA1B00C8E13F /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = 19DEC69A2ECFDA1B00C8E13F /* OpenAPIRuntime */; };
 		19DEC69D2ECFDA2700C8E13F /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 19DEC69C2ECFDA2700C8E13F /* OpenAPIURLSession */; };
+		360F0E103468A4F7653AD2F4 /* Budget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA8760C42DD247CBA6D916C /* Budget.swift */; };
 		6AA9E23E999F013E55B70043 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38025D2232155360ABD12026 /* LoginView.swift */; };
 		7AB75F0D889278F3E662B07B /* AuthorizationInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */; };
 		8BF7346A1713EA6AFBCDA674 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD22AAA46A15E5EC90954C99 /* Network.swift */; };
@@ -24,6 +25,7 @@
 		A55568107A9E803DDF1FC142 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B0641ACC12E1F09CE2DD9A /* Config.swift */; };
 		B48FBEFC2EAEC15DE267143D /* NetworkInterseptorProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA69EE2527BC9F123CBA36E /* NetworkInterseptorProvider.swift */; };
 		C31B071A75500BD4550C7DDB /* Backend+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E83D6EEC6DEE12ED172EAEFA /* Backend+Extension.swift */; };
+		C5FD60BFCB3FC6144C7FC4AC /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9056A8374ADFF3222C4E11BD /* Settings.swift */; };
 		C9E6DF7E5116BD0CE28D6AA2 /* HttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 253FE113C4CC46915FF3FF3B /* HttpClient.swift */; };
 		CBE4B0B85853552EBBDE15D8 /* Apollo+Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF3045261A0EECEC9B86E4 /* Apollo+Setup.swift */; };
 		D26D99F953548C0E0A9282DB /* openapi-generator-config.yml in Sources */ = {isa = PBXBuildFile; fileRef = 4C5DF3C92CAA279A30B30F4B /* openapi-generator-config.yml */; };
@@ -61,6 +63,7 @@
 		6E983F39B992738E0080E234 /* SettingsPageView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = SettingsPageView.swift; path = SettingsPageView.swift; sourceTree = "<group>"; };
 		7FCAE6F960A1E478477CD517 /* SettingsPageViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = SettingsPageViewModel.swift; path = SettingsPageViewModel.swift; sourceTree = "<group>"; };
 		81B0641ACC12E1F09CE2DD9A /* Config.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		9056A8374ADFF3222C4E11BD /* Settings.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = Settings.swift; path = Settings.swift; sourceTree = "<group>"; };
 		937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		A93AA395652C56CD396DF75F /* MainTabView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthorizationInterceptor.swift; sourceTree = "<group>"; };
@@ -69,6 +72,7 @@
 		DCEF3045261A0EECEC9B86E4 /* Apollo+Setup.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = "Apollo+Setup.swift"; sourceTree = "<group>"; };
 		E83D6EEC6DEE12ED172EAEFA /* Backend+Extension.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; path = "Backend+Extension.swift"; sourceTree = "<group>"; };
 		E934CC52D4D72E742184A072 /* AuthManager.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		EAA8760C42DD247CBA6D916C /* Budget.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = Budget.swift; path = Budget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -208,11 +212,22 @@
 			path = Network;
 			sourceTree = "<group>";
 		};
+		D31B19D7184324AADAF8A8F2 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				EAA8760C42DD247CBA6D916C /* Budget.swift */,
+				9056A8374ADFF3222C4E11BD /* Settings.swift */,
+			);
+			name = Models;
+			path = Models;
+			sourceTree = "<group>";
+		};
 		E7B3E1F17E00FB7963AA3BF8 /* BudgetApp */ = {
 			isa = PBXGroup;
 			children = (
 				57A8570849BB2158A7B5E29D /* Configuration */,
 				FCB692BB6D4F6274FC8F73B6 /* Schema */,
+				D31B19D7184324AADAF8A8F2 /* Models */,
 			);
 			path = BudgetApp;
 			sourceTree = "<group>";
@@ -397,6 +412,8 @@
 				C31B071A75500BD4550C7DDB /* Backend+Extension.swift in Sources */,
 				126D92990F9953A23829C25F /* SettingsPageView.swift in Sources */,
 				19149232841685411B43FC92 /* SettingsPageViewModel.swift in Sources */,
+				360F0E103468A4F7653AD2F4 /* Budget.swift in Sources */,
+				C5FD60BFCB3FC6144C7FC4AC /* Settings.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

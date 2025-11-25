@@ -108,9 +108,11 @@ impl MonthlyBudget {
 #[serde(rename_all = "camelCase")]
 pub struct BudgetConfig {
     /// Total allocated budget
+    #[schema(required = true)]
     #[serde(alias = "total")]
     pub total_allocation: f64,
     /// Shawn percentage allocation
+    #[schema(required = true)]
     #[serde(alias = "shawn_percentage_allocation")]
     pub shawn_percentage_allocation: f64,
     /// Shawn contribution amount. The frontend is responsible for computing this value
