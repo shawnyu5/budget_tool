@@ -130,7 +130,7 @@ struct SettingsPageView: View {
                             print("Updating settings")
                             try await viewModel.updateSettings(
                                 new: Backend.UpdateBudgetConfigInput(
-                                    year: String(selectedYear),
+                                    year: selectedYear,
                                     month: GraphQLEnum(Backend.Month.from(month: selectedMonth)),
                                     budgetConfig: Backend.BudgetConfigInput(
                                         totalAllocation: self.totalAllocation,

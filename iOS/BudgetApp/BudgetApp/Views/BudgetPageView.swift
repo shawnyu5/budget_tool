@@ -42,7 +42,7 @@ struct BudgetPageView: View {
     /// If we are displaying `selectedItem`'s details
     // @State private var showingItemDetails = false
     /// The selected item to display details of
-    @State private var selectedItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?
+    @State private var selectedItem: Spending?
 
     /// Task for fetching budget
     @State private var fetchTask: Task<Void, Never>? = nil
@@ -81,24 +81,42 @@ struct BudgetPageView: View {
                     .padding(.vertical, 4)
 
                     Section(header: Label("Expenses", systemImage: "list.bullet")) {
-                        ForEach(viewModel.budgetItems?.spending ?? [], id: \.id) {
-                            item in
-                            Button(action: {
-                                selectedItem = item
-                                // showingItemDetails = true
+                        if let spending = viewModel.budget?.spending {
+                            ForEach(spending, id: \.id) {
+                                item in
+                                Button(action: {
+                                    selectedItem = item
+                                    // showingItemDetails = true
 
-                            }) {
-                                Text(item.description)
-                                // .onTapGesture {
-                                //     selectedItem = item
-                                //     showingItemDetails = true
-                                // }
+                                }) {
+                                    Text(item.description)
+                                    // .onTapGesture {
+                                    //     selectedItem = item
+                                    //     showingItemDetails = true
+                                    // }
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
+                            .onDelete(perform: { indexSet in
+                                guard let budgetSpending = viewModel.budget?.spending else {
+                                    return
+                                }
+
+                                for index in indexSet {
+                                    let itemToDelete = budgetSpending[index]
+                                    let idToDelete = itemToDelete.id
+                                    Task {
+                                        try await Network.shared.graphql.perform(
+                                            mutation: Backend.DeleteSpendingItemByIDMutation(
+                                                inputs: Backend.DeleteSpendingItemByIdInput(
+                                                    year: selectedYear,
+                                                    month: GraphQLEnum(selectedMonth),
+                                                    id: idToDelete
+                                                )))
+                                    }
+                                }
+                            })
                         }
-                        .onDelete(perform: { IndexSet in
-                            // TODO: delete item using new graphql API
-                        })
                     }
                 }
                 .toolbar {
@@ -132,28 +150,35 @@ struct BudgetPageView: View {
             print("Refreshing")
             await loadBudget()
         }
-        .onChange(of: selectedYear) {
-            Task {
-                await loadBudget()
-            }
-        }
-        .onChange(of: selectedMonth) {
-            Task {
-                await loadBudget()
-            }
-        }
+        // .onChange(of: selectedYear) {
+        //     Task {
+        //         await loadBudget()
+        //     }
+        // }
+        // .onChange(of: selectedMonth) {
+        //     Task {
+        //         await loadBudget()
+        //     }
+        // }
         .sheet(isPresented: $showingAddExpenseItem) {
             ExpenseItemView(title: "Add Expense Item") { expenseItem in
-                // TODO: call backend to add expense item via new graphql endpoint
-                let selectedYearString = String(self.selectedYear)
-                // let path = Operations.UpdateBudgetHandler.Input.Path(year: selectedYearString, month: self.selectedMonth).self
-                // let path = Operations.UpdateBudgetHandler.Input.Path(year: selectedYearString, month: Components.Schemas.Month.from(month: self.selectedMonth))
-                // let body = Operations.UpdateBudgetHandler.Input.Body.json(
-                //     Components.Schemas.MonthlyBudget(budget: Components.Schemas.BudgetConfig, month: Components.Schemas.Month, overBudgetAmount: Double, spending: [Components.Schemas.SpendingItem], totalSpending: Double)
-                // )
-                // Network.shared.http.updateBudgetHandler(path: path, body: body)
-                // Network.shared.http.updateBudgetHandler(body: .json(Components.Schemas.MonthlyBudget(month: self.selectedMonth, spending: [self.$selectedItem])))
-                // Network.shared.http.updateBudgetHandler(expenseItem)
+                do {
+                    try await Network.shared.graphql.perform(
+                        mutation: Backend.AddSpendingItemByMonthMutation(
+                            inputs: Backend.AddSpendingItemByMonthInput(
+                                year: String(selectedYear), month: GraphQLEnum(selectedMonth),
+                                spendingItem: Backend.SpendingItemInput(
+                                    id: expenseItem.id,
+                                    amount: expenseItem.amount,
+                                    date: expenseItem.date, description: expenseItem.description
+                                )
+
+                            )))
+                } catch {
+                    print("Failed to add spending item: \(error)")
+                    viewModel.errorMessage = error.localizedDescription
+                }
+
                 await loadBudget()
             }
             .onAppear {

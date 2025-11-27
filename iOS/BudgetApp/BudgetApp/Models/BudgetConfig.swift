@@ -7,8 +7,18 @@ struct BudgetConfig {
 }
 
 extension BudgetConfig {
+    static func from(_ from: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Budget) -> Self {
+        Self(
+            totalAllocation: from.totalAllocation,
+            shawnPercentageAllocation: from.shawnPercentageAllocation,
+            shawnContributionAmount: from.shawnContributionAmount,
+            maggiePercentageAllocation: from.maggiePercentageAllocation,
+            maggieContributionAmount: from.maggieContributionAmount
+        )
+    }
+
     static func from(
-        budgetConfigQuery from: Backend.GetMonthlyBudgetConfigQuery.Data.MonthlyBudgetConfig
+        _ from: Backend.GetMonthlyBudgetConfigQuery.Data.MonthlyBudgetConfig
             .AsBudgetConfig
     ) -> Self {
         return Self(

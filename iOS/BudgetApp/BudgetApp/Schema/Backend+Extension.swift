@@ -42,3 +42,9 @@ extension Backend.Month {
         }
     }
 }
+
+// extension Backend.AddSpendingItemByMonthInput {
+//     static func from(model from: Spending) -> Self {
+//         return Self(year: from.year, month: GraphQLEnum<Backend.Month>, spendingItem: Backend.SpendingItemInput)
+//     }
+// }

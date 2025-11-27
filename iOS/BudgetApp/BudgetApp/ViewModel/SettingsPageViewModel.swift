@@ -22,7 +22,7 @@ final class SettingsPageViewModel {
 
             if let budgetConfig = response.data?.monthlyBudgetConfig.asBudgetConfig {
                 print("Got budget config: \(budgetConfig)")
-                self.budgetConfig = BudgetConfig.from(budgetConfigQuery: budgetConfig)
+                self.budgetConfig = BudgetConfig.from(budgetConfig)
             } else if let errorCode = response.data?.monthlyBudgetConfig.asGraphQLErrorObject {
                 self.errorCode = errorCode.code.value
                 errorMessage = errorCode.message

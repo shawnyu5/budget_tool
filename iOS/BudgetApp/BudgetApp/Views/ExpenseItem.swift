@@ -24,7 +24,9 @@ class Expenses {
 
     init() {
         if let userDefaultItems = UserDefaults.standard.data(forKey: userDefaultKey) {
-            if let decodedItems: [ExpenseItem] = try? JSONDecoder().decode([ExpenseItem].self, from: userDefaultItems) {
+            if let decodedItems: [ExpenseItem] = try? JSONDecoder().decode(
+                [ExpenseItem].self, from: userDefaultItems
+            ) {
                 items = decodedItems
                 return
             }
@@ -40,19 +42,21 @@ class Expenses {
     }
 }
 
-typealias onSubmitFunc = (Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending) async -> Void
+typealias onSubmitFunc = (Spending) async -> Void
 
 /// Display a single expense item
 struct ExpenseItemView: View {
     /// Title of the view
     var title: String
-    /// The expense item this view is displaying
-    var expenseItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?
+
+    // /// The expense item this view is displaying
+    // var expenseItem: Spending?
 
     /// Closure called when the view is submitted, with the updated Spending item passed to it
     let onSubmit: onSubmitFunc
 
     // Local editable state
+    private var id = UUID()
     @State private var description = ""
     @State private var amount = 0.0
     @State private var date: Date = .init()
@@ -66,33 +70,33 @@ struct ExpenseItemView: View {
     /// - onSubmit: to be called when the view is saved
     init(
         title: String,
-        expenseItem: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending?,
+        expenseItem: Spending,
         onSubmit: @escaping onSubmitFunc
     ) {
         self.title = title
-        self.expenseItem = expenseItem
+        // self.expenseItem = expenseItem
 
         // Initialize local editable state
-        _description = State(initialValue: expenseItem?.description ?? "")
-        _amount = State(initialValue: expenseItem?.amount ?? 0)
+        _description = State(initialValue: expenseItem.description)
+        _amount = State(initialValue: expenseItem.amount)
 
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy/M/d" // matches "2025/4/1"
         formatter.locale = Locale(identifier: "en_US_POSIX") // recommended for fixed formats
-        _date = State(initialValue: formatter.date(from: expenseItem?.date ?? "") ?? Date())
-        _notes = State(initialValue: expenseItem?.notes ?? "")
+        _date = State(initialValue: formatter.date(from: expenseItem.date) ?? Date())
+        _notes = State(initialValue: expenseItem.notes ?? "")
         self.onSubmit = onSubmit
     }
 
     /// Create an empty Expense item view, used for inputting new expense items
     /// - title: the title of the view
     /// - onSubmit: to be called when the view is saved
-    init(title: String,
-         onSubmit: @escaping onSubmitFunc)
-    {
+    init(
+        title: String,
+        onSubmit: @escaping onSubmitFunc
+    ) {
         self.title = title
         self.onSubmit = onSubmit
-        expenseItem = nil
     }
 
     var body: some View {
@@ -101,9 +105,11 @@ struct ExpenseItemView: View {
                 TextField("Description", text: $description)
                 DatePicker("Date", selection: $date, displayedComponents: [.date])
 
-                TextField("Amount", value: $amount, format: .currency(code: Locale.current.identifier))
+                TextField(
+                    "Amount", value: $amount, format: .currency(code: Locale.current.identifier)
+                )
                 #if os(iOS)
-                    .keyboardType(.decimalPad)
+                .keyboardType(.decimalPad)
                 #endif
 
                 VStack {
@@ -119,8 +125,13 @@ struct ExpenseItemView: View {
             .toolbar {
                 Button("Save") {
                     Task {
-                        // At this point, there must be an expense item
-                        await self.onSubmit(self.expenseItem!)
+                        await self.onSubmit(
+                            Spending(
+                                id: self.id.uuidString, amount: self.amount,
+                                // TODO: this date format is not correct...
+                                date: self.date.ISO8601Format(),
+                                description: self.description
+                            ))
                         dismiss()
                     }
                 }
@@ -130,7 +141,7 @@ struct ExpenseItemView: View {
 }
 
 #Preview {
-    ExpenseItemView(title: "Preview", expenseItem: nil) {
+    ExpenseItemView(title: "Preview") {
         _ in
     }
 }

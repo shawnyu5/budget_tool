@@ -7,7 +7,7 @@ import SwiftUI
 @Observable
 final class BudgetViewModel {
     /// Budget items
-    var budgetItems: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget?
+    var budget: Budget?
     /// If the budget is loading
     var isLoading = false
     /// Error code
@@ -56,7 +56,7 @@ final class BudgetViewModel {
 
             if let budget = budgetResult.asMonthlyBudget {
                 print("Got budget: \(budget)")
-                budgetItems = budget
+                self.budget = Budget.from(graphqlQuery: budget)
             } else if let error = budgetResult.asGraphQLErrorObject {
                 print("Caught graphql error")
                 errorCode = error.code.value

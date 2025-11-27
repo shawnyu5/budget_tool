@@ -4,7 +4,7 @@
 @_spi(Internal) @_spi(Unsafe) import ApolloAPI
 
 extension Backend {
-  struct UpdateBudgetConfigInput: InputObject {
+  struct DeleteSpendingItemByIdInput: InputObject {
     private(set) var __data: InputDict
 
     init(_ data: InputDict) {
@@ -14,31 +14,29 @@ extension Backend {
     init(
       year: Int32,
       month: GraphQLEnum<Month>,
-      budgetConfig: BudgetConfigInput
+      id: String
     ) {
       __data = InputDict([
         "year": year,
         "month": month,
-        "budgetConfig": budgetConfig
+        "id": id
       ])
     }
 
-    /// The year of the budget to update
     var year: Int32 {
       get { __data["year"] }
       set { __data["year"] = newValue }
     }
 
-    /// The month of the budget to update
     var month: GraphQLEnum<Month> {
       get { __data["month"] }
       set { __data["month"] = newValue }
     }
 
-    /// The new budget
-    var budgetConfig: BudgetConfigInput {
-      get { __data["budgetConfig"] }
-      set { __data["budgetConfig"] = newValue }
+    /// The ID of the spending item to delete
+    var id: String {
+      get { __data["id"] }
+      set { __data["id"] = newValue }
     }
   }
 

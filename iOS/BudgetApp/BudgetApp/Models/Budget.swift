@@ -1,3 +1,51 @@
+struct Budget {
+    var month: Month
+    var config: BudgetConfig
+    var totalSpending: Float64
+    var overBudgetAmount: Float64
+    var spending: [Spending]
+    var carriedOverFrom: Month?
+}
+
+struct Spending: Identifiable {
+    var id: String
+    var amount: Float64
+    var date: String
+    var description: String
+    var notes: String?
+}
+
+extension Spending {
+    static func from(
+        graphql from: [Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending]
+    ) -> [Self] {
+        let converted = from.map { backend in
+            Self(
+                id: backend.id,
+                amount: backend.amount,
+                date: backend.date,
+                description: backend.description,
+                notes: backend.notes
+            )
+        }
+        return converted
+    }
+}
+
+extension Budget {
+    static func from(
+        graphqlQuery from: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget
+    ) -> Self {
+        return Self(
+            month: Month.from(backendMonth: from.month.value ?? .january),
+            config: BudgetConfig.from(from.budget),
+            totalSpending: from.totalSpending,
+            overBudgetAmount: from.overBudgetAmount,
+            spending: Spending.from(graphql: from.spending)
+        )
+    }
+}
+
 enum Month: String {
     case january = "January"
     case february = "February"
@@ -15,8 +63,8 @@ enum Month: String {
 
 extension Month {
     /// Convert `Backend.Month` to `Month`
-    static func from(month: Backend.Month) -> Month {
-        switch month {
+    static func from(backendMonth: Backend.Month) -> Self {
+        switch backendMonth {
         case .january: return .january
         case .february: return .february
         case .march: return .march
