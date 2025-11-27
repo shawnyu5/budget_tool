@@ -1,3 +1,9 @@
+input AddSpendingItemByMonthInput {
+	year: String!
+	month: Month!
+	spendingItem: SpendingItemInput!
+}
+
 type BudgetConfig {
 	"""
 	Total allocated budget
@@ -42,6 +48,15 @@ input BudgetConfigInput {
 	Maggie contribution amount. The frontend is responsible for computing this value
 	"""
 	maggieContributionAmount: Float!
+}
+
+input DeleteSpendingItemByIdInput {
+	year: Int!
+	month: Month!
+	"""
+	The ID of the spending item to delete
+	"""
+	id: String!
 }
 
 """
@@ -141,6 +156,14 @@ type MutationRoot {
 	Update the budget configuration for a specific month
 	"""
 	updateBudgetConfig(inputs: UpdateBudgetConfigInput!): MonthlyBudgetConfigResponse!
+	"""
+	Add a spending item to a month
+	"""
+	addSpendingItemByMonth(inputs: AddSpendingItemByMonthInput!): MonthlyBudgetResponse!
+	"""
+	Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
+	"""
+	deleteSpendingItemById(inputs: DeleteSpendingItemByIdInput!): MonthlyBudgetResponse!
 }
 
 type NotificationKeys {
@@ -201,6 +224,32 @@ type SpendingItem {
 	notes: String
 }
 
+"""
+A single transaction
+"""
+input SpendingItemInput {
+	"""
+	A unique identifier
+	"""
+	id: String!
+	"""
+	The dollar amount
+	"""
+	amount: Float!
+	"""
+	The date
+	"""
+	date: String!
+	"""
+	Description of the purchase
+	"""
+	description: String!
+	"""
+	Additional notes
+	"""
+	notes: String
+}
+
 input SubscriptionInput {
 	endpoint: String!
 	p256Dh: String!
@@ -212,7 +261,7 @@ input UpdateBudgetConfigInput {
 	"""
 	The year of the budget to update
 	"""
-	year: String!
+	year: Int!
 	"""
 	The month of the budget to update
 	"""

@@ -7,9 +7,12 @@ use crate::{
         users::{User, USER_TABLE_NAME},
         DB,
     },
-    graphql::query::MonthlyBudgetConfigResponse,
+    graphql::{
+        error::GraphQLErrorObject,
+        query::{MonthlyBudgetConfigResponse, MonthlyBudgetResponse},
+    },
     month::Month,
-    monthly_budget::BudgetConfig,
+    monthly_budget::{BudgetConfig, SpendingItem},
     routes::MaybeJwt,
 };
 
@@ -28,11 +31,26 @@ pub struct SubscriptionInput {
 #[derive(InputObject)]
 pub struct UpdateBudgetConfigInput {
     /// The year of the budget to update
-    pub year: String,
+    pub year: i32,
     /// The month of the budget to update
     pub month: Month,
     /// The new budget
     pub budget_config: BudgetConfig,
+}
+
+#[derive(InputObject)]
+pub struct AddSpendingItemByMonthInput {
+    pub year: String,
+    pub month: Month,
+    pub spending_item: SpendingItem,
+}
+
+#[derive(InputObject)]
+pub struct DeleteSpendingItemByIdInput {
+    pub year: i32,
+    pub month: Month,
+    /// The ID of the spending item to delete
+    pub id: String,
 }
 
 #[Object]
@@ -109,7 +127,7 @@ impl MutationRoot {
         // TODO: proper error handling for if validation fails
         // inputs.budget_config.validate();
 
-        let db = DB::new(&inputs.year)
+        let db = DB::new(&inputs.year.to_string())
             .await
             .context("Failed to connect to database")?;
 
@@ -127,5 +145,78 @@ impl MutationRoot {
         return Ok(MonthlyBudgetConfigResponse::MonthlyBudgetConfig(
             month_budget.budget,
         ));
+    }
+
+    #[instrument(skip_all)]
+    /// Add a spending item to a month
+    async fn add_spending_item_by_month(
+        &self,
+        ctx: &Context<'_>,
+        inputs: AddSpendingItemByMonthInput,
+    ) -> Result<MonthlyBudgetResponse> {
+        let maybe_jwt = ctx
+            .data::<MaybeJwt>()
+            .expect("There should always be a JWT here!");
+        if maybe_jwt.is_none() {
+            panic!("JWT is invalid");
+            // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
+            //     code: GraphQLErrorCode::Forbidden,
+            //     message: "Missing or invalid JWT".to_string(),
+            // });
+        }
+
+        let db = DB::new(inputs.year.as_str())
+            .await
+            .context("Failed to connect to DB")?;
+
+        let mut month_budget = db
+            .get_month_budget(inputs.month)
+            .await
+            .context("Failed to get monthly budget")?;
+
+        month_budget.spending.push(inputs.spending_item);
+        month_budget.update_calculations();
+
+        info!("Updated budget: {:#?}", month_budget);
+        db.update_monthly_budget(inputs.month, &month_budget)
+            .await
+            .context("Failed to save updated budget to DB")?;
+
+        return Ok(MonthlyBudgetResponse::MonthlyBudget(month_budget));
+    }
+
+    /// Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
+    async fn delete_spending_item_by_id(
+        &self,
+        ctx: &Context<'_>,
+        inputs: DeleteSpendingItemByIdInput,
+    ) -> Result<MonthlyBudgetResponse> {
+        let maybe_jwt = ctx
+            .data::<MaybeJwt>()
+            .expect("There should always be a JWT here!");
+        if maybe_jwt.is_none() {
+            panic!("JWT is invalid");
+            // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
+            //     code: GraphQLErrorCode::Forbidden,
+            //     message: "Missing or invalid JWT".to_string(),
+            // });
+        }
+
+        let db = DB::new(&inputs.year.to_string())
+            .await
+            .context("Failed to connect to DB")?;
+
+        let mut month_budget = db
+            .get_month_budget(inputs.month)
+            .await
+            .context("Failed to get month budget")?;
+
+        month_budget.spending.retain(|item| item.id != inputs.id);
+        info!("Updated budget: {:#?}", month_budget);
+        db.update_monthly_budget(inputs.month, &month_budget)
+            .await
+            .context("Failed to save updated budget to DB")?;
+
+        return Ok(MonthlyBudgetResponse::MonthlyBudget(month_budget));
     }
 }

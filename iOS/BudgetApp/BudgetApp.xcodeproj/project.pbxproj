@@ -18,6 +18,7 @@
 		19DEC69D2ECFDA2700C8E13F /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = 19DEC69C2ECFDA2700C8E13F /* OpenAPIURLSession */; };
 		360F0E103468A4F7653AD2F4 /* Budget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA8760C42DD247CBA6D916C /* Budget.swift */; };
 		6AA9E23E999F013E55B70043 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38025D2232155360ABD12026 /* LoginView.swift */; };
+		741F068AD7F35612F8011579 /* Component+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546A80BD3B8309FC87925028 /* Component+Extension.swift */; };
 		7AB75F0D889278F3E662B07B /* AuthorizationInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */; };
 		8BF7346A1713EA6AFBCDA674 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD22AAA46A15E5EC90954C99 /* Network.swift */; };
 		92374D96CA7E27EF221108DF /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */; };
@@ -60,6 +61,7 @@
 		253FE113C4CC46915FF3FF3B /* HttpClient.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
 		38025D2232155360ABD12026 /* LoginView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		4C5DF3C92CAA279A30B30F4B /* openapi-generator-config.yml */ = {isa = PBXFileReference; explicitFileType = text.yaml; path = "openapi-generator-config.yml"; sourceTree = "<group>"; };
+		546A80BD3B8309FC87925028 /* Component+Extension.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = "Component+Extension.swift"; path = "Component+Extension.swift"; sourceTree = "<group>"; };
 		6E983F39B992738E0080E234 /* SettingsPageView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = SettingsPageView.swift; path = SettingsPageView.swift; sourceTree = "<group>"; };
 		7FCAE6F960A1E478477CD517 /* SettingsPageViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = SettingsPageViewModel.swift; path = SettingsPageViewModel.swift; sourceTree = "<group>"; };
 		81B0641ACC12E1F09CE2DD9A /* Config.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
@@ -217,6 +219,7 @@
 			children = (
 				EAA8760C42DD247CBA6D916C /* Budget.swift */,
 				9056A8374ADFF3222C4E11BD /* Settings.swift */,
+				546A80BD3B8309FC87925028 /* Component+Extension.swift */,
 			);
 			name = Models;
 			path = Models;
@@ -414,6 +417,7 @@
 				19149232841685411B43FC92 /* SettingsPageViewModel.swift in Sources */,
 				360F0E103468A4F7653AD2F4 /* Budget.swift in Sources */,
 				C5FD60BFCB3FC6144C7FC4AC /* Settings.swift in Sources */,
+				741F068AD7F35612F8011579 /* Component+Extension.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

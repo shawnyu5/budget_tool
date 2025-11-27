@@ -145,11 +145,11 @@ struct BudgetPageView: View {
         .sheet(isPresented: $showingAddExpenseItem) {
             ExpenseItemView(title: "Add Expense Item") { expenseItem in
                 // TODO: call backend to add expense item via new graphql endpoint
-                // let selectedYearString = String(self.selectedYear)
+                let selectedYearString = String(self.selectedYear)
                 // let path = Operations.UpdateBudgetHandler.Input.Path(year: selectedYearString, month: self.selectedMonth).self
-                // let path = Operations.UpdateBudgetHandler.Input.Path(year: selectedYearString, month: .april)
+                // let path = Operations.UpdateBudgetHandler.Input.Path(year: selectedYearString, month: Components.Schemas.Month.from(month: self.selectedMonth))
                 // let body = Operations.UpdateBudgetHandler.Input.Body.json(
-                //     Components.Schemas.MonthlyBudget(month: self.selectedMonth, spending: [expenseItem])
+                //     Components.Schemas.MonthlyBudget(budget: Components.Schemas.BudgetConfig, month: Components.Schemas.Month, overBudgetAmount: Double, spending: [Components.Schemas.SpendingItem], totalSpending: Double)
                 // )
                 // Network.shared.http.updateBudgetHandler(path: path, body: body)
                 // Network.shared.http.updateBudgetHandler(body: .json(Components.Schemas.MonthlyBudget(month: self.selectedMonth, spending: [self.$selectedItem])))
