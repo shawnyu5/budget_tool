@@ -63,15 +63,15 @@
 		253FE113C4CC46915FF3FF3B /* HttpClient.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
 		38025D2232155360ABD12026 /* LoginView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		4C5DF3C92CAA279A30B30F4B /* openapi-generator-config.yml */ = {isa = PBXFileReference; explicitFileType = text.yaml; path = "openapi-generator-config.yml"; sourceTree = "<group>"; };
-		535751530348B5C74579E052 /* DateToolBarModifier.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; path = DateToolBarModifier.swift; sourceTree = "<group>"; };
+		535751530348B5C74579E052 /* DateToolBarModifier.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = DateToolBarModifier.swift; sourceTree = "<group>"; };
 		6E983F39B992738E0080E234 /* SettingsPageView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = SettingsPageView.swift; sourceTree = "<group>"; };
-		6EE9E9E80BA11B2BEDB461B0 /* BudgetView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = BudgetView.swift; path = BudgetView.swift; sourceTree = "<group>"; };
+		6EE9E9E80BA11B2BEDB461B0 /* BudgetView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = BudgetView.swift; sourceTree = "<group>"; };
 		7FCAE6F960A1E478477CD517 /* SettingsPageViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = SettingsPageViewModel.swift; sourceTree = "<group>"; };
 		81B0641ACC12E1F09CE2DD9A /* Config.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		9056A8374ADFF3222C4E11BD /* BudgetConfig.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = BudgetConfig.swift; sourceTree = "<group>"; };
 		937A18931F58DE4DD23B56A7 /* LoginViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		A93AA395652C56CD396DF75F /* MainTabView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
-		B351D1241F8AE91914D62BCA /* Utils.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = Utils.swift; path = Utils.swift; sourceTree = "<group>"; };
+		B351D1241F8AE91914D62BCA /* Utils.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthorizationInterceptor.swift; sourceTree = "<group>"; };
 		CAA69EE2527BC9F123CBA36E /* NetworkInterseptorProvider.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = NetworkInterseptorProvider.swift; sourceTree = "<group>"; };
 		CD22AAA46A15E5EC90954C99 /* Network.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
@@ -82,7 +82,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1930EFBE2ECD4EAB001F1964 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		1930EFBE2ECD4EAB001F1964 /* Exceptions for "BudgetApp" folder in "BudgetApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -95,7 +95,7 @@
 		19EFA7722EAE7AC9000B2CD3 /* BudgetApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				1930EFBE2ECD4EAB001F1964 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				1930EFBE2ECD4EAB001F1964 /* Exceptions for "BudgetApp" folder in "BudgetApp" target */,
 			);
 			path = BudgetApp;
 			sourceTree = "<group>";
@@ -355,7 +355,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				197F98342EAF020D0091C276 /* XCRemoteSwiftPackageReference "apollo-ios" */,
-				1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */,
+				1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				19DEC5562ECEB3ED00C8E13F /* XCRemoteSwiftPackageReference "swift-log" */,
 				19DEC6972ECFD90A00C8E13F /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
 				19DEC6982ECFD97B00C8E13F /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
@@ -803,7 +803,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */ = {
+		1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess?utm_source=chatgpt.com";
 			requirement = {
@@ -856,7 +856,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		1930EFC02ECD58AC001F1964 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */;
+			package = 1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
 			productName = KeychainAccess;
 		};
 		197F98352EAF020D0091C276 /* Apollo */ = {

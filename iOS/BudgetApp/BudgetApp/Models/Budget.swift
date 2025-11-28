@@ -30,11 +30,65 @@ extension Spending {
         }
         return converted
     }
+
+    static func from(
+        graphql from: [Backend.AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.AsMonthlyBudget.Spending]
+    ) -> [Self] {
+        let converted = from.map { backend in
+            Self(
+                id: backend.id,
+                amount: backend.amount,
+                date: backend.date,
+                description: backend.description,
+                notes: backend.notes
+            )
+        }
+        return converted
+    }
+
+    static func from(
+        graphql from: [Backend.UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.AsMonthlyBudget.Spending]
+    ) -> [Self] {
+        let converted = from.map { backend in
+            Self(
+                id: backend.id,
+                amount: backend.amount,
+                date: backend.date,
+                description: backend.description,
+                notes: backend.notes
+            )
+        }
+        return converted
+    }
 }
 
 extension Budget {
     static func from(
         graphqlQuery from: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget
+    ) -> Self {
+        return Self(
+            month: Month.from(backendMonth: from.month.value ?? .january),
+            config: BudgetConfig.from(from.budget),
+            totalSpending: from.totalSpending,
+            overBudgetAmount: from.overBudgetAmount,
+            spending: Spending.from(graphql: from.spending)
+        )
+    }
+
+    static func from(
+        graphqlQuery from: Backend.AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.AsMonthlyBudget
+    ) -> Self {
+        return Self(
+            month: Month.from(backendMonth: from.month.value ?? .january),
+            config: BudgetConfig.from(from.budget),
+            totalSpending: from.totalSpending,
+            overBudgetAmount: from.overBudgetAmount,
+            spending: Spending.from(graphql: from.spending)
+        )
+    }
+
+    static func from(
+        graphqlQuery from: Backend.UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.AsMonthlyBudget
     ) -> Self {
         return Self(
             month: Month.from(backendMonth: from.month.value ?? .january),

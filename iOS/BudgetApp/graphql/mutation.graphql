@@ -33,9 +33,17 @@ mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
 mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
   addSpendingItemByMonth(inputs: $inputs) {
     ... on MonthlyBudget {
+      month
       totalSpending
       overBudgetAmount
       carriedOverFrom
+      budget {
+        totalAllocation
+        maggiePercentageAllocation
+        maggieContributionAmount
+        shawnPercentageAllocation
+        shawnContributionAmount
+      }
       spending {
         id
         description
@@ -57,6 +65,35 @@ mutation DeleteSpendingItemByID($inputs: DeleteSpendingItemByIdInput!) {
       totalSpending
       overBudgetAmount
       carriedOverFrom
+      spending {
+        id
+        description
+        amount
+        date
+        notes
+      }
+    }
+    ... on GraphQLErrorObject {
+      code
+      message
+    }
+  }
+}
+
+mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
+  updateSpendingItemById(inputs: $inputs) {
+    ... on MonthlyBudget {
+      month
+      totalSpending
+      overBudgetAmount
+      carriedOverFrom
+      budget {
+        totalAllocation
+        maggiePercentageAllocation
+        maggieContributionAmount
+        shawnPercentageAllocation
+        shawnContributionAmount
+      }
       spending {
         id
         description

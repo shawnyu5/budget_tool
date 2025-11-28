@@ -1,16 +1,17 @@
 use anyhow::{Context as AnhowContext, Result};
 use async_graphql::{Context, InputObject, Object};
-use tracing::{debug, info, instrument, warn};
+use chrono::NaiveDate;
+use mongodb::bson::doc;
+use rayon::iter::IntoParallelRefMutIterator;
+use rayon::prelude::*;
+use tracing::{debug, error, info, instrument, warn};
 
 use crate::{
     db::{
         users::{User, USER_TABLE_NAME},
         DB,
     },
-    graphql::{
-        error::GraphQLErrorObject,
-        query::{MonthlyBudgetConfigResponse, MonthlyBudgetResponse},
-    },
+    graphql::query::{MonthlyBudgetConfigResponse, MonthlyBudgetResponse},
     month::Month,
     monthly_budget::{BudgetConfig, SpendingItem},
     routes::MaybeJwt,
@@ -51,6 +52,14 @@ pub struct DeleteSpendingItemByIdInput {
     pub month: Month,
     /// The ID of the spending item to delete
     pub id: String,
+}
+
+#[derive(InputObject)]
+pub struct UpdateSpendingItemByIdInput {
+    pub year: i32,
+    pub month: Month,
+    /// The new spending item to update
+    pub spending_item: SpendingItem,
 }
 
 #[Object]
@@ -218,5 +227,113 @@ impl MutationRoot {
             .context("Failed to save updated budget to DB")?;
 
         return Ok(MonthlyBudgetResponse::MonthlyBudget(month_budget));
+    }
+
+    #[instrument(skip_all)]
+    /// Update a spending item by ID
+    async fn update_spending_item_by_id(
+        &self,
+        ctx: &Context<'_>,
+        inputs: UpdateSpendingItemByIdInput,
+    ) -> Result<MonthlyBudgetResponse> {
+        let maybe_jwt = ctx
+            .data::<MaybeJwt>()
+            .expect("There should always be a JWT here!");
+        if maybe_jwt.is_none() {
+            panic!("JWT is invalid");
+            // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
+            //     code: GraphQLErrorCode::Forbidden,
+            //     message: "Missing or invalid JWT".to_string(),
+            // });
+        }
+
+        info!("New spending item: {:#?}", inputs.spending_item);
+        let db = DB::new(&inputs.year.to_string())
+            .await
+            .context("Failed to connect to database")?;
+
+        let mut monthly_budget = db
+            .get_month_budget(inputs.month)
+            .await
+            .context("Failed to get budget for month {month}")?;
+
+        // TODO: look into doing this without cloning
+        info!("Looking for ID: {id}", id = inputs.spending_item.id);
+        let updated_monthly_spending: Vec<SpendingItem> = monthly_budget
+            .spending
+            .par_iter_mut()
+            .map(|spending| {
+                info!("Iteration ID: {}", spending.id);
+                if spending.id == inputs.spending_item.id {
+                    info!("Found existing item, updating");
+                    SpendingItem {
+                        id: inputs.spending_item.id.clone(),
+                        date: inputs.spending_item.date.clone(),
+                        amount: inputs.spending_item.amount,
+                        description: inputs.spending_item.description.clone(),
+                        notes: inputs.spending_item.notes.clone(),
+                    }
+                } else {
+                    spending.clone()
+                }
+            })
+            .collect();
+        monthly_budget.spending = updated_monthly_spending;
+        monthly_budget.spending.sort_by(|a, b| {
+            info!("Sorting spending item");
+            // If we cant parse either dates into a proper date, just give up
+            let fallback_date = NaiveDate::from_ymd_opt(1, 1, 1).unwrap();
+            let a_date = NaiveDate::parse_from_str(&a.date, "%Y/%m/%d").unwrap_or_else(|e| {
+                error!(
+                    "Failed to parse date: {e}. Using fallback date: {}",
+                    fallback_date.to_string()
+                );
+                fallback_date
+            });
+
+            let b_date = NaiveDate::parse_from_str(&b.date, "%Y/%m/%d").unwrap_or_else(|e| {
+                error!(
+                    "Failed to parse date: {e}. Using fallback date: {}",
+                    fallback_date.to_string()
+                );
+                fallback_date
+            });
+
+            b_date.cmp(&a_date)
+        });
+        debug!("Sorted spending items: {:?}", monthly_budget.spending);
+
+        monthly_budget.calculate_over_budget_amount();
+        info!(
+            "Calculated over budget amount: {}",
+            monthly_budget.over_budget_amount
+        );
+        info!(
+            "Calculated total spending: {}",
+            monthly_budget.total_spending
+        );
+        debug!("Updated spending items: {:?}", monthly_budget.spending);
+        debug!(
+            "Calculated total spending: {}",
+            monthly_budget.total_spending
+        );
+
+        let filter = doc! {
+            "month": inputs.month.to_string()
+        };
+
+        let result = db
+            .collection
+            .replace_one(filter, &monthly_budget)
+            // .with_options(options)
+            .await
+            .context("Failed to update monthly budget")?;
+
+        info!("Modified {} document(s)", result.modified_count);
+        debug_assert!(
+            result.modified_count == 1,
+            "Should always modify a single document"
+        );
+        return Ok(MonthlyBudgetResponse::MonthlyBudget(monthly_budget));
     }
 }

@@ -5,16 +5,16 @@
 @_spi(Execution) @_spi(Unsafe) import ApolloAPI
 
 extension Backend {
-  struct AddSpendingItemByMonthMutation: GraphQLMutation {
-    static let operationName: String = "AddSpendingItemByMonth"
+  struct UpdateSpendingItemByIDMutation: GraphQLMutation {
+    static let operationName: String = "UpdateSpendingItemByID"
     static let operationDocument: ApolloAPI.OperationDocument = .init(
       definition: .init(
-        #"mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) { addSpendingItemByMonth(inputs: $inputs) { __typename ... on MonthlyBudget { month totalSpending overBudgetAmount carriedOverFrom budget { __typename totalAllocation maggiePercentageAllocation maggieContributionAmount shawnPercentageAllocation shawnContributionAmount } spending { __typename id description amount date notes } } ... on GraphQLErrorObject { code message } } }"#
+        #"mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) { updateSpendingItemById(inputs: $inputs) { __typename ... on MonthlyBudget { month totalSpending overBudgetAmount carriedOverFrom budget { __typename totalAllocation maggiePercentageAllocation maggieContributionAmount shawnPercentageAllocation shawnContributionAmount } spending { __typename id description amount date notes } } ... on GraphQLErrorObject { code message } } }"#
       ))
 
-    public var inputs: AddSpendingItemByMonthInput
+    public var inputs: UpdateSpendingItemByIdInput
 
-    public init(inputs: AddSpendingItemByMonthInput) {
+    public init(inputs: UpdateSpendingItemByIdInput) {
       self.inputs = inputs
     }
 
@@ -26,19 +26,19 @@ extension Backend {
 
       static var __parentType: any ApolloAPI.ParentType { Backend.Objects.MutationRoot }
       static var __selections: [ApolloAPI.Selection] { [
-        .field("addSpendingItemByMonth", AddSpendingItemByMonth.self, arguments: ["inputs": .variable("inputs")]),
+        .field("updateSpendingItemById", UpdateSpendingItemById.self, arguments: ["inputs": .variable("inputs")]),
       ] }
       static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-        AddSpendingItemByMonthMutation.Data.self
+        UpdateSpendingItemByIDMutation.Data.self
       ] }
 
-      /// Add a spending item to a month
-      var addSpendingItemByMonth: AddSpendingItemByMonth { __data["addSpendingItemByMonth"] }
+      /// Update a spending item by ID
+      var updateSpendingItemById: UpdateSpendingItemById { __data["updateSpendingItemById"] }
 
-      /// AddSpendingItemByMonth
+      /// UpdateSpendingItemById
       ///
       /// Parent Type: `MonthlyBudgetResponse`
-      struct AddSpendingItemByMonth: Backend.SelectionSet {
+      struct UpdateSpendingItemById: Backend.SelectionSet {
         let __data: DataDict
         init(_dataDict: DataDict) { __data = _dataDict }
 
@@ -49,20 +49,20 @@ extension Backend {
           .inlineFragment(AsGraphQLErrorObject.self),
         ] }
         static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-          AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.self
+          UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.self
         ] }
 
         var asMonthlyBudget: AsMonthlyBudget? { _asInlineFragment() }
         var asGraphQLErrorObject: AsGraphQLErrorObject? { _asInlineFragment() }
 
-        /// AddSpendingItemByMonth.AsMonthlyBudget
+        /// UpdateSpendingItemById.AsMonthlyBudget
         ///
         /// Parent Type: `MonthlyBudget`
         struct AsMonthlyBudget: Backend.InlineFragment {
           let __data: DataDict
           init(_dataDict: DataDict) { __data = _dataDict }
 
-          typealias RootEntityType = AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth
+          typealias RootEntityType = UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById
           static var __parentType: any ApolloAPI.ParentType { Backend.Objects.MonthlyBudget }
           static var __selections: [ApolloAPI.Selection] { [
             .field("month", GraphQLEnum<Backend.Month>.self),
@@ -73,8 +73,8 @@ extension Backend {
             .field("spending", [Spending].self),
           ] }
           static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-            AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.self,
-            AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.AsMonthlyBudget.self
+            UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.self,
+            UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.AsMonthlyBudget.self
           ] }
 
           /// The month
@@ -91,7 +91,7 @@ extension Backend {
           /// List of spent items
           var spending: [Spending] { __data["spending"] }
 
-          /// AddSpendingItemByMonth.AsMonthlyBudget.Budget
+          /// UpdateSpendingItemById.AsMonthlyBudget.Budget
           ///
           /// Parent Type: `BudgetConfig`
           struct Budget: Backend.SelectionSet {
@@ -108,7 +108,7 @@ extension Backend {
               .field("shawnContributionAmount", Double.self),
             ] }
             static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-              AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.AsMonthlyBudget.Budget.self
+              UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.AsMonthlyBudget.Budget.self
             ] }
 
             /// Total allocated budget
@@ -123,7 +123,7 @@ extension Backend {
             var shawnContributionAmount: Double { __data["shawnContributionAmount"] }
           }
 
-          /// AddSpendingItemByMonth.AsMonthlyBudget.Spending
+          /// UpdateSpendingItemById.AsMonthlyBudget.Spending
           ///
           /// Parent Type: `SpendingItem`
           struct Spending: Backend.SelectionSet {
@@ -140,7 +140,7 @@ extension Backend {
               .field("notes", String?.self),
             ] }
             static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-              AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.AsMonthlyBudget.Spending.self
+              UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.AsMonthlyBudget.Spending.self
             ] }
 
             /// A unique identifier
@@ -156,22 +156,22 @@ extension Backend {
           }
         }
 
-        /// AddSpendingItemByMonth.AsGraphQLErrorObject
+        /// UpdateSpendingItemById.AsGraphQLErrorObject
         ///
         /// Parent Type: `GraphQLErrorObject`
         struct AsGraphQLErrorObject: Backend.InlineFragment {
           let __data: DataDict
           init(_dataDict: DataDict) { __data = _dataDict }
 
-          typealias RootEntityType = AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth
+          typealias RootEntityType = UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById
           static var __parentType: any ApolloAPI.ParentType { Backend.Objects.GraphQLErrorObject }
           static var __selections: [ApolloAPI.Selection] { [
             .field("code", GraphQLEnum<Backend.GraphQLErrorCode>.self),
             .field("message", String.self),
           ] }
           static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
-            AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.self,
-            AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.AsGraphQLErrorObject.self
+            UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.self,
+            UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.AsGraphQLErrorObject.self
           ] }
 
           var code: GraphQLEnum<Backend.GraphQLErrorCode> { __data["code"] }

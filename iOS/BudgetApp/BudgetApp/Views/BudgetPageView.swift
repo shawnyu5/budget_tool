@@ -52,25 +52,6 @@ struct BudgetPageView: View {
                                 overBudgetAmount: viewModel.budget?.overBudgetAmount ?? 0,
                                 budgetConfig: viewModel.budget?.config
                             )
-                            // HStack {
-                            //     Text("$")
-                            //     Text(String(viewModel.budget?.totalSpending ?? 0))
-                            //     Text("/")
-                            //     Text(String(viewModel.budget?.totalAllocation ?? 0))
-                            // }
-                            // .font(.title)
-                            //
-                            // HStack {
-                            //     Text("Shawn").bold()
-                            //     Text("(60%): $100")
-                            // }
-                            // .padding(.leading)
-                            //
-                            // HStack {
-                            //     Text("Maggie").bold()
-                            //     Text("(40%): $80")
-                            // }
-                            // .padding(.leading)
                         }
                     }
                     .padding(.vertical, 4)
@@ -158,35 +139,17 @@ struct BudgetPageView: View {
         }
         .sheet(isPresented: $showingAddExpenseItem) {
             ExpenseItemView(title: "Add Expense Item") { expenseItem in
-                do {
-                    try await Network.shared.graphql.perform(
-                        mutation: Backend.AddSpendingItemByMonthMutation(
-                            inputs: Backend.AddSpendingItemByMonthInput(
-                                year: String(year),
-                                month: GraphQLEnum(Backend.Month.from(month: month)),
-                                spendingItem: Backend.SpendingItemInput(
-                                    id: expenseItem.id,
-                                    amount: expenseItem.amount,
-                                    date: expenseItem.date, description: expenseItem.description
-                                )
-
-                            )))
-                } catch {
-                    print("Failed to add spending item: \(error)")
-                    viewModel.errorMessage = error.localizedDescription
-                }
-
-                await loadBudget()
+                await viewModel.addSpendingItemByMonth(year: String(year), month: month, spendingItem: expenseItem)
             }
             .onAppear {
                 print("Showing add expense item sheet")
             }
         }
         .sheet(item: $selectedItem) { item in
-            ExpenseItemView(title: "Edit expense item", expenseItem: item) { _ in }
-                .onAppear {
-                    print("SHEET: selected item: \(item)")
-                }
+            ExpenseItemView(title: "Edit expense item", expenseItem: item) { item in
+                print("Item to update: \(item)")
+                await viewModel.updateSpendingItemById(year: year, month: month, item: item)
+            }
         }
     }
 

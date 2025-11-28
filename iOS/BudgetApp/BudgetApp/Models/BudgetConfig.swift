@@ -17,6 +17,26 @@ extension BudgetConfig {
         )
     }
 
+    static func from(_ from: Backend.AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.AsMonthlyBudget.Budget) -> Self {
+        Self(
+            totalAllocation: from.totalAllocation,
+            shawnPercentageAllocation: from.shawnPercentageAllocation,
+            shawnContributionAmount: from.shawnContributionAmount,
+            maggiePercentageAllocation: from.maggiePercentageAllocation,
+            maggieContributionAmount: from.maggieContributionAmount
+        )
+    }
+
+    static func from(_ from: Backend.UpdateSpendingItemByIDMutation.Data.UpdateSpendingItemById.AsMonthlyBudget.Budget) -> Self {
+        Self(
+            totalAllocation: from.totalAllocation,
+            shawnPercentageAllocation: from.shawnPercentageAllocation,
+            shawnContributionAmount: from.shawnContributionAmount,
+            maggiePercentageAllocation: from.maggiePercentageAllocation,
+            maggieContributionAmount: from.maggieContributionAmount
+        )
+    }
+
     static func from(
         _ from: Backend.GetMonthlyBudgetConfigQuery.Data.MonthlyBudgetConfig
             .AsBudgetConfig

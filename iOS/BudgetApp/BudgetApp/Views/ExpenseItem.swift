@@ -79,6 +79,7 @@ struct ExpenseItemView: View {
         // Initialize local editable state
         _description = State(initialValue: expenseItem.description)
         _amount = State(initialValue: expenseItem.amount)
+        id = .init(uuidString: expenseItem.id) ?? UUID()
 
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy/M/d" // matches "2025/4/1"

@@ -164,6 +164,10 @@ type MutationRoot {
 	Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
 	"""
 	deleteSpendingItemById(inputs: DeleteSpendingItemByIdInput!): MonthlyBudgetResponse!
+	"""
+	Update a spending item by ID
+	"""
+	updateSpendingItemById(inputs: UpdateSpendingItemByIdInput!): MonthlyBudgetResponse!
 }
 
 type NotificationKeys {
@@ -270,6 +274,15 @@ input UpdateBudgetConfigInput {
 	The new budget
 	"""
 	budgetConfig: BudgetConfigInput!
+}
+
+input UpdateSpendingItemByIdInput {
+	year: Int!
+	month: Month!
+	"""
+	The new spending item to update
+	"""
+	spendingItem: SpendingItemInput!
 }
 
 """

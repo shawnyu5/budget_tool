@@ -39,7 +39,9 @@ final class BudgetViewModel {
             let response = try await ApolloClient.shared.fetch(
                 query: Backend.GetMonthBudgetQuery(year: year, month: GraphQLEnum(month)),
                 cachePolicy: .networkOnly,
-                requestConfiguration: RequestConfiguration(requestTimeout: 60, writeResultsToCache: false)
+                requestConfiguration: RequestConfiguration(
+                    requestTimeout: 60, writeResultsToCache: false
+                )
             )
 
             // print("Second request")
@@ -75,8 +77,72 @@ final class BudgetViewModel {
         }
     }
 
-    /// Rounds a number to 2 decimal places
-    private func roundTwoDecimals(float: Float64) -> Float64 {
-        return (float * 100).rounded() / 100
+    /// Update a spending item by ID
+    func updateSpendingItemById(year: Int32, month: Month, item: Spending) async {
+        do {
+            let result = try await Network.shared.graphql.perform(
+                mutation: Backend.UpdateSpendingItemByIDMutation(
+                    inputs: Backend.UpdateSpendingItemByIdInput(
+                        year: year,
+                        month: GraphQLEnum(Backend.Month.from(month: month)),
+                        spendingItem: .init(
+                            id: item.id,
+                            amount: item.amount,
+                            date: item.date,
+                            description: item.description
+                        )
+                    )))
+            if let budget = result.data?.updateSpendingItemById.asMonthlyBudget {
+                print("Got budget after update spend item: ")
+                dump(budget)
+                self.budget = Budget.from(graphqlQuery: budget)
+            } else if let error = result.data?.updateSpendingItemById.asGraphQLErrorObject {
+                print("Caught graphql error")
+                errorCode = error.code.value
+                errorMessage = error.message
+                if let errorCode = errorCode, let errorMessage = errorMessage {
+                    print("Got error code: \(errorCode): \(errorMessage)")
+                    self.errorCode = errorCode
+                }
+            }
+        } catch {
+            print(error)
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func addSpendingItemByMonth(year: String, month: Month, spendingItem: Spending) async {
+        do {
+            let result = try await Network.shared.graphql.perform(
+                mutation: Backend.AddSpendingItemByMonthMutation(
+                    inputs: Backend.AddSpendingItemByMonthInput(
+                        year: String(year),
+                        month: GraphQLEnum(Backend.Month.from(month: month)),
+                        spendingItem: Backend.SpendingItemInput(
+                            id: spendingItem.id,
+                            amount: spendingItem.amount,
+                            date: spendingItem.date,
+                            description: spendingItem.description
+                        )
+
+                    )))
+
+            if let budget = result.data?.addSpendingItemByMonth.asMonthlyBudget {
+                print("Got budget after update spend item: ")
+                dump(budget)
+                self.budget = Budget.from(graphqlQuery: budget)
+            } else if let error = result.data?.addSpendingItemByMonth.asGraphQLErrorObject {
+                print("Caught graphql error")
+                errorCode = error.code.value
+                errorMessage = error.message
+                if let errorCode = errorCode, let errorMessage = errorMessage {
+                    print("Got error code: \(errorCode): \(errorMessage)")
+                    self.errorCode = errorCode
+                }
+            }
+        } catch {
+            print(error)
+            errorMessage = error.localizedDescription
+        }
     }
 }
