@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		0EA2E08D6DF4CEE5D86DD941 /* BudgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EE9E9E80BA11B2BEDB461B0 /* BudgetView.swift */; };
 		126D92990F9953A23829C25F /* SettingsPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E983F39B992738E0080E234 /* SettingsPageView.swift */; };
-		134C11F1EAF47EBA4A39A7EC /* ExpenseTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6DC2628E10D8A59BD37CFA3 /* ExpenseTable.swift */; };
 		19149232841685411B43FC92 /* SettingsPageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FCAE6F960A1E478477CD517 /* SettingsPageViewModel.swift */; };
 		1930EFC12ECD58AC001F1964 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 1930EFC02ECD58AC001F1964 /* KeychainAccess */; };
 		195F71442ECC08D400B8D6AD /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 195F71432ECC08D400B8D6AD /* Debug.xcconfig */; };
@@ -80,7 +79,6 @@
 		E83D6EEC6DEE12ED172EAEFA /* Backend+Extension.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = "Backend+Extension.swift"; sourceTree = "<group>"; };
 		E934CC52D4D72E742184A072 /* AuthManager.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
 		EAA8760C42DD247CBA6D916C /* Budget.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Budget.swift; sourceTree = "<group>"; };
-		F6DC2628E10D8A59BD37CFA3 /* ExpenseTable.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; lastKnownFileType = sourcecode.swift; name = ExpenseTable.swift; path = ExpenseTable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -189,7 +187,6 @@
 				6E983F39B992738E0080E234 /* SettingsPageView.swift */,
 				535751530348B5C74579E052 /* DateToolBarModifier.swift */,
 				6EE9E9E80BA11B2BEDB461B0 /* BudgetView.swift */,
-				F6DC2628E10D8A59BD37CFA3 /* ExpenseTable.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -427,7 +424,6 @@
 				514DE7DC61F1A710CCC868E8 /* DateToolBarModifier.swift in Sources */,
 				0EA2E08D6DF4CEE5D86DD941 /* BudgetView.swift in Sources */,
 				99474AE363329290FB7DB107 /* Utils.swift in Sources */,
-				134C11F1EAF47EBA4A39A7EC /* ExpenseTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

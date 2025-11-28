@@ -34,6 +34,21 @@ extension Spending {
     }
 
     static func from(
+        graphql from: [Backend.DeleteSpendingItemByIDMutation.Data.DeleteSpendingItemById.AsMonthlyBudget.Spending]
+    ) -> [Self] {
+        let converted = from.map { backend in
+            Self(
+                id: backend.id,
+                amount: backend.amount,
+                date: strToDate(string: backend.date) ?? Date(),
+                description: backend.description,
+                notes: backend.notes
+            )
+        }
+        return converted
+    }
+
+    static func from(
         graphql from: [Backend.AddSpendingItemByMonthMutation.Data.AddSpendingItemByMonth.AsMonthlyBudget.Spending]
     ) -> [Self] {
         let converted = from.map { backend in
@@ -67,6 +82,18 @@ extension Spending {
 extension Budget {
     static func from(
         graphqlQuery from: Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget
+    ) -> Self {
+        return Self(
+            month: Month.from(backendMonth: from.month.value ?? .january),
+            config: BudgetConfig.from(from.budget),
+            totalSpending: from.totalSpending,
+            overBudgetAmount: from.overBudgetAmount,
+            spending: Spending.from(graphql: from.spending)
+        )
+    }
+
+    static func from(
+        graphqlQuery from: Backend.DeleteSpendingItemByIDMutation.Data.DeleteSpendingItemById.AsMonthlyBudget
     ) -> Self {
         return Self(
             month: Month.from(backendMonth: from.month.value ?? .january),

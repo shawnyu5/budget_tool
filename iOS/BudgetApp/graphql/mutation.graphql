@@ -62,9 +62,17 @@ mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
 mutation DeleteSpendingItemByID($inputs: DeleteSpendingItemByIdInput!) {
   deleteSpendingItemById(inputs: $inputs) {
     ... on MonthlyBudget {
+      month
       totalSpending
       overBudgetAmount
       carriedOverFrom
+      budget {
+        totalAllocation
+        maggiePercentageAllocation
+        maggieContributionAmount
+        shawnPercentageAllocation
+        shawnContributionAmount
+      }
       spending {
         id
         description

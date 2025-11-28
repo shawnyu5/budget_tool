@@ -57,7 +57,6 @@ struct BudgetPageView: View {
                     .padding(.vertical, 4)
 
                     Section(header: Label("Expenses", systemImage: "list.bullet")) {
-                        // SpendingTable(spending: viewModel.budget?.spending ?? [])
                         if let spending = viewModel.budget?.spending {
                             // Table headers
                             HStack {

@@ -145,4 +145,34 @@ final class BudgetViewModel {
             errorMessage = error.localizedDescription
         }
     }
+
+    func deleteSpendingItemByID(year: Int32, month: Month, id: String) async {
+        do {
+            let result = try await Network.shared.graphql.perform(
+                mutation: Backend.DeleteSpendingItemByIDMutation(
+                    inputs: Backend.DeleteSpendingItemByIdInput(
+                        year: year,
+                        month: GraphQLEnum(
+                            Backend.Month.from(month: month)),
+                        id: id
+                    )))
+
+            if let budget = result.data?.deleteSpendingItemById.asMonthlyBudget {
+                print("Got budget after update spend item: ")
+                dump(budget)
+                self.budget = Budget.from(graphqlQuery: budget)
+            } else if let error = result.data?.deleteSpendingItemById.asGraphQLErrorObject {
+                print("Caught graphql error")
+                errorCode = error.code.value
+                errorMessage = error.message
+                if let errorCode = errorCode, let errorMessage = errorMessage {
+                    print("Got error code: \(errorCode): \(errorMessage)")
+                    self.errorCode = errorCode
+                }
+            }
+        } catch {
+            print(error)
+            errorMessage = error.localizedDescription
+        }
+    }
 }

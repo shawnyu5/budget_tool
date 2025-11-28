@@ -9,7 +9,7 @@ extension Backend {
     static let operationName: String = "DeleteSpendingItemByID"
     static let operationDocument: ApolloAPI.OperationDocument = .init(
       definition: .init(
-        #"mutation DeleteSpendingItemByID($inputs: DeleteSpendingItemByIdInput!) { deleteSpendingItemById(inputs: $inputs) { __typename ... on MonthlyBudget { totalSpending overBudgetAmount carriedOverFrom spending { __typename id description amount date notes } } ... on GraphQLErrorObject { code message } } }"#
+        #"mutation DeleteSpendingItemByID($inputs: DeleteSpendingItemByIdInput!) { deleteSpendingItemById(inputs: $inputs) { __typename ... on MonthlyBudget { month totalSpending overBudgetAmount carriedOverFrom budget { __typename totalAllocation maggiePercentageAllocation maggieContributionAmount shawnPercentageAllocation shawnContributionAmount } spending { __typename id description amount date notes } } ... on GraphQLErrorObject { code message } } }"#
       ))
 
     public var inputs: DeleteSpendingItemByIdInput
@@ -65,9 +65,11 @@ extension Backend {
           typealias RootEntityType = DeleteSpendingItemByIDMutation.Data.DeleteSpendingItemById
           static var __parentType: any ApolloAPI.ParentType { Backend.Objects.MonthlyBudget }
           static var __selections: [ApolloAPI.Selection] { [
+            .field("month", GraphQLEnum<Backend.Month>.self),
             .field("totalSpending", Double.self),
             .field("overBudgetAmount", Double.self),
             .field("carriedOverFrom", GraphQLEnum<Backend.Month>?.self),
+            .field("budget", Budget.self),
             .field("spending", [Spending].self),
           ] }
           static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
@@ -75,6 +77,8 @@ extension Backend {
             DeleteSpendingItemByIDMutation.Data.DeleteSpendingItemById.AsMonthlyBudget.self
           ] }
 
+          /// The month
+          var month: GraphQLEnum<Backend.Month> { __data["month"] }
           /// Total spending for the month. Including any over budget amount
           var totalSpending: Double { __data["totalSpending"] }
           /// Amount over budget for the month. 0 means not over budget.
@@ -82,8 +86,42 @@ extension Backend {
           /// The month it was carried over from
           /// If the setting are not carried over from a previous month, this value will be empty
           var carriedOverFrom: GraphQLEnum<Backend.Month>? { __data["carriedOverFrom"] }
+          /// Budget details
+          var budget: Budget { __data["budget"] }
           /// List of spent items
           var spending: [Spending] { __data["spending"] }
+
+          /// DeleteSpendingItemById.AsMonthlyBudget.Budget
+          ///
+          /// Parent Type: `BudgetConfig`
+          struct Budget: Backend.SelectionSet {
+            let __data: DataDict
+            init(_dataDict: DataDict) { __data = _dataDict }
+
+            static var __parentType: any ApolloAPI.ParentType { Backend.Objects.BudgetConfig }
+            static var __selections: [ApolloAPI.Selection] { [
+              .field("__typename", String.self),
+              .field("totalAllocation", Double.self),
+              .field("maggiePercentageAllocation", Double.self),
+              .field("maggieContributionAmount", Double.self),
+              .field("shawnPercentageAllocation", Double.self),
+              .field("shawnContributionAmount", Double.self),
+            ] }
+            static var __fulfilledFragments: [any ApolloAPI.SelectionSet.Type] { [
+              DeleteSpendingItemByIDMutation.Data.DeleteSpendingItemById.AsMonthlyBudget.Budget.self
+            ] }
+
+            /// Total allocated budget
+            var totalAllocation: Double { __data["totalAllocation"] }
+            /// Maggie percentage allocation
+            var maggiePercentageAllocation: Double { __data["maggiePercentageAllocation"] }
+            /// Maggie contribution amount. The frontend is responsible for computing this value
+            var maggieContributionAmount: Double { __data["maggieContributionAmount"] }
+            /// Shawn percentage allocation
+            var shawnPercentageAllocation: Double { __data["shawnPercentageAllocation"] }
+            /// Shawn contribution amount. The frontend is responsible for computing this value
+            var shawnContributionAmount: Double { __data["shawnContributionAmount"] }
+          }
 
           /// DeleteSpendingItemById.AsMonthlyBudget.Spending
           ///
