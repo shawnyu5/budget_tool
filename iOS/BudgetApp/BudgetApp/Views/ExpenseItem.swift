@@ -1,47 +1,5 @@
 import SwiftUI
 
-/// Represents a single expense item
-struct ExpenseItem: Identifiable, Codable {
-    var id = UUID()
-    let amount: Double
-    let date: Date
-    let description: String
-    let Notes: String
-
-    enum CodingKeys: String, CodingKey {
-        case id = "_id"
-        case amount
-        case date
-        case description
-        case Notes
-    }
-}
-
-@Observable
-class Expenses {
-    // TODO: use swift data here
-    var userDefaultKey = "Items"
-
-    init() {
-        if let userDefaultItems = UserDefaults.standard.data(forKey: userDefaultKey) {
-            if let decodedItems: [ExpenseItem] = try? JSONDecoder().decode(
-                [ExpenseItem].self, from: userDefaultItems
-            ) {
-                items = decodedItems
-                return
-            }
-        }
-    }
-
-    var items = [ExpenseItem]() {
-        didSet {
-            if let encoded = try? JSONEncoder().encode(items) {
-                UserDefaults.standard.set(encoded, forKey: userDefaultKey)
-            }
-        }
-    }
-}
-
 typealias onSubmitFunc = (Spending) async -> Void
 
 /// Display a single expense item
@@ -77,14 +35,14 @@ struct ExpenseItemView: View {
         // self.expenseItem = expenseItem
 
         // Initialize local editable state
-        _description = State(initialValue: expenseItem.description)
-        _amount = State(initialValue: expenseItem.amount)
         id = .init(uuidString: expenseItem.id) ?? UUID()
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy/M/d" // matches "2025/4/1"
-        formatter.locale = Locale(identifier: "en_US_POSIX") // recommended for fixed formats
-        _date = State(initialValue: formatter.date(from: expenseItem.date) ?? Date())
+        description = expenseItem.description
+        amount = expenseItem.amount
+        date = expenseItem.date
+        // let formatter = DateFormatter()
+        // formatter.dateFormat = "yyyy/M/d" // matches "2025/4/1"
+        // formatter.locale = Locale(identifier: "en_US_POSIX") // recommended for fixed formats
+        // _date = State(initialValue: formatter.date(from: expenseItem.date) ?? Date())
         _notes = State(initialValue: expenseItem.notes ?? "")
         self.onSubmit = onSubmit
     }
@@ -129,8 +87,7 @@ struct ExpenseItemView: View {
                         await self.onSubmit(
                             Spending(
                                 id: self.id.uuidString, amount: self.amount,
-                                // TODO: this date format is not correct...
-                                date: self.date.ISO8601Format(),
+                                date: self.date,
                                 description: self.description
                             ))
                         dismiss()

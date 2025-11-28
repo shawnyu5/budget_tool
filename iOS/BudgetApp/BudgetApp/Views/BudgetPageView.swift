@@ -57,19 +57,32 @@ struct BudgetPageView: View {
                     .padding(.vertical, 4)
 
                     Section(header: Label("Expenses", systemImage: "list.bullet")) {
+                        // SpendingTable(spending: viewModel.budget?.spending ?? [])
                         if let spending = viewModel.budget?.spending {
+                            // Table headers
+                            HStack {
+                                Text("Amount").bold()
+                                Divider()
+                                Text("Description").bold()
+                                Divider()
+                                Text("Date").bold()
+                            }
+                            .frame(maxWidth: .infinity)
+
                             ForEach(spending, id: \.id) {
                                 item in
                                 Button(action: {
                                     selectedItem = item
-                                    // showingItemDetails = true
 
                                 }) {
-                                    Text(item.description)
-                                    // .onTapGesture {
-                                    //     selectedItem = item
-                                    //     showingItemDetails = true
-                                    // }
+                                    HStack {
+                                        Text(String(format: "%.2f", item.amount))
+                                        Divider()
+                                        Text(item.description)
+                                        Divider()
+                                        Text(dateToStr(date: item.date))
+                                    }
+                                    .frame(maxWidth: .infinity)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -82,6 +95,7 @@ struct BudgetPageView: View {
                                     let itemToDelete = budgetSpending[index]
                                     let idToDelete = itemToDelete.id
                                     Task {
+                                        // TODO: move this into view model
                                         try await Network.shared.graphql.perform(
                                             mutation: Backend.DeleteSpendingItemByIDMutation(
                                                 inputs: Backend.DeleteSpendingItemByIdInput(
@@ -98,17 +112,6 @@ struct BudgetPageView: View {
                 }
                 .toolbar {
                     ToolbarItemGroup(placement: .navigationBarTrailing) {
-                        // Picker("Year", selection: $selectedYear) {
-                        //     ForEach([selectedYear - 1, selectedYear, selectedYear + 1], id: \.self) { option in
-                        //         Text(String(option))
-                        //     }
-                        // }
-                        //
-                        // Picker("Month", selection: $selectedMonth) {
-                        //     ForEach(Backend.Month.allCases, id: \.self) { month in
-                        //         Text(month.rawValue).tag(month)
-                        //     }
-                        // }
                         Button("Add Expense item", systemImage: "plus") {
                             showingAddExpenseItem = true
                         }
@@ -116,7 +119,6 @@ struct BudgetPageView: View {
                         .buttonBorderShape(.automatic)
                     }
                 }
-                // .toolbar {}
             }
         }
         .task {
@@ -165,8 +167,6 @@ struct BudgetPageView: View {
         }
     }
 }
-
-extension Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending: Identifiable {}
 
 #Preview {
     BudgetPageView(year: .constant(2025), month: .constant(.november))

@@ -1,3 +1,5 @@
+import SwiftUI
+
 struct Budget {
     var month: Month
     var config: BudgetConfig
@@ -10,7 +12,7 @@ struct Budget {
 struct Spending: Identifiable {
     var id: String
     var amount: Float64
-    var date: String
+    var date: Date
     var description: String
     var notes: String?
 }
@@ -23,7 +25,7 @@ extension Spending {
             Self(
                 id: backend.id,
                 amount: backend.amount,
-                date: backend.date,
+                date: strToDate(string: backend.date) ?? Date(),
                 description: backend.description,
                 notes: backend.notes
             )
@@ -38,7 +40,7 @@ extension Spending {
             Self(
                 id: backend.id,
                 amount: backend.amount,
-                date: backend.date,
+                date: strToDate(string: backend.date) ?? Date(),
                 description: backend.description,
                 notes: backend.notes
             )
@@ -53,7 +55,7 @@ extension Spending {
             Self(
                 id: backend.id,
                 amount: backend.amount,
-                date: backend.date,
+                date: strToDate(string: backend.date) ?? Date(),
                 description: backend.description,
                 notes: backend.notes
             )

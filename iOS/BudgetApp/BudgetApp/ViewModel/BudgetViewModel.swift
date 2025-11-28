@@ -88,7 +88,7 @@ final class BudgetViewModel {
                         spendingItem: .init(
                             id: item.id,
                             amount: item.amount,
-                            date: item.date,
+                            date: dateToStr(date: item.date),
                             description: item.description
                         )
                     )))
@@ -121,7 +121,7 @@ final class BudgetViewModel {
                         spendingItem: Backend.SpendingItemInput(
                             id: spendingItem.id,
                             amount: spendingItem.amount,
-                            date: spendingItem.date,
+                            date: dateToStr(date: spendingItem.date),
                             description: spendingItem.description
                         )
 
