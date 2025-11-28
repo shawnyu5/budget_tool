@@ -62,6 +62,11 @@ enum Month: String {
 }
 
 extension Month {
+    static let allCases: [Self] = [
+        .january, .february, .march, .april, .may, .june,
+        .july, .august, .september, .october, .november, .december,
+    ]
+
     /// Convert `Backend.Month` to `Month`
     static func from(backendMonth: Backend.Month) -> Self {
         switch backendMonth {

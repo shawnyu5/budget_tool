@@ -13,39 +13,25 @@ import SwiftUI
 @MainActor
 struct BudgetPageView: View {
     @Environment(AuthManager.self) private var auth: AuthManager
-
-    /// By default display the budget for the current month
-    init() {
-        _viewModel = State(wrappedValue: BudgetViewModel())
-    }
-
-    init(year selectedYear: Int32, month selectedMonth: Backend.Month) {
-        self.init()
-        self.selectedYear = selectedYear
-        self.selectedMonth = selectedMonth
-    }
-
     /// The current selected year to get the budget of
-    var selectedYear: Int32 = .init(Calendar.current.component(.year, from: Date()))
+    @Binding var year: Int32
     /// The current selected month to get the budget of
-    var selectedMonth: Backend.Month = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "LLLL"
-        let monthName = formatter.string(from: Date()).lowercased()
-        let str = Backend.Month.from(string: monthName)
-        return Backend.Month.from(string: monthName) ?? .january
-    }()
+    @Binding var month: Month
 
-    @State private var viewModel: BudgetViewModel
+    @State private var viewModel = BudgetViewModel()
     /// If the add expense view is being shown right now
     @State private var showingAddExpenseItem = false
     /// If we are displaying `selectedItem`'s details
     // @State private var showingItemDetails = false
     /// The selected item to display details of
     @State private var selectedItem: Spending?
-
     /// Task for fetching budget
     @State private var fetchTask: Task<Void, Never>? = nil
+
+    /// By default display the budget for the current month
+    // init() {
+    //     _viewModel = State(wrappedValue: BudgetViewModel())
+    // }
 
     var body: some View {
         VStack {
@@ -61,21 +47,30 @@ struct BudgetPageView: View {
                         if viewModel.isLoading {
                             ProgressView("Loading...")
                         } else {
-                            HStack {
-                                Text("$10/200").font(.title)
-                            }
-
-                            HStack {
-                                Text("Shawn").bold()
-                                Text("(60%): $100")
-                            }
-                            .padding(.leading)
-
-                            HStack {
-                                Text("Maggie").bold()
-                                Text("(40%): $80")
-                            }
-                            .padding(.leading)
+                            BudgetView(
+                                totalSpending: viewModel.budget?.totalSpending ?? 0,
+                                overBudgetAmount: viewModel.budget?.overBudgetAmount ?? 0,
+                                budgetConfig: viewModel.budget?.config
+                            )
+                            // HStack {
+                            //     Text("$")
+                            //     Text(String(viewModel.budget?.totalSpending ?? 0))
+                            //     Text("/")
+                            //     Text(String(viewModel.budget?.totalAllocation ?? 0))
+                            // }
+                            // .font(.title)
+                            //
+                            // HStack {
+                            //     Text("Shawn").bold()
+                            //     Text("(60%): $100")
+                            // }
+                            // .padding(.leading)
+                            //
+                            // HStack {
+                            //     Text("Maggie").bold()
+                            //     Text("(40%): $80")
+                            // }
+                            // .padding(.leading)
                         }
                     }
                     .padding(.vertical, 4)
@@ -109,8 +104,9 @@ struct BudgetPageView: View {
                                         try await Network.shared.graphql.perform(
                                             mutation: Backend.DeleteSpendingItemByIDMutation(
                                                 inputs: Backend.DeleteSpendingItemByIdInput(
-                                                    year: selectedYear,
-                                                    month: GraphQLEnum(selectedMonth),
+                                                    year: year,
+                                                    month: GraphQLEnum(
+                                                        Backend.Month.from(month: month)),
                                                     id: idToDelete
                                                 )))
                                     }
@@ -150,23 +146,24 @@ struct BudgetPageView: View {
             print("Refreshing")
             await loadBudget()
         }
-        // .onChange(of: selectedYear) {
-        //     Task {
-        //         await loadBudget()
-        //     }
-        // }
-        // .onChange(of: selectedMonth) {
-        //     Task {
-        //         await loadBudget()
-        //     }
-        // }
+        .onChange(of: year) {
+            Task {
+                await loadBudget()
+            }
+        }
+        .onChange(of: month) {
+            Task {
+                await loadBudget()
+            }
+        }
         .sheet(isPresented: $showingAddExpenseItem) {
             ExpenseItemView(title: "Add Expense Item") { expenseItem in
                 do {
                     try await Network.shared.graphql.perform(
                         mutation: Backend.AddSpendingItemByMonthMutation(
                             inputs: Backend.AddSpendingItemByMonthInput(
-                                year: String(selectedYear), month: GraphQLEnum(selectedMonth),
+                                year: String(year),
+                                month: GraphQLEnum(Backend.Month.from(month: month)),
                                 spendingItem: Backend.SpendingItemInput(
                                     id: expenseItem.id,
                                     amount: expenseItem.amount,
@@ -193,11 +190,12 @@ struct BudgetPageView: View {
         }
     }
 
+    @MainActor
     private func loadBudget() async {
         // Cancel previous fetch if still running
         fetchTask?.cancel()
         fetchTask = Task { @MainActor in
-            await viewModel.fetchBudget(year: selectedYear, month: selectedMonth)
+            await viewModel.fetchBudget(year: year, month: Backend.Month.from(month: month))
             if viewModel.errorCode == Backend.GraphQLErrorCode.forbidden {
                 auth.isAuthenticated = false
             }
@@ -208,5 +206,6 @@ struct BudgetPageView: View {
 extension Backend.GetMonthBudgetQuery.Data.MonthlyBudget.AsMonthlyBudget.Spending: Identifiable {}
 
 #Preview {
-    BudgetPageView().environment(AuthManager())
+    BudgetPageView(year: .constant(2025), month: .constant(.november))
+        .environment(AuthManager())
 }

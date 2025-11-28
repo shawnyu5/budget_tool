@@ -107,20 +107,6 @@ struct LoginView: View {
                 Spacer()
             }
             .padding()
-            .navigationDestination(isPresented:
-                Binding(
-                    get: { auth.isAuthenticated },
-                    set: { auth.isAuthenticated = $0 }
-                )) {
-                    BudgetPageView()
-                        .navigationBarBackButtonHidden(true)
-            }
-            .onAppear {
-                if auth.isAuthenticated {
-                    BudgetPageView()
-                        .navigationBarBackButtonHidden(true)
-                }
-            }
         }
     }
 }

@@ -5,15 +5,9 @@ struct SettingsPageView: View {
     @Environment(AuthManager.self) private var auth: AuthManager
 
     /// The current selected year to get the budget of
-    var selectedYear: Int32 = .init(Calendar.current.component(.year, from: Date()))
+    var year: Int32
     /// The current selected month to get the budget of
-    var selectedMonth: Month = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "LLLL"
-        let monthName = formatter.string(from: Date()).lowercased()
-        let str = Backend.Month.from(string: monthName)
-        return Month.from(string: monthName) ?? .january
-    }()
+    var month: Month
 
     // @State private var totalAllocation = {
     //     return shawnContributionPercentage + maggieContributionAmount
@@ -130,8 +124,8 @@ struct SettingsPageView: View {
                             print("Updating settings")
                             try await viewModel.updateSettings(
                                 new: Backend.UpdateBudgetConfigInput(
-                                    year: selectedYear,
-                                    month: GraphQLEnum(Backend.Month.from(month: selectedMonth)),
+                                    year: year,
+                                    month: GraphQLEnum(Backend.Month.from(month: month)),
                                     budgetConfig: Backend.BudgetConfigInput(
                                         totalAllocation: self.totalAllocation,
                                         shawnPercentageAllocation: self.shawnContributionPercentage,
@@ -183,7 +177,7 @@ struct SettingsPageView: View {
         fetchTask?.cancel()
         fetchTask = Task { @MainActor in
             await viewModel.fetchSettings(
-                year: selectedYear, month: Backend.Month.from(month: selectedMonth)
+                year: year, month: Backend.Month.from(month: month)
             )
             if viewModel.errorCode == Backend.GraphQLErrorCode.forbidden {
                 auth.isAuthenticated = false
@@ -200,17 +194,7 @@ struct SettingsPageView: View {
     }
 }
 
-/// Calculates `total` is the `percentage` of what number
-/// returns the total value `number` is a `percentage` of
-private func calculatePercentageOf(
-    total: Double,
-    percentage: Double
-) -> Double {
-    let result = total / (percentage / 100.0)
-    return round(result)
-}
-
 #Preview {
-    SettingsPageView()
+    SettingsPageView(year: 2025, month: .november)
         .environment(AuthManager())
 }

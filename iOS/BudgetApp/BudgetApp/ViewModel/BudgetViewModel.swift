@@ -57,6 +57,7 @@ final class BudgetViewModel {
             if let budget = budgetResult.asMonthlyBudget {
                 print("Got budget: \(budget)")
                 self.budget = Budget.from(graphqlQuery: budget)
+                // self.budget?.config.shawnPercentageAllocation = roundTwoDecimals(float: self.budget?.config.shawnPercentageAllocation ?? 0)
             } else if let error = budgetResult.asGraphQLErrorObject {
                 print("Caught graphql error")
                 errorCode = error.code.value
@@ -72,5 +73,10 @@ final class BudgetViewModel {
             print("[Fetch budget] Caught API error: \(error.localizedDescription)")
             errorMessage = "API error: \(error)"
         }
+    }
+
+    /// Rounds a number to 2 decimal places
+    private func roundTwoDecimals(float: Float64) -> Float64 {
+        return (float * 100).rounded() / 100
     }
 }

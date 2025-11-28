@@ -1,9 +1,4 @@
 extension Backend.Month {
-    static let allCases: [Backend.Month] = [
-        .january, .february, .march, .april, .may, .june,
-        .july, .august, .september, .october, .november, .december,
-    ]
-
     /// Convert a string to Backend.Month
     static func from(string: String) -> Backend.Month? {
         let lower = string.lowercased()
