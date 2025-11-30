@@ -75,7 +75,7 @@
     },
     "/auth/validate-token/v2": {
       "get": {
-        "summary": "Validate the JWT token in the header fr this time.",
+        "summary": "Validate the JWT token in the header fr this time.\nBy checking the JWT token in the authorization header is still valid or not",
         "operationId": "validate_token_v2",
         "responses": {
           "200": {

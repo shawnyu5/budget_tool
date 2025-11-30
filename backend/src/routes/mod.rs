@@ -74,7 +74,6 @@ pub async fn app() -> Router {
             get_spending_item,
             update_spending_item
         })
-        // .layer(middleware::from_fn(check_valid_year))
         .routes(routes!(validate_token))
         .routes(routes!(validate_token_v2))
         .routes(routes!(export_csv_handler))
@@ -449,6 +448,7 @@ async fn validate_token() -> &'static str {
 }
 
 /// Validate the JWT token in the header fr this time.
+/// By checking the JWT token in the authorization header is still valid or not
 #[utoipa::path(
     get,
     path = "/auth/validate-token/v2",
