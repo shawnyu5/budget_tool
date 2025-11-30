@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AppVersionData, AppVersionErrors, AppVersionResponses, BasicAuthHandlerData, BasicAuthHandlerErrors, BasicAuthHandlerResponses, ExportCsvHandlerData, ExportCsvHandlerErrors, ExportCsvHandlerResponses, GetMonthBudgetHandlerData, GetMonthBudgetHandlerErrors, GetMonthBudgetHandlerResponses, GetSpendingItemData, GetSpendingItemErrors, GetSpendingItemResponses, GraphqlHandlerData, GraphqlHandlerResponses, SaveNotificationSubscriptionHandlerData, SendNotificationHandlerData, UpdateBudgetHandlerData, UpdateBudgetHandlerErrors, UpdateBudgetHandlerResponses, UpdateSpendingItemData, UpdateSpendingItemErrors, UpdateSpendingItemResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponses } from './types.gen';
+import type { AppVersionData, AppVersionErrors, AppVersionResponses, BasicAuthHandlerData, BasicAuthHandlerErrors, BasicAuthHandlerResponses, ExportCsvHandlerData, ExportCsvHandlerErrors, ExportCsvHandlerResponses, GetMonthBudgetHandlerData, GetMonthBudgetHandlerErrors, GetMonthBudgetHandlerResponses, GetSpendingItemData, GetSpendingItemErrors, GetSpendingItemResponses, GraphqlHandlerData, GraphqlHandlerResponses, SaveNotificationSubscriptionHandlerData, SaveNotificationSubscriptionHandlerResponses, SendNotificationHandlerData, SendNotificationHandlerResponses, UpdateBudgetHandlerData, UpdateBudgetHandlerErrors, UpdateBudgetHandlerResponses, UpdateSpendingItemData, UpdateSpendingItemErrors, UpdateSpendingItemResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponses, ValidateTokenV2Data, ValidateTokenV2Errors, ValidateTokenV2Responses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -28,10 +28,21 @@ export const appVersion = <ThrowOnError extends boolean = false>(options?: Optio
 
 /**
  * Validate the JWT token in the header.
+ * Um I kinda forgot to implement this route. So this route will always return true
  */
 export const validateToken = <ThrowOnError extends boolean = false>(options?: Options<ValidateTokenData, ThrowOnError>) => {
     return (options?.client ?? client).get<ValidateTokenResponses, ValidateTokenErrors, ThrowOnError>({
         url: '/auth/validate-token',
+        ...options
+    });
+};
+
+/**
+ * Validate the JWT token in the header fr this time.
+ */
+export const validateTokenV2 = <ThrowOnError extends boolean = false>(options?: Options<ValidateTokenV2Data, ThrowOnError>) => {
+    return (options?.client ?? client).get<ValidateTokenV2Responses, ValidateTokenV2Errors, ThrowOnError>({
+        url: '/auth/validate-token/v2',
         ...options
     });
 };
@@ -66,8 +77,8 @@ export const updateBudgetHandler = <ThrowOnError extends boolean = false>(option
 /**
  * Gets the spending items in csv form. If converting budget information to CSV fails at any point, partial data will not be returned
  */
-export const exportCsvHandler = <ThrowOnError extends boolean = false>(options?: Options<ExportCsvHandlerData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ExportCsvHandlerResponses, ExportCsvHandlerErrors, ThrowOnError>({
+export const exportCsvHandler = <ThrowOnError extends boolean = false>(options: Options<ExportCsvHandlerData, ThrowOnError>) => {
+    return (options.client ?? client).get<ExportCsvHandlerResponses, ExportCsvHandlerErrors, ThrowOnError>({
         responseType: 'text',
         url: '/export/{year}/{month}/csv',
         ...options
@@ -96,7 +107,7 @@ export const basicAuthHandler = <ThrowOnError extends boolean = false>(options?:
  * @deprecated
  */
 export const saveNotificationSubscriptionHandler = <ThrowOnError extends boolean = false>(options: Options<SaveNotificationSubscriptionHandlerData, ThrowOnError>) => {
-    return (options.client ?? client).post<unknown, unknown, ThrowOnError>({
+    return (options.client ?? client).post<SaveNotificationSubscriptionHandlerResponses, unknown, ThrowOnError>({
         url: '/notification/save-subscription',
         ...options,
         headers: {
@@ -110,7 +121,7 @@ export const saveNotificationSubscriptionHandler = <ThrowOnError extends boolean
  * Send a notification
  */
 export const sendNotificationHandler = <ThrowOnError extends boolean = false>(options: Options<SendNotificationHandlerData, ThrowOnError>) => {
-    return (options.client ?? client).post<unknown, unknown, ThrowOnError>({
+    return (options.client ?? client).post<SendNotificationHandlerResponses, unknown, ThrowOnError>({
         url: '/notification/send',
         ...options,
         headers: {

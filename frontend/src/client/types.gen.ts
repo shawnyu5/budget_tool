@@ -172,6 +172,29 @@ export type ValidateTokenResponses = {
     200: unknown;
 };
 
+export type ValidateTokenV2Data = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth/validate-token/v2';
+};
+
+export type ValidateTokenV2Errors = {
+    /**
+     * JWT has expired
+     */
+    403: string;
+};
+
+export type ValidateTokenV2Error = ValidateTokenV2Errors[keyof ValidateTokenV2Errors];
+
+export type ValidateTokenV2Responses = {
+    /**
+     * The JWT token is still valid
+     */
+    200: unknown;
+};
+
 export type GetMonthBudgetHandlerData = {
     body?: never;
     path: {
@@ -260,7 +283,16 @@ export type UpdateBudgetHandlerResponses = {
 
 export type ExportCsvHandlerData = {
     body?: never;
-    path?: never;
+    path: {
+        /**
+         * The year the spending item is in
+         */
+        year: string;
+        /**
+         * The month the spending item is in
+         */
+        month: Month;
+    };
     query?: never;
     url: '/export/{year}/{month}/csv';
 };
@@ -344,11 +376,25 @@ export type SaveNotificationSubscriptionHandlerData = {
     url: '/notification/save-subscription';
 };
 
+export type SaveNotificationSubscriptionHandlerResponses = {
+    /**
+     * Notification sent successfully
+     */
+    200: unknown;
+};
+
 export type SendNotificationHandlerData = {
     body: NotificationSendBody;
     path?: never;
     query?: never;
     url: '/notification/send';
+};
+
+export type SendNotificationHandlerResponses = {
+    /**
+     * Notification sent successfully
+     */
+    200: unknown;
 };
 
 export type GetSpendingItemData = {

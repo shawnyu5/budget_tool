@@ -17,6 +17,12 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type AddSpendingItemByMonthInput = {
+  month: Month;
+  spendingItem: SpendingItemInput;
+  year: Scalars['String']['input'];
+};
+
 export type BudgetConfig = {
   __typename?: 'BudgetConfig';
   /** Maggie contribution amount. The frontend is responsible for computing this value */
@@ -42,6 +48,13 @@ export type BudgetConfigInput = {
   shawnPercentageAllocation: Scalars['Float']['input'];
   /** Total allocated budget */
   totalAllocation: Scalars['Float']['input'];
+};
+
+export type DeleteSpendingItemByIdInput = {
+  /** The ID of the spending item to delete */
+  id: Scalars['String']['input'];
+  month: Month;
+  year: Scalars['Int']['input'];
 };
 
 /** Frontend configuration */
@@ -110,6 +123,10 @@ export type MonthlyBudgetResponse = GraphQlErrorObject | MonthlyBudget;
 
 export type MutationRoot = {
   __typename?: 'MutationRoot';
+  /** Add a spending item to a month */
+  addSpendingItemByMonth: MonthlyBudgetResponse;
+  /** Delete a spending item by ID. If the item doesnt exist, this handler will not do anything */
+  deleteSpendingItemById: MonthlyBudgetResponse;
   /**
    * Save a notification subscription for a user
    * The user is extracted from the JWT
@@ -117,6 +134,18 @@ export type MutationRoot = {
   saveSubscription: User;
   /** Update the budget configuration for a specific month */
   updateBudgetConfig: MonthlyBudgetConfigResponse;
+  /** Update a spending item by ID */
+  updateSpendingItemById: MonthlyBudgetResponse;
+};
+
+
+export type MutationRootAddSpendingItemByMonthArgs = {
+  inputs: AddSpendingItemByMonthInput;
+};
+
+
+export type MutationRootDeleteSpendingItemByIdArgs = {
+  inputs: DeleteSpendingItemByIdInput;
 };
 
 
@@ -127,6 +156,11 @@ export type MutationRootSaveSubscriptionArgs = {
 
 export type MutationRootUpdateBudgetConfigArgs = {
   inputs: UpdateBudgetConfigInput;
+};
+
+
+export type MutationRootUpdateSpendingItemByIdArgs = {
+  inputs: UpdateSpendingItemByIdInput;
 };
 
 export type NotificationKeys = {
@@ -187,6 +221,20 @@ export type SpendingItem = {
   notes?: Maybe<Scalars['String']['output']>;
 };
 
+/** A single transaction */
+export type SpendingItemInput = {
+  /** The dollar amount */
+  amount: Scalars['Float']['input'];
+  /** The date */
+  date: Scalars['String']['input'];
+  /** Description of the purchase */
+  description: Scalars['String']['input'];
+  /** A unique identifier */
+  id: Scalars['String']['input'];
+  /** Additional notes */
+  notes?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type SubscriptionInput = {
   auth: Scalars['String']['input'];
   endpoint: Scalars['String']['input'];
@@ -200,7 +248,14 @@ export type UpdateBudgetConfigInput = {
   /** The month of the budget to update */
   month: Month;
   /** The year of the budget to update */
-  year: Scalars['String']['input'];
+  year: Scalars['Int']['input'];
+};
+
+export type UpdateSpendingItemByIdInput = {
+  month: Month;
+  /** The new spending item to update */
+  spendingItem: SpendingItemInput;
+  year: Scalars['Int']['input'];
 };
 
 /** Represents a user */

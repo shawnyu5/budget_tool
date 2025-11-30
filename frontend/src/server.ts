@@ -165,7 +165,7 @@ export async function updateMonthlyBudget(
  * Updates the budget config for a specific month
  */
 export async function updateMonthlyBudgetConfig(
-  year: string,
+  year: Number,
   month: Month,
   budgetConfig: BudgetConfig,
   navigate: Navigator,

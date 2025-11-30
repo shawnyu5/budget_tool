@@ -106,7 +106,7 @@ export default function Settings() {
     }
     try {
       const updatedBudget = await updateMonthlyBudgetConfig(
-        searchParam.year as string,
+        Number(searchParam.year),
         searchParam.month as Month,
         monthlyBudgetConfigResource()!,
         navigate,
@@ -118,7 +118,7 @@ export default function Settings() {
     } catch (e) {
       log.error("Failed to update budget: ", e);
       setErrorMessage("Failed to update settings... Please try again later...");
-      return
+      return;
     }
 
     // setMonthlyBudget((prev) => {
