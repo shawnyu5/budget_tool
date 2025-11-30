@@ -58,15 +58,15 @@ struct BudgetPageView: View {
 
                     Section(header: Label("Expenses", systemImage: "list.bullet")) {
                         if let spending = viewModel.budget?.spending {
-                            // Table headers
-                            HStack {
-                                Text("Amount").bold()
-                                Divider()
-                                Text("Description").bold()
-                                Divider()
-                                Text("Date").bold()
-                            }
-                            .frame(maxWidth: .infinity)
+                            // // Table headers
+                            // HStack {
+                            //     Text("Amount").bold()
+                            //     Divider()
+                            //     Text("Description").bold()
+                            //     Divider()
+                            //     Text("Date").bold()
+                            // }
+                            // .frame(maxWidth: .infinity)
 
                             ForEach(spending, id: \.id) {
                                 item in
@@ -75,11 +75,14 @@ struct BudgetPageView: View {
 
                                 }) {
                                     HStack {
-                                        Text(String(format: "%.2f", item.amount))
+                                        Text(String(format: "$%.2f", item.amount))
+                                        Divider()
+                                        // TODO: display in a human friendly format here, maybe a format that doesnt take up as much space / width
+                                        Text(dateToStr(date: item.date))
                                         Divider()
                                         Text(item.description)
                                         Divider()
-                                        Text(dateToStr(date: item.date))
+                                        Text(item.notes ?? "")
                                     }
                                     .frame(maxWidth: .infinity)
                                 }
@@ -120,24 +123,23 @@ struct BudgetPageView: View {
                 }
             }
         }
-        .task {
-            print("Fetching budget in view...")
-            await loadBudget()
-        }
         .refreshable {
             print("Refreshing")
             await loadBudget()
         }
-        .onChange(of: year) {
-            Task {
-                await loadBudget()
-            }
+        .task(id: "\(year)-\(month.rawValue)") {
+            await loadBudget()
         }
-        .onChange(of: month) {
-            Task {
-                await loadBudget()
-            }
-        }
+        // .onChange(of: year) {
+        //     Task {
+        //         await loadBudget()
+        //     }
+        // }
+        // .onChange(of: month) {
+        //     Task {
+        //         await loadBudget()
+        //     }
+        // }
         .sheet(isPresented: $showingAddExpenseItem) {
             ExpenseItemView(title: "Add Expense Item") { expenseItem in
                 await viewModel.addSpendingItemByMonth(year: String(year), month: month, spendingItem: expenseItem)

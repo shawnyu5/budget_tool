@@ -17,6 +17,11 @@ final class LoginviewModel {
     var isLoading = false
     /// Login to app using basic auth
     func login(username: String, password: String) async -> Result<String, LoginError> {
+        isLoading = true
+        defer {
+            isLoading = false
+        }
+
         do {
             let url = URL(string: "\(config.apiUrl)/login/basic")!
 
@@ -32,9 +37,7 @@ final class LoginviewModel {
             request.httpMethod = "POST"
             request.addValue("Basic \(basicAuthEncoded)", forHTTPHeaderField: "Authorization")
 
-            isLoading = true
             let (data, response) = try await URLSession.shared.data(for: request)
-            isLoading = false
             if let httpResponse = response as? HTTPURLResponse {
                 switch httpResponse.statusCode {
                 case 200 ... 299:

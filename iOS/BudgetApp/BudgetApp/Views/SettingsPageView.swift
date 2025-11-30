@@ -2,20 +2,23 @@ import SwiftUI
 
 @MainActor
 struct SettingsPageView: View {
-    @Environment(AuthManager.self) private var auth: AuthManager
-
     /// The current selected year to get the budget of
     var year: Int32
     /// The current selected month to get the budget of
     var month: Month
-
-    // @State private var totalAllocation = {
-    //     return shawnContributionPercentage + maggieContributionAmount
-    // }
     var totalAllocation: Double {
         shawnContributionAmount + maggieContributionAmount
     }
 
+    enum Field {
+        case shawnContributionPercentage
+        case maggieContributionPercentage
+        case shawnContributionAmount
+        case maggieContributionAmount
+    }
+
+    @FocusState private var focusedField: Field?
+    @Environment(AuthManager.self) private var auth: AuthManager
     @State private var shawnContributionPercentage = 50.0
     @State private var shawnContributionAmount = 50.0
     @State private var maggieContributionPercentage = 50.0
@@ -53,6 +56,8 @@ struct SettingsPageView: View {
                                 "Percentage", value: $shawnContributionPercentage, format: .number
                             )
                             .keyboardType(.numberPad)
+                            .submitLabel(.next)
+                            .focused($focusedField, equals: .shawnContributionPercentage)
                             // .onChange(of: shawnContributionPercentage) {
                             //     print(shawnContributionPercentage)
                             //     self.maggieContributionPercentage = 100 - shawnContributionPercentage
@@ -74,6 +79,8 @@ struct SettingsPageView: View {
                     } else {
                         TextField("$", value: $shawnContributionAmount, format: .number)
                             .keyboardType(.numberPad)
+                            .submitLabel(.next)
+                            .focused($focusedField, equals: .shawnContributionAmount)
                             .onChange(of: shawnContributionAmount) {
                                 self.maggieContributionAmount =
                                     totalAllocation - shawnContributionAmount
@@ -101,6 +108,8 @@ struct SettingsPageView: View {
                                 "Percentage", value: $maggieContributionPercentage, format: .number
                             )
                             .keyboardType(.numberPad)
+                            .submitLabel(.next)
+                            .focused($focusedField, equals: .maggieContributionPercentage)
                             .onChange(of: maggieContributionPercentage) {
                                 self.shawnContributionPercentage =
                                     100 - maggieContributionPercentage
@@ -113,6 +122,8 @@ struct SettingsPageView: View {
                         .font(.subheadline)
                     TextField("$", value: $maggieContributionAmount, format: .number)
                         .keyboardType(.numberPad)
+                        .submitLabel(.next)
+                        .focused($focusedField, equals: .maggieContributionAmount)
                         .onChange(of: maggieContributionAmount) {
                             self.shawnContributionPercentage = 100 - maggieContributionPercentage
                         }
@@ -137,6 +148,7 @@ struct SettingsPageView: View {
                                 ))
                             print("Settings updated")
                             self.showConfirmation = true
+                            focusedField = nil
 
                             DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                                 withAnimation {
@@ -146,6 +158,13 @@ struct SettingsPageView: View {
                         }
                     }
                 )
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .keyboard) {
+                Button("Done") {
+                    focusedField = nil
+                }
             }
         }
         .task {
@@ -170,9 +189,21 @@ struct SettingsPageView: View {
             }, alignment: .top
         )
         .animation(.easeInOut, value: true)
+        .onChange(of: year) {
+            Task {
+                await loadSettings()
+            }
+        }
+        .onChange(of: month) {
+            Task {
+                await loadSettings()
+            }
+        }
     }
 
+    @MainActor
     private func loadSettings() async {
+        print("Loading settings for month \(month)")
         // Cancel previous fetch if still running
         fetchTask?.cancel()
         fetchTask = Task { @MainActor in

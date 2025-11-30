@@ -33,7 +33,9 @@
 		CBE4B0B85853552EBBDE15D8 /* Apollo+Setup.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCEF3045261A0EECEC9B86E4 /* Apollo+Setup.swift */; };
 		D26D99F953548C0E0A9282DB /* openapi-generator-config.yml in Sources */ = {isa = PBXBuildFile; fileRef = 4C5DF3C92CAA279A30B30F4B /* openapi-generator-config.yml */; };
 		DC3BBE69BA3D98436EAD74A7 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E934CC52D4D72E742184A072 /* AuthManager.swift */; };
+		EC191C2EF81459E3CDA64BD7 /* KeyboardDismissModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6D6E7D413529A577B802B75 /* KeyboardDismissModifier.swift */; };
 		F0EA868830497EA97541DA41 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93AA395652C56CD396DF75F /* MainTabView.swift */; };
+		F611F8890C12370A8B906DCE /* Staging.xcconfig in Sources */ = {isa = PBXBuildFile; fileRef = 5F879C8E33BFC440A0CE2EF7 /* Staging.xcconfig */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +66,7 @@
 		38025D2232155360ABD12026 /* LoginView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		4C5DF3C92CAA279A30B30F4B /* openapi-generator-config.yml */ = {isa = PBXFileReference; explicitFileType = text.yaml; path = "openapi-generator-config.yml"; sourceTree = "<group>"; };
 		535751530348B5C74579E052 /* DateToolBarModifier.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = DateToolBarModifier.swift; sourceTree = "<group>"; };
+		5F879C8E33BFC440A0CE2EF7 /* Staging.xcconfig */ = {isa = PBXFileReference; explicitFileType = text.xcconfig; path = Staging.xcconfig; sourceTree = "<group>"; };
 		6E983F39B992738E0080E234 /* SettingsPageView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = SettingsPageView.swift; sourceTree = "<group>"; };
 		6EE9E9E80BA11B2BEDB461B0 /* BudgetView.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = BudgetView.swift; sourceTree = "<group>"; };
 		7FCAE6F960A1E478477CD517 /* SettingsPageViewModel.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = SettingsPageViewModel.swift; sourceTree = "<group>"; };
@@ -75,6 +78,7 @@
 		BB47C76AE5E2392A6CBFA9C3 /* AuthorizationInterceptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthorizationInterceptor.swift; sourceTree = "<group>"; };
 		CAA69EE2527BC9F123CBA36E /* NetworkInterseptorProvider.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = NetworkInterseptorProvider.swift; sourceTree = "<group>"; };
 		CD22AAA46A15E5EC90954C99 /* Network.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
+		D6D6E7D413529A577B802B75 /* KeyboardDismissModifier.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = KeyboardDismissModifier.swift; sourceTree = "<group>"; };
 		DCEF3045261A0EECEC9B86E4 /* Apollo+Setup.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = "Apollo+Setup.swift"; sourceTree = "<group>"; };
 		E83D6EEC6DEE12ED172EAEFA /* Backend+Extension.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = "Backend+Extension.swift"; sourceTree = "<group>"; };
 		E934CC52D4D72E742184A072 /* AuthManager.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
@@ -82,7 +86,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1930EFBE2ECD4EAB001F1964 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		1930EFBE2ECD4EAB001F1964 /* Exceptions for "BudgetApp" folder in "BudgetApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -95,7 +99,7 @@
 		19EFA7722EAE7AC9000B2CD3 /* BudgetApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				1930EFBE2ECD4EAB001F1964 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				1930EFBE2ECD4EAB001F1964 /* Exceptions for "BudgetApp" folder in "BudgetApp" target */,
 			);
 			path = BudgetApp;
 			sourceTree = "<group>";
@@ -163,6 +167,7 @@
 				19EFA7892EAE7ACA000B2CD3 /* BudgetAppUITests.xctest */,
 				79F0D503E4F3FF2DC2962D46 /* BudgetApp */,
 				4C5DF3C92CAA279A30B30F4B /* openapi-generator-config.yml */,
+				5F879C8E33BFC440A0CE2EF7 /* Staging.xcconfig */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -187,6 +192,7 @@
 				6E983F39B992738E0080E234 /* SettingsPageView.swift */,
 				535751530348B5C74579E052 /* DateToolBarModifier.swift */,
 				6EE9E9E80BA11B2BEDB461B0 /* BudgetView.swift */,
+				D6D6E7D413529A577B802B75 /* KeyboardDismissModifier.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -355,7 +361,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				197F98342EAF020D0091C276 /* XCRemoteSwiftPackageReference "apollo-ios" */,
-				1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */,
+				1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
 				19DEC5562ECEB3ED00C8E13F /* XCRemoteSwiftPackageReference "swift-log" */,
 				19DEC6972ECFD90A00C8E13F /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
 				19DEC6982ECFD97B00C8E13F /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
@@ -424,6 +430,8 @@
 				514DE7DC61F1A710CCC868E8 /* DateToolBarModifier.swift in Sources */,
 				0EA2E08D6DF4CEE5D86DD941 /* BudgetView.swift in Sources */,
 				99474AE363329290FB7DB107 /* Utils.swift in Sources */,
+				F611F8890C12370A8B906DCE /* Staging.xcconfig in Sources */,
+				EC191C2EF81459E3CDA64BD7 /* KeyboardDismissModifier.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,6 +469,163 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		1908CA572EDA93B8001913F0 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5F879C8E33BFC440A0CE2EF7 /* Staging.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Staging;
+		};
+		1908CA582EDA93B8001913F0 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VW8ZPF8L9T;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BudgetApp/Info.plist;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 15.7;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shawnyu.BudgetApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Staging;
+		};
+		1908CA592EDA93B8001913F0 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.7;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shawnyu.BudgetAppTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BudgetApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BudgetApp";
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Staging;
+		};
+		1908CA5A2EDA93B8001913F0 /* Staging */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MACOSX_DEPLOYMENT_TARGET = 15.7;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.shawnyu.BudgetAppUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TEST_TARGET_NAME = BudgetApp;
+				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Staging;
+		};
 		19EFA7912EAE7ACA000B2CD3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 195F71432ECC08D400B8D6AD /* Debug.xcconfig */;
@@ -582,8 +747,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VW8ZPF8L9T;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -606,6 +773,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.shawnyu.BudgetApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -625,8 +793,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VW8ZPF8L9T;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -649,6 +820,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.shawnyu.BudgetApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -768,42 +940,46 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				19EFA7912EAE7ACA000B2CD3 /* Debug */,
+				1908CA572EDA93B8001913F0 /* Staging */,
 				19EFA7922EAE7ACA000B2CD3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		19EFA7932EAE7ACA000B2CD3 /* Build configuration list for PBXNativeTarget "BudgetApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				19EFA7942EAE7ACA000B2CD3 /* Debug */,
+				1908CA582EDA93B8001913F0 /* Staging */,
 				19EFA7952EAE7ACA000B2CD3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		19EFA7962EAE7ACA000B2CD3 /* Build configuration list for PBXNativeTarget "BudgetAppTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				19EFA7972EAE7ACA000B2CD3 /* Debug */,
+				1908CA592EDA93B8001913F0 /* Staging */,
 				19EFA7982EAE7ACA000B2CD3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		19EFA7992EAE7ACA000B2CD3 /* Build configuration list for PBXNativeTarget "BudgetAppUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				19EFA79A2EAE7ACA000B2CD3 /* Debug */,
+				1908CA5A2EDA93B8001913F0 /* Staging */,
 				19EFA79B2EAE7ACA000B2CD3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */ = {
+		1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/kishikawakatsumi/KeychainAccess?utm_source=chatgpt.com";
 			requirement = {
@@ -856,7 +1032,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		1930EFC02ECD58AC001F1964 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess?utm_source=chatgpt.com" */;
+			package = 1930EFBF2ECD58AC001F1964 /* XCRemoteSwiftPackageReference "KeychainAccess" */;
 			productName = KeychainAccess;
 		};
 		197F98352EAF020D0091C276 /* Apollo */ = {

@@ -129,7 +129,7 @@ extension Budget {
     }
 }
 
-enum Month: String {
+enum Month: String, Equatable {
     case january = "January"
     case february = "February"
     case march = "March"

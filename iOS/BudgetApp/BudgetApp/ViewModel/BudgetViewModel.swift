@@ -93,8 +93,6 @@ final class BudgetViewModel {
                         )
                     )))
             if let budget = result.data?.updateSpendingItemById.asMonthlyBudget {
-                print("Got budget after update spend item: ")
-                dump(budget)
                 self.budget = Budget.from(graphqlQuery: budget)
             } else if let error = result.data?.updateSpendingItemById.asGraphQLErrorObject {
                 print("Caught graphql error")
