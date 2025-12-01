@@ -37,16 +37,8 @@ final class BudgetViewModel {
         print("Fetching budget for year \(year) month \(month)")
         do {
             let response = try await ApolloClient.shared.fetch(
-                query: Backend.GetMonthBudgetQuery(year: year, month: GraphQLEnum(month)),
-                cachePolicy: .networkOnly,
-                requestConfiguration: RequestConfiguration(
-                    requestTimeout: 60, writeResultsToCache: false
-                )
+                query: Backend.GetMonthBudgetQuery(year: year, month: GraphQLEnum(month))
             )
-
-            // print("Second request")
-            // _ = try await ApolloClient.shared.fetch(
-            //     query: Backend.GetMonthBudgetQuery(year: year, month: GraphQLEnum(month)))
 
             print(response.data?.monthlyBudget.asMonthlyBudget?.spending)
             guard let budgetResult = response.data?.monthlyBudget else {
