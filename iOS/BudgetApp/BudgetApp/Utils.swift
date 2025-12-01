@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 /// Calculates `total` is the `percentage` of what number
@@ -6,7 +7,7 @@ func calculatePercentageOf(
     percentage: Double
 ) -> Double {
     let result = total * (percentage / 100.0)
-    return round(result)
+    return result
 }
 
 /// Convert a string to date
@@ -25,4 +26,14 @@ func dateToStr(date: Date) -> String {
     formatter.dateFormat = "yyyy/M/d" // matches "2025/4/1"
     formatter.locale = Locale(identifier: "en_US_POSIX") // recommended for fixed formats
     return formatter.string(from: date)
+}
+
+/// Rounds a double to 2 decimal places
+/// - Parameter decimal: any double value
+/// - Returns: a string, with 2 decimal points
+func roundTwoDecimalPlaces(decimal: Double) -> String {
+    var decimalValue = Decimal(decimal)
+    var roundedValue = Decimal()
+    NSDecimalRound(&roundedValue, &decimalValue, 2, .plain)
+    return String(format: "%.2f", (roundedValue as NSDecimalNumber).doubleValue)
 }

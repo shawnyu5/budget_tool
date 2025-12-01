@@ -39,33 +39,31 @@ struct BudgetView: View {
 
     var body: some View {
         HStack {
-            Text("$")
-            Text(String(totalSpending))
+            Text("$ \(String(totalSpending))")
                 .foregroundColor(totalSpendingColor)
             Text("/")
-            Text(String(budgetConfig?.totalAllocation ?? 0))
-            Text(" - ")
-            Text(String(remainingBudget))
+            Text("$ \(String(budgetConfig?.totalAllocation ?? 0))")
         }
         .font(.title)
 
         HStack {
+            Text("Remaining:")
+                .bold()
+            Text("$ \(roundTwoDecimalPlaces(decimal: remainingBudget))")
+        }
+        HStack {
             Text("Shawn").bold()
             Text(
-                String(
-                    format: "(%.2f%%): %.2f", budgetConfig?.shawnPercentageAllocation ?? 0,
-                    shawnPayAmount
-                ))
+                "(\(roundTwoDecimalPlaces(decimal: budgetConfig?.shawnPercentageAllocation ?? 0))%): \(roundTwoDecimalPlaces(decimal: shawnPayAmount))"
+            )
         }
         .padding(.leading)
 
         HStack {
             Text("Maggie").bold()
             Text(
-                String(
-                    format: "(%.2f%%): %.2f", budgetConfig?.maggiePercentageAllocation ?? 0,
-                    maggiePayAmount
-                ))
+                "(\(roundTwoDecimalPlaces(decimal: budgetConfig?.maggiePercentageAllocation ?? 0))%): \(roundTwoDecimalPlaces(decimal: maggiePayAmount))"
+            )
         }
         .padding(.leading)
     }
