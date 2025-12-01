@@ -303,7 +303,7 @@ impl MutationRoot {
         });
         debug!("Sorted spending items: {:?}", monthly_budget.spending);
 
-        monthly_budget.calculate_over_budget_amount();
+        monthly_budget.update_calculations();
         info!(
             "Calculated over budget amount: {}",
             monthly_budget.over_budget_amount
