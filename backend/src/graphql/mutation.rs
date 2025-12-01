@@ -194,6 +194,7 @@ impl MutationRoot {
         return Ok(MonthlyBudgetResponse::MonthlyBudget(month_budget));
     }
 
+    #[instrument(skip_all)]
     /// Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
     async fn delete_spending_item_by_id(
         &self,
@@ -221,6 +222,7 @@ impl MutationRoot {
             .context("Failed to get month budget")?;
 
         month_budget.spending.retain(|item| item.id != inputs.id);
+        month_budget.update_calculations();
         info!("Updated budget: {:#?}", month_budget);
         db.update_monthly_budget(inputs.month, &month_budget)
             .await
