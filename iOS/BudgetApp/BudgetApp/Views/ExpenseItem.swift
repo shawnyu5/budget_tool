@@ -14,7 +14,7 @@ struct ExpenseItemView: View {
     let onSubmit: onSubmitFunc
 
     // Local editable state
-    private var id = UUID()
+    private var id = UUID().uuidString
     @State private var description = ""
     @State private var amount = 0.0
     @State private var date: Date = .init()
@@ -22,7 +22,7 @@ struct ExpenseItemView: View {
     // When to dismiss this view
     @Environment(\.dismiss) var dismiss
 
-    /// Create an Expense item view to display an expense item
+    /// Create an Expense item view to display an existing expense item
     /// - title: the title of the view
     /// - expenseItem: the expense item to display in the view
     /// - onSubmit: to be called when the view is saved
@@ -32,18 +32,12 @@ struct ExpenseItemView: View {
         onSubmit: @escaping onSubmitFunc
     ) {
         self.title = title
-        // self.expenseItem = expenseItem
 
-        // Initialize local editable state
-        id = .init(uuidString: expenseItem.id) ?? UUID()
+        id = expenseItem.id
         description = expenseItem.description
         amount = expenseItem.amount
         date = expenseItem.date
-        // let formatter = DateFormatter()
-        // formatter.dateFormat = "yyyy/M/d" // matches "2025/4/1"
-        // formatter.locale = Locale(identifier: "en_US_POSIX") // recommended for fixed formats
-        // _date = State(initialValue: formatter.date(from: expenseItem.date) ?? Date())
-        _notes = State(initialValue: expenseItem.notes ?? "")
+        notes = expenseItem.notes ?? ""
         self.onSubmit = onSubmit
     }
 
@@ -86,7 +80,7 @@ struct ExpenseItemView: View {
                     Task {
                         await self.onSubmit(
                             Spending(
-                                id: self.id.uuidString, amount: self.amount,
+                                id: self.id, amount: self.amount,
                                 date: self.date,
                                 description: self.description
                             ))
