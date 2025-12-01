@@ -6,15 +6,23 @@ struct BudgetView: View {
     var overBudgetAmount: Double = 0
     var budgetConfig: BudgetConfig?
 
+    /// Amount of money remaining in the current budget period
+    private var remainingBudget: Double {
+        return (budgetConfig?.totalAllocation ?? 0) - totalSpending
+    }
+
+    /// The color of the totalSpending text
+    private var totalSpendingColor: Color {
+        print("Over budget amount: \(overBudgetAmount)")
+        if overBudgetAmount == 0 {
+            return .primary
+        } else {
+            return .red
+        }
+    }
+
     /// Amount of money Shawn is responsible for paying
     private var shawnPayAmount: Double {
-        //         calculatePercentage(
-        //   (props.monthlyBudget()?.totalSpending ?? 0) -
-        //     (props.monthlyBudget()?.overBudgetAmount ?? 0),
-        //   props.monthlyBudget()?.budget?.shawnPercentageAllocation ?? 0,
-        // ) +
-        //   (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2,
-
         return calculatePercentageOf(
             total: totalSpending - overBudgetAmount,
             percentage: budgetConfig?.shawnPercentageAllocation ?? 0
@@ -33,8 +41,11 @@ struct BudgetView: View {
         HStack {
             Text("$")
             Text(String(totalSpending))
+                .foregroundColor(totalSpendingColor)
             Text("/")
             Text(String(budgetConfig?.totalAllocation ?? 0))
+            Text(" - ")
+            Text(String(remainingBudget))
         }
         .font(.title)
 
