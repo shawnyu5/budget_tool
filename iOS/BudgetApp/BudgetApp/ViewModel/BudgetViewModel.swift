@@ -73,7 +73,7 @@ final class BudgetViewModel {
             }
         } catch {
             print("[Fetch budget] Caught API error: \(error.localizedDescription)")
-            errorMessage = "API error: \(error)"
+            errorMessage = "API error: \(error.localizedDescription)"
         }
     }
 

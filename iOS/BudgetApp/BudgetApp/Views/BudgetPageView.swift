@@ -28,11 +28,6 @@ struct BudgetPageView: View {
     /// Task for fetching budget
     @State private var fetchTask: Task<Void, Never>? = nil
 
-    /// By default display the budget for the current month
-    // init() {
-    //     _viewModel = State(wrappedValue: BudgetViewModel())
-    // }
-
     var body: some View {
         VStack {
             if let error = viewModel.errorMessage {
@@ -58,16 +53,6 @@ struct BudgetPageView: View {
 
                     Section(header: Label("Expenses", systemImage: "list.bullet")) {
                         if let spending = viewModel.budget?.spending {
-                            // // Table headers
-                            // HStack {
-                            //     Text("Amount").bold()
-                            //     Divider()
-                            //     Text("Description").bold()
-                            //     Divider()
-                            //     Text("Date").bold()
-                            // }
-                            // .frame(maxWidth: .infinity)
-
                             ForEach(spending, id: \.id) {
                                 item in
                                 Button(action: {
@@ -97,15 +82,9 @@ struct BudgetPageView: View {
                                     let itemToDelete = budgetSpending[index]
                                     let idToDelete = itemToDelete.id
                                     Task {
-                                        // TODO: move this into view model
-                                        try await Network.shared.graphql.perform(
-                                            mutation: Backend.DeleteSpendingItemByIDMutation(
-                                                inputs: Backend.DeleteSpendingItemByIdInput(
-                                                    year: year,
-                                                    month: GraphQLEnum(
-                                                        Backend.Month.from(month: month)),
-                                                    id: idToDelete
-                                                )))
+                                        await viewModel.deleteSpendingItemByID(
+                                            year: year, month: month, id: idToDelete
+                                        )
                                     }
                                 }
                             })
@@ -142,7 +121,9 @@ struct BudgetPageView: View {
         // }
         .sheet(isPresented: $showingAddExpenseItem) {
             ExpenseItemView(title: "Add Expense Item") { expenseItem in
-                await viewModel.addSpendingItemByMonth(year: String(year), month: month, spendingItem: expenseItem)
+                await viewModel.addSpendingItemByMonth(
+                    year: String(year), month: month, spendingItem: expenseItem
+                )
             }
             .onAppear {
                 print("Showing add expense item sheet")
