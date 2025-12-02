@@ -81,7 +81,7 @@ struct BudgetPageView: View {
                                 for index in indexSet {
                                     let itemToDelete = budgetSpending[index]
                                     let idToDelete = itemToDelete.id
-                                    Task {
+                                    Task { @MainActor in
                                         await viewModel.deleteSpendingItemByID(
                                             year: year, month: month, id: idToDelete
                                         )

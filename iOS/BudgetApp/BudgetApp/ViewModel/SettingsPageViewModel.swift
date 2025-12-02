@@ -18,7 +18,10 @@ final class SettingsPageViewModel {
             self.isLoading = false
         }
         do {
-            let response = try await Network.shared.graphql.fetch(query: Backend.GetMonthlyBudgetConfigQuery(year: year, month: GraphQLEnum(month)))
+            let response = try await Network.shared.graphql.fetch(
+                query: Backend.GetMonthlyBudgetConfigQuery(year: year, month: GraphQLEnum(month)),
+                cachePolicy: .networkOnly
+            )
 
             if let budgetConfig = response.data?.monthlyBudgetConfig.asBudgetConfig {
                 print("Got budget config: \(budgetConfig)")
@@ -33,7 +36,8 @@ final class SettingsPageViewModel {
     }
 
     func updateSettings(new settings: Backend.UpdateBudgetConfigInput) async throws {
-        let response = try await Network.shared.graphql.perform(mutation: Backend.UpdateMonthlyBudgetConfigMutation(inputs: settings))
+        let response = try await Network.shared.graphql.perform(
+            mutation: Backend.UpdateMonthlyBudgetConfigMutation(inputs: settings))
         if let error = response.data?.updateBudgetConfig.asGraphQLErrorObject {
             errorMessage = error.message
             errorCode = error.code.value

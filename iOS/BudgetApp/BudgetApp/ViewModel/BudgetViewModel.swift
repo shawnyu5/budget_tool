@@ -37,7 +37,11 @@ final class BudgetViewModel {
         print("Fetching budget for year \(year) month \(month)")
         do {
             let response = try await ApolloClient.shared.fetch(
-                query: Backend.GetMonthBudgetQuery(year: year, month: GraphQLEnum(month))
+                query: Backend.GetMonthBudgetQuery(year: year, month: GraphQLEnum(month)),
+                cachePolicy: .networkOnly,
+                requestConfiguration: RequestConfiguration(
+                    requestTimeout: 60, writeResultsToCache: false
+                )
             )
 
             print(response.data?.monthlyBudget.asMonthlyBudget?.spending)
@@ -50,6 +54,7 @@ final class BudgetViewModel {
 
             if let budget = budgetResult.asMonthlyBudget {
                 print("Got budget: \(budget)")
+                print("Spending: \(budget.spending)")
                 self.budget = Budget.from(graphqlQuery: budget)
                 // self.budget?.config.shawnPercentageAllocation = roundTwoDecimals(float: self.budget?.config.shawnPercentageAllocation ?? 0)
             } else if let error = budgetResult.asGraphQLErrorObject {
@@ -121,6 +126,12 @@ final class BudgetViewModel {
                 print("Got budget after update spend item: ")
                 dump(budget)
                 self.budget = Budget.from(graphqlQuery: budget)
+                // TODO: update fetch budget cache here
+                // try Network.shared.graphql.store.withinReadWriteTransaction {
+                //     transaction in
+                //     try await transaction.write(data: result.data?.addSpendingItemByMonth.asMonthlyBudget, for: Backend.GetMonthBudgetQuery.self)
+                // }
+
             } else if let error = result.data?.addSpendingItemByMonth.asGraphQLErrorObject {
                 print("Caught graphql error")
                 errorCode = error.code.value
