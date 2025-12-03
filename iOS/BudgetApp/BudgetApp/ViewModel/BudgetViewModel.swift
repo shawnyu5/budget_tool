@@ -86,7 +86,8 @@ final class BudgetViewModel {
                             id: item.id,
                             amount: item.amount,
                             date: dateToStr(date: item.date),
-                            description: item.description
+                            description: item.description,
+                            notes: .some(item.notes ?? "")
                         )
                     )))
             if let budget = result.data?.updateSpendingItemById.asMonthlyBudget {

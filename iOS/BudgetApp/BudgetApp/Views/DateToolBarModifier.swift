@@ -4,11 +4,14 @@ import SwiftUI
 struct DatePickerToolBarModifier: ViewModifier {
     @Binding var year: Int32
     @Binding var month: Month
+    private var currentYear: Int32 {
+        return Int32(Calendar.current.component(.year, from: Date()))
+    }
 
     func body(content: Content) -> some View {
         content.toolbar {
             Picker("Year", selection: $year) {
-                ForEach([year - 1, year, year + 1], id: \.self) { option in
+                ForEach([self.currentYear - 1, self.currentYear, self.currentYear + 1], id: \.self) { option in
                     Text(String(option))
                 }
             }

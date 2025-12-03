@@ -82,7 +82,8 @@ struct ExpenseItemView: View {
                             Spending(
                                 id: self.id, amount: self.amount,
                                 date: self.date,
-                                description: self.description
+                                description: self.description,
+                                notes: self.notes
                             ))
                         dismiss()
                     }
