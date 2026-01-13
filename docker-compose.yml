@@ -1,0 +1,11 @@
+services:
+  budget_tool:
+    container_name: budget_tool
+    build: .
+    image: ghcr.io/shawnyu5/budget_tool:latest
+    ports:
+      - "3000:80"
+    # environment:
+    #   VITE_BACKEND_URL: "/api"
+    env_file:
+      - ./backend/.env
