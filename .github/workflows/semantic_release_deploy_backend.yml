@@ -1,4 +1,4 @@
-name: Semantic release and deploy backend
+name: Semantic release and publish image
 on:
   push:
     branches:
@@ -16,7 +16,7 @@ jobs:
         id: dry_run
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: codfish/semantic-release-action@v3
+        uses: codfish/semantic-release-action@v4.0.1
         with:
           dry-run: true
 
@@ -36,43 +36,41 @@ jobs:
         if: steps.dry_run.outputs.new-release-published == 'true'
         uses: moonrepo/setup-rust@v1
 
-      # - name: Re generate cargo lock file
-      #   if: steps.dry_run.outputs.new-release-published == 'true'
-      #   run: |
-      #     cd backend
-      #     cargo generate-lockfile
-
-      # - name: Commit changes
-      #   if: steps.dry_run.outputs.new-release-published == 'true'
-      #   continue-on-error: true
-      #   uses: EndBug/add-and-commit@v9
-      #   with:
-      #     add: "."
-      #     message: "chore: update application version [skip ci]"
-      #     push: true
-      #     pull: "--rebase --autostash"
-
-      # - name: Git pull
-      #   if: steps.dry_run.outputs.new-release-published == 'true'
-      #   continue-on-error: true
-      #   run: git pull --rebase --autostash
-
       - name: Semantic release
+        id: semantic_release
         if: steps.dry_run.outputs.new-release-published == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: codfish/semantic-release-action@v3
+        uses: codfish/semantic-release-action@v4.0.1
 
-      - name: Setup flyctl
+      - name: Update values.yaml
         if: steps.dry_run.outputs.new-release-published == 'true'
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        uses: fjogeleit/yaml-update-action@v0.16.1
+        with:
+          valueFile: "docker-compose.yml"
+          propertyPath: "services.budget_tool.image"
+          value: ghcr.io/shawnyu5/budget_tool:${{ steps.semantic_release.outputs.release-version }}
+          commitChange: false
 
-      - name: Deploy backend
+      - name: Set up Docker
         if: steps.dry_run.outputs.new-release-published == 'true'
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        uses: docker/setup-docker-action@v4.7.0
+
+      - name: Push new image
+        if: steps.dry_run.outputs.new-release-published == 'true'
         run: |
-          cd backend
-          flyctl deploy --remote-only --config fly.prod.toml
+          docker compose build --push
 
-
+      # - name: Setup flyctl
+      #   if: steps.dry_run.outputs.new-release-published == 'true'
+      #   uses: superfly/flyctl-actions/setup-flyctl@master
+      #
+      # - name: Deploy backend
+      #   if: steps.dry_run.outputs.new-release-published == 'true'
+      #   env:
+      #     FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      #   run: |
+      #     cd backend
+      #     flyctl deploy --remote-only --config fly.prod.toml
+      #
+      #
