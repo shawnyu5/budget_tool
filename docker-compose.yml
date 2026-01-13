@@ -1,0 +1,10 @@
+services:
+  budget_tool:
+    container_name: budget_tool
+    build: .
+    ports:
+      - "3000:80"
+    # environment:
+    #   VITE_BACKEND_URL: "/api"
+    env_file:
+      - ./backend/.env
