@@ -33,9 +33,9 @@ jobs:
           key: "package.version"
           value: "${{ steps.dry_run.outputs.release-version }}"
 
-      - name: Setup rust toolling
-        if: steps.dry_run.outputs.new-release-published == 'true'
-        uses: moonrepo/setup-rust@v1
+      # - name: Setup rust toolling
+      #   if: steps.dry_run.outputs.new-release-published == 'true'
+      #   uses: moonrepo/setup-rust@v1
 
       - name: Semantic release
         id: semantic_release
