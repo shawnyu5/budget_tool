@@ -5,13 +5,17 @@ use anyhow::{anyhow, Context};
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::{HeaderMap, StatusCode};
+use axum_extra::TypedHeader;
 use base64::prelude::*;
 use chrono::{Duration, Utc};
 use common_axum::app_error_v2::AppError;
+use headers::authorization::Basic;
+use headers::Authorization;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
-use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rayon::prelude::*;
 use tracing::{error, info, instrument, warn};
 
+use crate::config::BasicAuth;
 use crate::routes::MaybeJwt;
 use crate::{config::Config, routes::JwtClaim};
 
@@ -39,10 +43,10 @@ pub async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> 
             let decoded_auth_user = String::from_utf8(decoded_auth_user)
                 .context("Failed to convert auth header to string")?;
 
-            let user: Vec<&String> = config
+            let user: Vec<BasicAuth> = config
                 .basic_auth
-                .par_iter()
-                .filter(|s| *s == &decoded_auth_user)
+                .into_par_iter()
+                .filter(|s| format!("{}:{}", s.username, s.password) == decoded_auth_user)
                 .collect();
             if user.is_empty() {
                 return Err(AppError(
@@ -55,7 +59,7 @@ pub async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> 
                 "There should be only one user that matched the authorizatio header. Something is wrong if there are multiple..."
             );
 
-            user[0]
+            user[0].clone()
         }
         None => {
             return Err(AppError(
@@ -65,8 +69,43 @@ pub async fn basic_auth_handler(headers: HeaderMap) -> Result<String, AppError> 
         }
     };
 
-    let username = user.split(":").collect::<Vec<&str>>()[0].to_string();
-    let token = generate_jwt(&username);
+    let token = generate_jwt(&user.username);
+    return Ok(token);
+}
+
+#[instrument(skip_all)]
+#[utoipa::path(post,
+    path = "/login/basic/v2",
+    responses(
+        (status = 200, description = "Login successful. Returns a JWT token", body = String),
+        (status = 401, description = "Authenication token expired. Please reauthenicate", body = String),
+        (status = 403, description = "Authenication failed", body = String),
+    )
+)]
+/// Better implemented version of the basic auth handler, using proper axum_extra constructs. This handler should behave the exact same as previous
+pub async fn basic_auth_handler_v2(
+    TypedHeader(auth): TypedHeader<Authorization<Basic>>,
+) -> Result<String, AppError> {
+    // pub async fn basic_auth_handler_v2(headers: HeaderMap) -> Result<String, AppError> {
+    let config = Config::load();
+
+    let user: Vec<BasicAuth> = config
+        .basic_auth
+        .into_par_iter()
+        .filter(|s| s.username == auth.username() && s.password == auth.password())
+        .collect();
+
+    if user.is_empty() {
+        return Err(AppError(
+            StatusCode::FORBIDDEN,
+            anyhow!("User does not have access"),
+        ));
+    }
+    assert!(
+                user.len() == 1,
+                "There should be only one user that matched the authorization header. Something is wrong if there are multiple..."
+            );
+    let token = generate_jwt(auth.username());
     return Ok(token);
 }
 
@@ -80,7 +119,6 @@ pub fn generate_jwt(username: &str) -> String {
         exp: (Utc::now().checked_add_signed(Duration::hours(24)))
             .unwrap()
             .timestamp(),
-        // exp: ((Utc::now() + Duration::hours(24)).timestamp() as usize),
     };
     return encode(&Header::default(), &claim, &key).unwrap();
 }

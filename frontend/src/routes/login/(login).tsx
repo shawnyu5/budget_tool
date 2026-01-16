@@ -35,6 +35,7 @@ export default function Login() {
       });
       return redirect("/");
     } catch (e) {
+       console.log("Caught error in component")
       log.error(`Failed to login: ${e}`);
       if (axios.isAxiosError(e)) {
         if (e.response?.status == 403) {

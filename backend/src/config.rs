@@ -15,12 +15,19 @@ pub struct Config {
     pub private_key: String,
     /// Public key used for encryption
     pub public_key: String,
-    /// Base64 encoded credentials
-    pub basic_auth: Vec<String>,
+    /// decoded credentials, where each item is a `username:password` pair
+    pub basic_auth: Vec<BasicAuth>,
     /// VAPID public key used to sign notifications by the client
     pub vapid_public_key: String,
     /// VAPID private key used to verify notifications sent by the client
     pub vapid_private_key: String,
+}
+
+/// Represent a basic auth with username / password pair
+#[derive(Debug, SimpleObject, Clone)]
+pub struct BasicAuth {
+    pub username: String,
+    pub password: String,
 }
 
 impl Config {
@@ -35,9 +42,19 @@ impl Config {
                     .decode(s)
                     // Failing to decode user credentials is a fatal error
                     .expect("Failed to decode user from base64");
-                String::from_utf8(decoded)
+
+                let s = String::from_utf8(decoded)
                     .expect("Failed to convert decoded user to string")
-                    .replace("\n", "")
+                    .replace("\n", "");
+
+                let (username, password) = s
+                    .split_once(":")
+                    .expect("Invalid format. Expected `username:password`");
+
+                BasicAuth {
+                    username: username.to_string(),
+                    password: password.to_string(),
+                }
             })
             .collect();
         return Config {

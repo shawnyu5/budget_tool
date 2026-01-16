@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AppVersionData, AppVersionErrors, AppVersionResponses, BasicAuthHandlerData, BasicAuthHandlerErrors, BasicAuthHandlerResponses, ExportCsvHandlerData, ExportCsvHandlerErrors, ExportCsvHandlerResponses, GetMonthBudgetHandlerData, GetMonthBudgetHandlerErrors, GetMonthBudgetHandlerResponses, GetSpendingItemData, GetSpendingItemErrors, GetSpendingItemResponses, GraphqlHandlerData, GraphqlHandlerResponses, SaveNotificationSubscriptionHandlerData, SaveNotificationSubscriptionHandlerResponses, SendNotificationHandlerData, SendNotificationHandlerResponses, UpdateBudgetHandlerData, UpdateBudgetHandlerErrors, UpdateBudgetHandlerResponses, UpdateSpendingItemData, UpdateSpendingItemErrors, UpdateSpendingItemResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponses, ValidateTokenV2Data, ValidateTokenV2Errors, ValidateTokenV2Responses } from './types.gen';
+import type { AppVersionData, AppVersionErrors, AppVersionResponses, BasicAuthHandlerData, BasicAuthHandlerErrors, BasicAuthHandlerResponses, BasicAuthHandlerV2Data, BasicAuthHandlerV2Errors, BasicAuthHandlerV2Responses, ExportCsvHandlerData, ExportCsvHandlerErrors, ExportCsvHandlerResponses, GetMonthBudgetHandlerData, GetMonthBudgetHandlerErrors, GetMonthBudgetHandlerResponses, GetSpendingItemData, GetSpendingItemErrors, GetSpendingItemResponses, GraphqlHandlerData, GraphqlHandlerResponses, SaveNotificationSubscriptionHandlerData, SaveNotificationSubscriptionHandlerResponses, SendNotificationHandlerData, SendNotificationHandlerResponses, UpdateBudgetHandlerData, UpdateBudgetHandlerErrors, UpdateBudgetHandlerResponses, UpdateSpendingItemData, UpdateSpendingItemErrors, UpdateSpendingItemResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponses, ValidateTokenV2Data, ValidateTokenV2Errors, ValidateTokenV2Responses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -39,6 +39,7 @@ export const validateToken = <ThrowOnError extends boolean = false>(options?: Op
 
 /**
  * Validate the JWT token in the header fr this time.
+ * By checking the JWT token in the authorization header is still valid or not
  */
 export const validateTokenV2 = <ThrowOnError extends boolean = false>(options?: Options<ValidateTokenV2Data, ThrowOnError>) => {
     return (options?.client ?? client).get<ValidateTokenV2Responses, ValidateTokenV2Errors, ThrowOnError>({
@@ -99,6 +100,17 @@ export const basicAuthHandler = <ThrowOnError extends boolean = false>(options?:
     return (options?.client ?? client).post<BasicAuthHandlerResponses, BasicAuthHandlerErrors, ThrowOnError>({
         responseType: 'text',
         url: '/login/basic',
+        ...options
+    });
+};
+
+/**
+ * Better implemented version of the basic auth handler, using proper axum_extra constructs. This handler should behave the exact same as previous
+ */
+export const basicAuthHandlerV2 = <ThrowOnError extends boolean = false>(options?: Options<BasicAuthHandlerV2Data, ThrowOnError>) => {
+    return (options?.client ?? client).post<BasicAuthHandlerV2Responses, BasicAuthHandlerV2Errors, ThrowOnError>({
+        responseType: 'text',
+        url: '/login/basic/v2',
         ...options
     });
 };

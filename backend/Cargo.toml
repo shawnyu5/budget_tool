@@ -27,6 +27,8 @@ jsonwebtoken = "9.3.1"
 tokio-cron-scheduler = { version = "0.15.0", features = ["signal"] }
 futures = "0.3.31"
 chrono-tz = "0.10.3"
+headers = "0.4.1"
+axum-extra = { version = "0.12.5", features = ["cookie", "typed-header"] }
 
 
 [dev-dependencies]

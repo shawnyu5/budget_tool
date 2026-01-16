@@ -358,6 +358,44 @@
         }
       }
     },
+    "/login/basic/v2": {
+      "post": {
+        "summary": "Better implemented version of the basic auth handler, using proper axum_extra constructs. This handler should behave the exact same as previous",
+        "operationId": "basic_auth_handler_v2",
+        "responses": {
+          "200": {
+            "description": "Login successful. Returns a JWT token",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authenication token expired. Please reauthenicate",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenication failed",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/notification/save-subscription": {
       "post": {
         "operationId": "save_notification_subscription_handler",

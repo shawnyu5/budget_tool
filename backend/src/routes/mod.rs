@@ -36,8 +36,11 @@ use crate::graphql::generate_graphql_schema;
 use crate::graphql::SchemaType;
 use crate::monthly_budget::MonthlyBudget;
 use crate::monthly_budget::SpendingItem;
+use crate::routes::auth::basic_auth_handler_v2;
 use crate::routes::auth::decode_jwt;
-use crate::routes::auth::{__path_basic_auth_handler, basic_auth_handler};
+use crate::routes::auth::{
+    __path_basic_auth_handler, __path_basic_auth_handler_v2, basic_auth_handler,
+};
 use crate::routes::notification::{
     __path_save_notification_subscription_handler, save_notification_subscription_handler,
 };
@@ -80,6 +83,7 @@ pub async fn app() -> Router {
         .layer(middleware::from_fn(check_auth_header))
         .routes(routes!(graphql_handler))
         .routes(routes!(basic_auth_handler))
+        .routes(routes!(basic_auth_handler_v2))
         .routes(routes!(send_notification_handler))
         .routes(routes!(save_notification_subscription_handler))
         .routes(routes!(app_version))

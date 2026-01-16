@@ -11,28 +11,31 @@ import { useNavigate } from "@solidjs/router";
 import { getLocalAuthToken, setLocalAuthToken } from "./utils";
 import axiosRetry from "axios-retry";
 import { client } from "~/client/client.gen";
-import { saveNotificationSubscriptionHandler } from "~/client/sdk.gen";
+import {
+  basicAuthHandlerV2,
+  saveNotificationSubscriptionHandler,
+} from "~/client/sdk.gen";
 import { handleGraphQLError, NewGraphQLSDK } from "./graphql";
 import {
-   BudgetConfig,
-   BudgetConfigInput,
-   Month,
-   MonthlyBudget,
+  BudgetConfig,
+  BudgetConfigInput,
+  Month,
+  MonthlyBudget,
 } from "./generated/graphql";
 import logger from "./logger";
 
 axiosRetry(axios, {
-   retries: 4,
-   retryDelay: axiosRetry.exponentialDelay,
+  retries: 4,
+  retryDelay: axiosRetry.exponentialDelay,
 });
 
 client.setConfig({
-   baseURL: loadLocalConfig().backendUrl,
-   axios: axios,
+  baseURL: loadLocalConfig().backendUrl,
+  axios: axios,
 });
 
 export type SpendingItem =
-   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
+  paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
 
 // // The budget for a month
 // export type MonthlyBudget =
@@ -40,25 +43,25 @@ export type SpendingItem =
 
 // The spending for a month
 export type MonthlySpending =
-   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"];
+  paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"];
 
 /**
  * Errors that could happen when fetching the monthly budget
  * @deprecated use GraphQlErrorCode instead
  */
 export enum MonthlyBudgetErrors {
-   /**
-    * Failed to fetch the budget for a particular month
-    **/
-   FAILED_TO_FETCH_BUDGET,
-   /**
-    * Forbidden to fetch the budget. User does not have the correct access
-    **/
-   FORBIDDEN,
-   /**
-    * Authentication token expired. Needs re authentication
-    */
-   RE_AUTH_NEEDED,
+  /**
+   * Failed to fetch the budget for a particular month
+   **/
+  FAILED_TO_FETCH_BUDGET,
+  /**
+   * Forbidden to fetch the budget. User does not have the correct access
+   **/
+  FORBIDDEN,
+  /**
+   * Authentication token expired. Needs re authentication
+   */
+  RE_AUTH_NEEDED,
 }
 
 /**
@@ -68,43 +71,43 @@ export enum MonthlyBudgetErrors {
  * @throws `MonthlyBudgetErrors` when fetching the budget fails
  */
 export async function getMonthlyBudget(
-   year: string,
-   month: Month,
-   navigate: Navigator,
+  year: string,
+  month: Month,
+  navigate: Navigator,
 ): Promise<MonthlyBudget | null> {
-   const sdk = NewGraphQLSDK();
-   let response = await sdk.GetMonthBudget({
-      year: parseInt(year),
-      month: month,
-   });
+  const sdk = NewGraphQLSDK();
+  let response = await sdk.GetMonthBudget({
+    year: parseInt(year),
+    month: month,
+  });
 
-   if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLError(response.monthlyBudget, navigate);
-      if (err) {
-         throw new Error(err);
-      }
-   }
-   return response.monthlyBudget as MonthlyBudget;
+  if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
+    const err = handleGraphQLError(response.monthlyBudget, navigate);
+    if (err) {
+      throw new Error(err);
+    }
+  }
+  return response.monthlyBudget as MonthlyBudget;
 }
 
 export async function getMonthlyBudgetConfig(
-   year: string,
-   month: Month,
-   navigate: Navigator,
+  year: string,
+  month: Month,
+  navigate: Navigator,
 ): Promise<BudgetConfig> {
-   const sdk = NewGraphQLSDK();
-   let response = await sdk.GetMonthlyBudgetConfig({
-      year: parseInt(year),
-      month,
-   });
+  const sdk = NewGraphQLSDK();
+  let response = await sdk.GetMonthlyBudgetConfig({
+    year: parseInt(year),
+    month,
+  });
 
-   if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLError(response.monthlyBudgetConfig, navigate);
-      if (err) {
-         throw new Error(err);
-      }
-   }
-   return response.monthlyBudgetConfig as BudgetConfig;
+  if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
+    const err = handleGraphQLError(response.monthlyBudgetConfig, navigate);
+    if (err) {
+      throw new Error(err);
+    }
+  }
+  return response.monthlyBudgetConfig as BudgetConfig;
 }
 
 // if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
@@ -128,102 +131,102 @@ export async function getMonthlyBudgetConfig(
  * @throws `MonthlyBudgetErrors` when updating the budget fails
  */
 export async function updateMonthlyBudget(
-   year: string,
-   month: string,
-   monthlyBudget: MonthlyBudget | null,
+  year: string,
+  month: string,
+  monthlyBudget: MonthlyBudget | null,
 ) {
-   if (!monthlyBudget) return;
-   try {
-      await axios.post(
-         `${loadLocalConfig().backendUrl}/budget/${year}/${month}`,
-         monthlyBudget,
-         {
-            headers: {
-               Authorization: `Bearer ${getLocalAuthToken()}`,
-            },
-         },
-      );
-   } catch (e) {
-      if (axios.isAxiosError(e)) {
-         if (e.response?.status == 404) {
-            log.info("No budget recorded for this month");
-            return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
-         } else if (e.response?.status == 403) {
-            log.info("Access forbidden");
-            return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
-         } else if (e.response?.status == 401) {
-            log.info("Authenication token expired. Needs re authenication");
-            return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
-         }
+  if (!monthlyBudget) return;
+  try {
+    await axios.post(
+      `${loadLocalConfig().backendUrl}/budget/${year}/${month}`,
+      monthlyBudget,
+      {
+        headers: {
+          Authorization: `Bearer ${getLocalAuthToken()}`,
+        },
+      },
+    );
+  } catch (e) {
+    if (axios.isAxiosError(e)) {
+      if (e.response?.status == 404) {
+        log.info("No budget recorded for this month");
+        return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+      } else if (e.response?.status == 403) {
+        log.info("Access forbidden");
+        return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
+      } else if (e.response?.status == 401) {
+        log.info("Authenication token expired. Needs re authenication");
+        return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
       }
-      log.info(`Failed to get monthly budget: ${e}`);
-      return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
-   }
+    }
+    log.info(`Failed to get monthly budget: ${e}`);
+    return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+  }
 }
 
 /**
  * Updates the budget config for a specific month
  */
 export async function updateMonthlyBudgetConfig(
-   year: Number,
-   month: Month,
-   budgetConfig: BudgetConfig,
-   navigate: Navigator,
+  year: Number,
+  month: Month,
+  budgetConfig: BudgetConfig,
+  navigate: Navigator,
 ): Promise<BudgetConfig> {
-   const sdk = NewGraphQLSDK();
-   const budgetConfigInput: BudgetConfigInput = {
-      totalAllocation: budgetConfig.totalAllocation,
-      maggieContributionAmount: budgetConfig.maggieContributionAmount,
-      maggiePercentageAllocation: budgetConfig.maggiePercentageAllocation,
-      shawnContributionAmount: budgetConfig.shawnContributionAmount,
-      shawnPercentageAllocation: budgetConfig.shawnPercentageAllocation,
-   };
-   const response = await sdk.UpdateMonthlyBudgetConfig({
-      inputs: {
-         year,
-         month,
-         budgetConfig: budgetConfigInput,
-      },
-   });
+  const sdk = NewGraphQLSDK();
+  const budgetConfigInput: BudgetConfigInput = {
+    totalAllocation: budgetConfig.totalAllocation,
+    maggieContributionAmount: budgetConfig.maggieContributionAmount,
+    maggiePercentageAllocation: budgetConfig.maggiePercentageAllocation,
+    shawnContributionAmount: budgetConfig.shawnContributionAmount,
+    shawnPercentageAllocation: budgetConfig.shawnPercentageAllocation,
+  };
+  const response = await sdk.UpdateMonthlyBudgetConfig({
+    inputs: {
+      year,
+      month,
+      budgetConfig: budgetConfigInput,
+    },
+  });
 
-   if (response.updateBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLError(response.updateBudgetConfig, navigate);
-      if (err) {
-         throw new Error(err);
-      }
-   }
-   return response.updateBudgetConfig as BudgetConfig;
+  if (response.updateBudgetConfig.__typename == "GraphQLErrorObject") {
+    const err = handleGraphQLError(response.updateBudgetConfig, navigate);
+    if (err) {
+      throw new Error(err);
+    }
+  }
+  return response.updateBudgetConfig as BudgetConfig;
 }
 /**
  * Validate the JWT token with the server. If the token is invalid or expired, redirect to `/login`
  */
 export async function validateJTWToken() {
-   log.info("Checking if there is a JWT token present");
-   const token = getLocalAuthToken();
-   if (!token) {
-      log.info("No JWT found...");
-      return;
-   }
+  log.info("Checking if there is a JWT token present");
+  const token = getLocalAuthToken();
+  if (!token) {
+    log.info("No JWT found...");
+    return;
+  }
 
-   log.info("Found JTW token. Checking if token is still valid");
-   const navigate = useNavigate();
-   try {
-      const response = await axios.get(
-         `${loadLocalConfig().backendUrl}/auth/validate-token`,
-         {
-            headers: {
-               Authorization: `Bearer ${token}`,
-            },
-         },
-      );
-      if (response.status == 200) {
-         log.info("Token is valid. Redirecting to home page");
-         navigate("/", { replace: true });
-      }
-   } catch (e) {
-      log.info("Token is no longer valid. Redirecting to login page");
-      navigate("/login", { replace: true });
-   }
+  log.info("Found JTW token. Checking if token is still valid");
+  const navigate = useNavigate();
+  try {
+    const response = await axios.get(
+      `${loadLocalConfig().backendUrl}/auth/validate-token`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.status == 200) {
+      log.info("Token is valid. Redirecting to home page");
+      navigate("/", { replace: true });
+    }
+  } catch (e) {
+    log.info("Token is no longer valid. Redirecting to login page");
+    navigate("/login", { replace: true });
+  }
 }
 
 /**
@@ -231,63 +234,58 @@ export async function validateJTWToken() {
  * @throws if authentication fails
  */
 export async function basicAuthLogin(userName: string, password: string) {
-   const base64Encoded = btoa(`${userName}:${password}`);
-   try {
-      const response = await axios.post(
-         `${loadLocalConfig().backendUrl}/login/basic`,
-         {},
-         {
-            headers: {
-               Authorization: `Basic ${base64Encoded}`,
-            },
-         },
-      );
+  const base64Encoded = btoa(`${userName}:${password}`);
+  const response = await basicAuthHandlerV2({
+    headers: {
+      Authorization: `Basic ${base64Encoded}`,
+    },
+  });
 
-      setLocalAuthToken(response.data);
-   } catch (e) {
-      log.error(`Failed to login: ${e}`);
-      throw e;
-   }
+  if (response.error && response.isAxiosError) {
+    throw response;
+  }
+
+  setLocalAuthToken(response.data ?? "");
 }
 
 export async function saveNotificationSubscription(
-   subscription: PushSubscription,
+  subscription: PushSubscription,
 ) {
-   const response = await saveNotificationSubscriptionHandler({
-      body: {
-         endpoint: subscription.endpoint,
-         keys: {
-            auth: String(subscription.getKey("auth")),
-            p256dh: String(subscription.getKey("p256dh")),
-         },
-         expirationTime: subscription.expirationTime,
+  const response = await saveNotificationSubscriptionHandler({
+    body: {
+      endpoint: subscription.endpoint,
+      keys: {
+        auth: String(subscription.getKey("auth")),
+        p256dh: String(subscription.getKey("p256dh")),
       },
-   });
-   return response;
+      expirationTime: subscription.expirationTime,
+    },
+  });
+  return response;
 }
 /**
  * Calculates the total spending for a month
  * @param monthlyBudget - the month's budget to calculate the total of
  */
 export function calculateTotalSpending(monthlyBudget: MonthlyBudget): number {
-   if (!monthlyBudget) {
-      return 0;
-   }
-   let total = 0;
-   for (let spending of monthlyBudget.spending) {
-      total += spending.amount;
-   }
-   return total;
+  if (!monthlyBudget) {
+    return 0;
+  }
+  let total = 0;
+  for (let spending of monthlyBudget.spending) {
+    total += spending.amount;
+  }
+  return total;
 }
 
 export async function exportCSV(year: string, month: string): Promise<string> {
-   const response = await axios.get(
-      `${loadLocalConfig().backendUrl}/export/${year}/${month}/csv`,
-      {
-         headers: {
-            Authorization: `Bearer ${getLocalAuthToken()}`,
-         },
+  const response = await axios.get(
+    `${loadLocalConfig().backendUrl}/export/${year}/${month}/csv`,
+    {
+      headers: {
+        Authorization: `Bearer ${getLocalAuthToken()}`,
       },
-   );
-   return response.data;
+    },
+  );
+  return response.data;
 }
