@@ -19,15 +19,9 @@ import {
 export function NewGraphQLSDK() {
    let url = "";
    // __AUTO_GENERATED_PRINT_VAR_START__
-   console.log("NewGraphQLSDK#if import:", import.meta.env.DEV); // __AUTO_GENERATED_PRINT_VAR_END__
    if (import.meta.env.DEV) {
       url = `${loadLocalConfig().backendUrl}/graphql`;
    } else {
-      // __AUTO_GENERATED_PRINT_VAR_START__
-      console.log(
-         "NewGraphQLSDK#if loadLocalConfig():",
-         loadLocalConfig().backendUrl,
-      ); // __AUTO_GENERATED_PRINT_VAR_END__
       url = `${window.location.origin}/${loadLocalConfig().backendUrl}/graphql`;
    }
 

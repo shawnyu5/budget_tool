@@ -9,7 +9,7 @@ use axum_extra::TypedHeader;
 use base64::prelude::*;
 use chrono::{Duration, Utc};
 use common_axum::app_error_v2::AppError;
-use headers::authorization::Basic;
+use headers::authorization::{Basic, Bearer};
 use headers::Authorization;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use rayon::prelude::*;
@@ -137,30 +137,20 @@ where
     type Rejection = Infallible;
 
     #[instrument(skip_all)]
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         info!("Extracting JWT from Authorization header");
-        let jwt_token = match parts.headers.get("authorization") {
-            Some(auth_header) => {
-                let auth_header_str = auth_header
-                    .to_str()
-                    .context("Failed to convert authorization header to string")
-                    .unwrap();
-
-                if !auth_header_str.contains("Bearer") {
+        let TypedHeader(Authorization(bearer)) =
+            match TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state).await {
+                Ok(bearer) => bearer,
+                Err(e) => {
+                    warn!("Missing bearer token: {e}");
                     return Ok(MaybeJwt(None));
                 }
-                auth_header_str.replace("Bearer ", "")
-            }
-            None => {
-                warn!("Missing auth header....");
-                return Ok(MaybeJwt(None));
-            }
-        };
+            };
 
         info!("Validating JWT");
-        let claim = match decode_jwt(&jwt_token) {
+        let claim = match decode_jwt(bearer.token()) {
             Ok(e) => {
-                // TODO: need to make sure jwt is not expired
                 info!("JWT exipration time: {time}", time = e.exp);
                 e
             }
@@ -169,6 +159,7 @@ where
                 return Ok(MaybeJwt(None));
             }
         };
+        info!("JWT claim: {:?}", claim);
 
         return Ok(MaybeJwt(Some(claim)));
     }
