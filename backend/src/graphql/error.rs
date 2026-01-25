@@ -1,5 +1,5 @@
 use async_graphql::{Enum, Error, ErrorExtensions, Object, Pos, Response, SimpleObject, Union};
-use axum::{response::IntoResponse, Json};
+use axum::{Json, response::IntoResponse};
 use serde::Serialize;
 use thiserror::Error;
 
@@ -12,10 +12,6 @@ pub struct GraphQLErrorObject {
 /// GraphQL error codes
 #[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, Error, Serialize)]
 pub enum GraphQLErrorCode {
-    /// When the user does not have the authorization
-    #[error("Not authorized")]
-    Forbidden,
-
     /// Something went wrong on the server side. Typically response 500
     #[error("ServerError")]
     ServerError,
@@ -23,14 +19,17 @@ pub enum GraphQLErrorCode {
     /// Failed to fetch budget for some reason. Typically response 404
     #[error("Failed to fetch budget")]
     FailedToFetchBudget,
+
+    #[error("Invalid Firefly API key")]
+    InvalidFireflyAPIKey,
 }
 
 impl ErrorExtensions for GraphQLErrorCode {
     fn extend(&self) -> async_graphql::Error {
         self.extend_with(|err, e| match err {
-            GraphQLErrorCode::Forbidden => e.set("code", "FORBIDDEN"),
             GraphQLErrorCode::ServerError => e.set("error", err.to_string()),
             GraphQLErrorCode::FailedToFetchBudget => e.set("error", err.to_string()),
+            GraphQLErrorCode::InvalidFireflyAPIKey => e.set("error", err.to_string()),
         })
     }
 }

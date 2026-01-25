@@ -1,0 +1,17 @@
+{
+   "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+   "spaces": 2,
+   "generators": {
+      "rust": {
+         "generatorName": "rust",
+         "glob": "./firefly_api.yml",
+         "output": "firefly_client",
+         "additionalProperties": {
+            "packageName": "firefly_client"
+         }
+      }
+   },
+   "generator-cli": {
+      "version": "7.19.0"
+   }
+}

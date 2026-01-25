@@ -1,8 +1,8 @@
 use std::env;
 
 use async_graphql::SimpleObject;
-use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
+use base64::prelude::BASE64_STANDARD;
 use dotenvy::dotenv;
 
 #[non_exhaustive]
@@ -17,10 +17,14 @@ pub struct Config {
     pub public_key: String,
     /// decoded credentials, where each item is a `username:password` pair
     pub basic_auth: Vec<BasicAuth>,
+    /// Key used for encryption / decryption
+    pub encryption_key: String,
     /// VAPID public key used to sign notifications by the client
     pub vapid_public_key: String,
     /// VAPID private key used to verify notifications sent by the client
     pub vapid_private_key: String,
+    /// URL to firefly API
+    pub firefly_url: String,
 }
 
 /// Represent a basic auth with username / password pair
@@ -58,6 +62,7 @@ impl Config {
             })
             .collect();
         return Config {
+            firefly_url: "https://firefly.shawnyu.ca/api".to_string(),
             db_connection_string: env::var("db_connection_string")
                 .expect("MIssing `db_connection_string` env var"),
             database_name: env::var("db_name").unwrap_or("budget_tool".to_string()),
@@ -65,6 +70,9 @@ impl Config {
                 .expect("Missing `private_key` env var, used for JWT signing"),
             public_key: env::var("public_key").expect("Missing public_key"),
             basic_auth: basic_auth_vec,
+            encryption_key: env::var("encryption_key")
+                .expect("Missing `encryption_key` env var")
+                .to_string(),
             vapid_public_key: env::var("vapid_public_key")
                 .expect("Missing vapid_public_key env var. Used for client notification signing"),
             vapid_private_key: env::var("vapid_private_key").expect(

@@ -60,6 +60,42 @@ input DeleteSpendingItemByIdInput {
 }
 
 """
+Firefly related settings
+"""
+type FireflySettings {
+	"""
+	If the user has enabled Firefly integration
+	"""
+	enabled: Boolean!
+	"""
+	API key, required if `enabled` = true
+	"""
+	apiKey: String
+	"""
+	Base64 encoded nounce used to encrypt / decrypt the API key
+	"""
+	encryptionNounce: String
+}
+
+"""
+Firefly related settings
+"""
+input FireflySettingsInput {
+	"""
+	If the user has enabled Firefly integration
+	"""
+	enabled: Boolean!
+	"""
+	API key, required if `enabled` = true
+	"""
+	apiKey: String
+	"""
+	Base64 encoded nounce used to encrypt / decrypt the API key
+	"""
+	encryptionNounce: String
+}
+
+"""
 Frontend configuration
 """
 type FrontendConfig {
@@ -78,10 +114,6 @@ GraphQL error codes
 """
 enum GraphQLErrorCode {
 	"""
-	When the user does not have the authorization
-	"""
-	FORBIDDEN
-	"""
 	Something went wrong on the server side. Typically response 500
 	"""
 	SERVER_ERROR
@@ -89,6 +121,7 @@ enum GraphQLErrorCode {
 	Failed to fetch budget for some reason. Typically response 404
 	"""
 	FAILED_TO_FETCH_BUDGET
+	INVALID_FIREFLY_API_KEY
 }
 
 type GraphQLErrorObject {
@@ -144,6 +177,37 @@ type MonthlyBudget {
 
 union MonthlyBudgetConfigResponse = BudgetConfig | GraphQLErrorObject
 
+"""
+Budget details for single month
+"""
+input MonthlyBudgetInput {
+	"""
+	The month
+	"""
+	month: Month!
+	"""
+	Budget details
+	"""
+	budget: BudgetConfigInput!
+	"""
+	Total spending for the month. Including any over budget amount
+	"""
+	totalSpending: Float!
+	"""
+	Amount over budget for the month. 0 means not over budget.
+	"""
+	overBudgetAmount: Float!
+	"""
+	List of spent items
+	"""
+	spending: [SpendingItemInput!]!
+	"""
+	The month it was carried over from
+	If the setting are not carried over from a previous month, this value will be empty
+	"""
+	carriedOverFrom: Month
+}
+
 union MonthlyBudgetResponse = MonthlyBudget | GraphQLErrorObject
 
 type MutationRoot {
@@ -155,7 +219,7 @@ type MutationRoot {
 	"""
 	Update the budget configuration for a specific month
 	"""
-	updateBudgetConfig(inputs: UpdateBudgetConfigInput!): MonthlyBudgetConfigResponse!
+	updateMonthlyBudgetConfig(inputs: UpdateBudgetConfigInput!): UpdateBudgetConfigResponse!
 	"""
 	Add a spending item to a month
 	"""
@@ -168,9 +232,19 @@ type MutationRoot {
 	Update a spending item by ID
 	"""
 	updateSpendingItemById(inputs: UpdateSpendingItemByIdInput!): MonthlyBudgetResponse!
+	"""
+	Update the budget for a specific month
+	"""
+	updateMonthlyBudget(inputs: UpdateMonthlyBudgetInput!): MonthlyBudgetResponse!
+	me(inputs: UpdateMe!): UpdateMeResponse!
 }
 
 type NotificationKeys {
+	p256Dh: String!
+	auth: String!
+}
+
+input NotificationKeysInput {
 	p256Dh: String!
 	auth: String!
 }
@@ -182,6 +256,15 @@ type NotificationSubscription {
 	endpoint: String!
 	expirationTime: Int
 	keys: NotificationKeys!
+}
+
+"""
+Stuff the browser sends to do the notification handshake
+"""
+input NotificationSubscriptionInput {
+	endpoint: String!
+	expirationTime: Int
+	keys: NotificationKeysInput!
 }
 
 """
@@ -200,6 +283,7 @@ type QueryRoot {
 	"""
 	monthlyBudget(year: Int!, month: Month!): MonthlyBudgetResponse!
 	monthlyBudgetConfig(year: Int!, month: Month!): MonthlyBudgetConfigResponse!
+	me: User!
 }
 
 """
@@ -271,9 +355,33 @@ input UpdateBudgetConfigInput {
 	"""
 	month: Month!
 	"""
-	The new budget
+	The new budget config
 	"""
 	budgetConfig: BudgetConfigInput!
+	"""
+	Firefly related settings for the current user
+	"""
+	firefly: FireflySettingsInput!
+}
+
+union UpdateBudgetConfigResponse = UpdateBudgetResponse | GraphQLErrorObject
+
+type UpdateBudgetResponse {
+	success: Boolean!
+}
+
+input UpdateMe {
+	user: UserInput!
+}
+
+type UpdateMeResponse {
+	success: Boolean!
+}
+
+input UpdateMonthlyBudgetInput {
+	year: Int!
+	month: Month!
+	budget: MonthlyBudgetInput!
 }
 
 input UpdateSpendingItemByIdInput {
@@ -298,6 +406,23 @@ type User {
 	"""
 	notificationSubscription: NotificationSubscription!
 	lastUpdated: String
+	firefly: FireflySettings
+}
+
+"""
+Represents a user
+"""
+input UserInput {
+	"""
+	Username of the user
+	"""
+	username: String!
+	"""
+	Notification subscription
+	"""
+	notificationSubscription: NotificationSubscriptionInput!
+	lastUpdated: String
+	firefly: FireflySettingsInput
 }
 
 """

@@ -1,0 +1,23 @@
+[package]
+name = "firefly_client"
+version = "6.4.14"
+authors = ["james@firefly-iii.org"]
+description = "This is the documentation of the Firefly III API. Please report any bugs or issues. You may use the \"Authorize\" button to try the API below. <br><br> Please keep in mind that the demo site does **not** accept requests from `curl`, `colly`, `wget`, etc. You must use a browser or a tool like Insomnia to make your test requests. <br><br> To learn more about the idiosyncrasies of this API, please read about the API in the [Firefly III API documentation](https://docs.firefly-iii.org/references/firefly-iii/api/). <br><br> <small>This file was last generated on 2025-12-26 @ 15:17:41 (Europe/Amsterdam)</small> "
+license = "AGPLv3"
+edition = "2021"
+
+[dependencies]
+serde = { version = "^1.0", features = ["derive"] }
+serde_with = { version = "^3.8", default-features = false, features = ["base64", "std", "macros"] }
+serde_json = "^1.0"
+serde_repr = "^0.1"
+url = "^2.5"
+uuid = { version = "^1.8", features = ["serde", "v4"] }
+tokio = { version = "^1.46.0", features = ["fs"] }
+tokio-util = { version = "^0.7", features = ["codec"] }
+reqwest = { version = "^0.12", default-features = false, features = ["json", "multipart", "stream"] }
+
+[features]
+default = ["native-tls"]
+native-tls = ["reqwest/native-tls"]
+rustls-tls = ["reqwest/rustls-tls"]

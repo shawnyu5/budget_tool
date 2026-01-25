@@ -111,28 +111,25 @@ pub struct BudgetConfig {
     #[schema(required = true)]
     #[serde(alias = "total")]
     pub total_allocation: f64,
+
     /// Shawn percentage allocation
     #[schema(required = true)]
     #[serde(alias = "shawn_percentage_allocation")]
     pub shawn_percentage_allocation: f64,
+
     /// Shawn contribution amount. The frontend is responsible for computing this value
     #[schema(required = true)]
     #[serde(default)]
     pub shawn_contribution_amount: f64,
+
     /// Maggie percentage allocation
     #[serde(alias = "maggie_percentage_allocation")]
     pub maggie_percentage_allocation: f64,
+
     /// Maggie contribution amount. The frontend is responsible for computing this value
     #[schema(required = true)]
     #[serde(default)]
     pub maggie_contribution_amount: f64,
-}
-
-impl BudgetConfig {
-    /// Validates the fields of the config. Returns any errors if the fields are incorrect
-    pub fn validate(&self) {
-        // todo!()
-    }
 }
 
 /// A single transaction

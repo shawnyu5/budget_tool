@@ -63,6 +63,8 @@ export const getMonthBudgetHandler = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending`, and `overBudgetAmount` is up to date
+ *
+ * @deprecated
  */
 export const updateBudgetHandler = <ThrowOnError extends boolean = false>(options: Options<UpdateBudgetHandlerData, ThrowOnError>) => {
     return (options.client ?? client).post<UpdateBudgetHandlerResponses, UpdateBudgetHandlerErrors, ThrowOnError>({

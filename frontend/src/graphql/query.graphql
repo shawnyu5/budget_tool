@@ -1,5 +1,11 @@
+fragment GraphQLErrorFields on GraphQLErrorObject {
+  __typename
+  code
+  message
+}
+
 # Get monthly budget configuration
-query GetMonthlyBudgetConfig($year: Int!, $month: Month!) {
+query SettingsPageData($year: Int!, $month: Month!) {
   monthlyBudgetConfig(year: $year, month: $month) {
     ... on BudgetConfig {
       __typename
@@ -9,10 +15,14 @@ query GetMonthlyBudgetConfig($year: Int!, $month: Month!) {
       maggiePercentageAllocation
       maggieContributionAmount
     }
-    ... on GraphQLErrorObject {
-      __typename
-      code
-      message
+    ...GraphQLErrorFields
+  }
+
+  me {
+    username
+    firefly {
+      enabled
+      apiKey
     }
   }
 }
@@ -42,11 +52,7 @@ query GetMonthBudget($year: Int!, $month: Month!) {
         shawnContributionAmount
       }
     }
-    ... on GraphQLErrorObject {
-      __typename
-      code
-      message
-    }
+    ...GraphQLErrorFields
   }
 }
 
@@ -55,5 +61,26 @@ query getConfig {
   config {
     encryptionPublicKey
     vapidPublicKey
+  }
+}
+
+# Get information about the currently authenticated user
+query Me {
+  me {
+    username
+  }
+}
+
+# Data required in the spending form
+query SpendingItemForm($year: Int!, $month: Month!) {
+  monthlyBudgetConfig(year: $year, month: $month) {
+    ... on BudgetConfig {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+    ...GraphQLErrorFields
   }
 }

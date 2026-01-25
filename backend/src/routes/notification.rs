@@ -1,6 +1,6 @@
 use crate::config::Config;
 use anyhow::{Context, Result};
-use async_graphql::SimpleObject;
+use async_graphql::{InputObject, SimpleObject};
 use axum::Json;
 use common_axum::app_error_v2::AppError;
 use mongodb::bson::doc;
@@ -23,7 +23,10 @@ pub struct NotificationBody {
     pub body: String,
 }
 /// Stuff the browser sends to do the notification handshake
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default)]
+#[derive(
+    Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default, InputObject,
+)]
+#[graphql(input_name = "NotificationSubscriptionInput")]
 #[serde(rename_all = "camelCase")]
 pub struct NotificationSubscription {
     pub endpoint: String,
@@ -31,7 +34,10 @@ pub struct NotificationSubscription {
     pub keys: NotificationKeys,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default)]
+#[derive(
+    Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default, InputObject,
+)]
+#[graphql(input_name = "NotificationKeysInput")]
 pub struct NotificationKeys {
     pub p256dh: String,
     pub auth: String,

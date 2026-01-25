@@ -10,6 +10,7 @@ The following environment variables are required:
 - `db_connection_string`: Mongo DB connection string. The DB user must have read write permission
 - `db_name`: the specific DB we are targeting
 - `private_key`: private key used for JWT auth
+- `encryption_key`: key used for encryption / decryption
 - `vapid_public_key`: VAPID public key used to sign the notification by the client
 - `vapid_private_key`: VAPID private key used to verify notifications from the client
 

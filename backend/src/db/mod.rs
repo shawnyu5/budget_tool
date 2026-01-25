@@ -41,12 +41,11 @@ impl<T: std::marker::Send + std::marker::Sync + DeserializeOwned> DB<T> {
     ///
     /// * `name`: name of the collection to connect to
     pub async fn new(name: &str) -> Result<Self> {
-        info!("Initializing DB client");
         let mut client_opts = ClientOptions::parse(Config::load().db_connection_string)
             .await
             .context("Failed to parse mongo DB url")?;
         client_opts.connect_timeout = Some(Duration::from_secs(10));
-        info!("Initialized DB client");
+        info!("Initializing DB client for {name} collection");
 
         let client = Client::with_options(client_opts).context("Failed to construct DB client")?;
         // let client = Client::with_uri_str(Config::load().db_connection_string)

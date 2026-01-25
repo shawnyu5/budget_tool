@@ -57,6 +57,27 @@ export type DeleteSpendingItemByIdInput = {
   year: Scalars['Int']['input'];
 };
 
+/** Firefly related settings */
+export type FireflySettings = {
+  __typename?: 'FireflySettings';
+  /** API key, required if `enabled` = true */
+  apiKey?: Maybe<Scalars['String']['output']>;
+  /** If the user has enabled Firefly integration */
+  enabled: Scalars['Boolean']['output'];
+  /** Base64 encoded nounce used to encrypt / decrypt the API key */
+  encryptionNounce?: Maybe<Scalars['String']['output']>;
+};
+
+/** Firefly related settings */
+export type FireflySettingsInput = {
+  /** API key, required if `enabled` = true */
+  apiKey?: InputMaybe<Scalars['String']['input']>;
+  /** If the user has enabled Firefly integration */
+  enabled: Scalars['Boolean']['input'];
+  /** Base64 encoded nounce used to encrypt / decrypt the API key */
+  encryptionNounce?: InputMaybe<Scalars['String']['input']>;
+};
+
 /** Frontend configuration */
 export type FrontendConfig = {
   __typename?: 'FrontendConfig';
@@ -70,8 +91,7 @@ export type FrontendConfig = {
 export enum GraphQlErrorCode {
   /** Failed to fetch budget for some reason. Typically response 404 */
   FailedToFetchBudget = 'FAILED_TO_FETCH_BUDGET',
-  /** When the user does not have the authorization */
-  Forbidden = 'FORBIDDEN',
+  InvalidFireflyApiKey = 'INVALID_FIREFLY_API_KEY',
   /** Something went wrong on the server side. Typically response 500 */
   ServerError = 'SERVER_ERROR'
 }
@@ -119,6 +139,25 @@ export type MonthlyBudget = {
 
 export type MonthlyBudgetConfigResponse = BudgetConfig | GraphQlErrorObject;
 
+/** Budget details for single month */
+export type MonthlyBudgetInput = {
+  /** Budget details */
+  budget: BudgetConfigInput;
+  /**
+   * The month it was carried over from
+   * If the setting are not carried over from a previous month, this value will be empty
+   */
+  carriedOverFrom?: InputMaybe<Month>;
+  /** The month */
+  month: Month;
+  /** Amount over budget for the month. 0 means not over budget. */
+  overBudgetAmount: Scalars['Float']['input'];
+  /** List of spent items */
+  spending: Array<SpendingItemInput>;
+  /** Total spending for the month. Including any over budget amount */
+  totalSpending: Scalars['Float']['input'];
+};
+
 export type MonthlyBudgetResponse = GraphQlErrorObject | MonthlyBudget;
 
 export type MutationRoot = {
@@ -127,13 +166,16 @@ export type MutationRoot = {
   addSpendingItemByMonth: MonthlyBudgetResponse;
   /** Delete a spending item by ID. If the item doesnt exist, this handler will not do anything */
   deleteSpendingItemById: MonthlyBudgetResponse;
+  me: UpdateMeResponse;
   /**
    * Save a notification subscription for a user
    * The user is extracted from the JWT
    */
   saveSubscription: User;
+  /** Update the budget for a specific month */
+  updateMonthlyBudget: MonthlyBudgetResponse;
   /** Update the budget configuration for a specific month */
-  updateBudgetConfig: MonthlyBudgetConfigResponse;
+  updateMonthlyBudgetConfig: UpdateBudgetConfigResponse;
   /** Update a spending item by ID */
   updateSpendingItemById: MonthlyBudgetResponse;
 };
@@ -149,12 +191,22 @@ export type MutationRootDeleteSpendingItemByIdArgs = {
 };
 
 
+export type MutationRootMeArgs = {
+  inputs: UpdateMe;
+};
+
+
 export type MutationRootSaveSubscriptionArgs = {
   subscription: SubscriptionInput;
 };
 
 
-export type MutationRootUpdateBudgetConfigArgs = {
+export type MutationRootUpdateMonthlyBudgetArgs = {
+  inputs: UpdateMonthlyBudgetInput;
+};
+
+
+export type MutationRootUpdateMonthlyBudgetConfigArgs = {
   inputs: UpdateBudgetConfigInput;
 };
 
@@ -169,6 +221,11 @@ export type NotificationKeys = {
   p256Dh: Scalars['String']['output'];
 };
 
+export type NotificationKeysInput = {
+  auth: Scalars['String']['input'];
+  p256Dh: Scalars['String']['input'];
+};
+
 /** Stuff the browser sends to do the notification handshake */
 export type NotificationSubscription = {
   __typename?: 'NotificationSubscription';
@@ -177,11 +234,19 @@ export type NotificationSubscription = {
   keys: NotificationKeys;
 };
 
+/** Stuff the browser sends to do the notification handshake */
+export type NotificationSubscriptionInput = {
+  endpoint: Scalars['String']['input'];
+  expirationTime?: InputMaybe<Scalars['Int']['input']>;
+  keys: NotificationKeysInput;
+};
+
 /** Root of the query */
 export type QueryRoot = {
   __typename?: 'QueryRoot';
   /** Configuration for the frontend to consume */
   config: FrontendConfig;
+  me: User;
   /**
    * Get the budget for a specific month in a year
    *
@@ -243,11 +308,35 @@ export type SubscriptionInput = {
 };
 
 export type UpdateBudgetConfigInput = {
-  /** The new budget */
+  /** The new budget config */
   budgetConfig: BudgetConfigInput;
+  /** Firefly related settings for the current user */
+  firefly: FireflySettingsInput;
   /** The month of the budget to update */
   month: Month;
   /** The year of the budget to update */
+  year: Scalars['Int']['input'];
+};
+
+export type UpdateBudgetConfigResponse = GraphQlErrorObject | UpdateBudgetResponse;
+
+export type UpdateBudgetResponse = {
+  __typename?: 'UpdateBudgetResponse';
+  success: Scalars['Boolean']['output'];
+};
+
+export type UpdateMe = {
+  user: UserInput;
+};
+
+export type UpdateMeResponse = {
+  __typename?: 'UpdateMeResponse';
+  success: Scalars['Boolean']['output'];
+};
+
+export type UpdateMonthlyBudgetInput = {
+  budget: MonthlyBudgetInput;
+  month: Month;
   year: Scalars['Int']['input'];
 };
 
@@ -261,11 +350,22 @@ export type UpdateSpendingItemByIdInput = {
 /** Represents a user */
 export type User = {
   __typename?: 'User';
+  firefly?: Maybe<FireflySettings>;
   lastUpdated?: Maybe<Scalars['String']['output']>;
   /** Notification subscription */
   notificationSubscription: NotificationSubscription;
   /** Username of the user */
   username: Scalars['String']['output'];
+};
+
+/** Represents a user */
+export type UserInput = {
+  firefly?: InputMaybe<FireflySettingsInput>;
+  lastUpdated?: InputMaybe<Scalars['String']['input']>;
+  /** Notification subscription */
+  notificationSubscription: NotificationSubscriptionInput;
+  /** Username of the user */
+  username: Scalars['String']['input'];
 };
 
 export type SaveSubscriptionMutationVariables = Exact<{
@@ -280,15 +380,24 @@ export type UpdateMonthlyBudgetConfigMutationVariables = Exact<{
 }>;
 
 
-export type UpdateMonthlyBudgetConfigMutation = { __typename?: 'MutationRoot', updateBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename?: 'GraphQLErrorObject' } };
+export type UpdateMonthlyBudgetConfigMutation = { __typename?: 'MutationRoot', updateMonthlyBudgetConfig: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename?: 'UpdateBudgetResponse', success: boolean } };
 
-export type GetMonthlyBudgetConfigQueryVariables = Exact<{
+export type UpdateMonthlyBudgetMutationVariables = Exact<{
+  inputs: UpdateMonthlyBudgetInput;
+}>;
+
+
+export type UpdateMonthlyBudgetMutation = { __typename?: 'MutationRoot', updateMonthlyBudget: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename: 'MonthlyBudget', month: Month, totalSpending: number, overBudgetAmount: number, carriedOverFrom?: Month | null, spending: Array<{ __typename?: 'SpendingItem', id: string, amount: number, date: string, description: string, notes?: string | null }>, budget: { __typename?: 'BudgetConfig', totalAllocation: number, maggiePercentageAllocation: number, maggieContributionAmount: number, shawnPercentageAllocation: number, shawnContributionAmount: number } } };
+
+export type GraphQlErrorFieldsFragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
+
+export type SettingsPageDataQueryVariables = Exact<{
   year: Scalars['Int']['input'];
   month: Month;
 }>;
 
 
-export type GetMonthlyBudgetConfigQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } };
+export type SettingsPageDataQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string }, me: { __typename?: 'User', username: string, firefly?: { __typename?: 'FireflySettings', enabled: boolean, apiKey?: string | null } | null } };
 
 export type GetMonthBudgetQueryVariables = Exact<{
   year: Scalars['Int']['input'];
@@ -303,7 +412,26 @@ export type GetConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetConfigQuery = { __typename?: 'QueryRoot', config: { __typename?: 'FrontendConfig', encryptionPublicKey: string, vapidPublicKey: string } };
 
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
+
+export type MeQuery = { __typename?: 'QueryRoot', me: { __typename?: 'User', username: string } };
+
+export type SpendingItemFormQueryVariables = Exact<{
+  year: Scalars['Int']['input'];
+  month: Month;
+}>;
+
+
+export type SpendingItemFormQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename?: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } };
+
+export const GraphQlErrorFieldsFragmentDoc = gql`
+    fragment GraphQLErrorFields on GraphQLErrorObject {
+  __typename
+  code
+  message
+}
+    `;
 export const SaveSubscriptionDocument = gql`
     mutation saveSubscription($subscription: SubscriptionInput!) {
   saveSubscription(subscription: $subscription) {
@@ -321,28 +449,9 @@ export const SaveSubscriptionDocument = gql`
     `;
 export const UpdateMonthlyBudgetConfigDocument = gql`
     mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
-  updateBudgetConfig(inputs: $inputs) {
-    ... on BudgetConfig {
-      __typename
-      totalAllocation
-      shawnPercentageAllocation
-      shawnContributionAmount
-      maggiePercentageAllocation
-      maggieContributionAmount
-    }
-  }
-}
-    `;
-export const GetMonthlyBudgetConfigDocument = gql`
-    query GetMonthlyBudgetConfig($year: Int!, $month: Month!) {
-  monthlyBudgetConfig(year: $year, month: $month) {
-    ... on BudgetConfig {
-      __typename
-      totalAllocation
-      shawnPercentageAllocation
-      shawnContributionAmount
-      maggiePercentageAllocation
-      maggieContributionAmount
+  updateMonthlyBudgetConfig(inputs: $inputs) {
+    ... on UpdateBudgetResponse {
+      success
     }
     ... on GraphQLErrorObject {
       __typename
@@ -352,10 +461,9 @@ export const GetMonthlyBudgetConfigDocument = gql`
   }
 }
     `;
-export const GetMonthBudgetDocument = gql`
-    query GetMonthBudget($year: Int!, $month: Month!) {
-  monthlyBudget(year: $year, month: $month) {
-    __typename
+export const UpdateMonthlyBudgetDocument = gql`
+    mutation UpdateMonthlyBudget($inputs: UpdateMonthlyBudgetInput!) {
+  updateMonthlyBudget(inputs: $inputs) {
     ... on MonthlyBudget {
       __typename
       month
@@ -385,6 +493,57 @@ export const GetMonthBudgetDocument = gql`
   }
 }
     `;
+export const SettingsPageDataDocument = gql`
+    query SettingsPageData($year: Int!, $month: Month!) {
+  monthlyBudgetConfig(year: $year, month: $month) {
+    ... on BudgetConfig {
+      __typename
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+    ...GraphQLErrorFields
+  }
+  me {
+    username
+    firefly {
+      enabled
+      apiKey
+    }
+  }
+}
+    ${GraphQlErrorFieldsFragmentDoc}`;
+export const GetMonthBudgetDocument = gql`
+    query GetMonthBudget($year: Int!, $month: Month!) {
+  monthlyBudget(year: $year, month: $month) {
+    __typename
+    ... on MonthlyBudget {
+      __typename
+      month
+      totalSpending
+      overBudgetAmount
+      spending {
+        id
+        amount
+        date
+        description
+        notes
+      }
+      carriedOverFrom
+      budget {
+        totalAllocation
+        maggiePercentageAllocation
+        maggieContributionAmount
+        shawnPercentageAllocation
+        shawnContributionAmount
+      }
+    }
+    ...GraphQLErrorFields
+  }
+}
+    ${GraphQlErrorFieldsFragmentDoc}`;
 export const GetConfigDocument = gql`
     query getConfig {
   config {
@@ -393,6 +552,27 @@ export const GetConfigDocument = gql`
   }
 }
     `;
+export const MeDocument = gql`
+    query Me {
+  me {
+    username
+  }
+}
+    `;
+export const SpendingItemFormDocument = gql`
+    query SpendingItemForm($year: Int!, $month: Month!) {
+  monthlyBudgetConfig(year: $year, month: $month) {
+    ... on BudgetConfig {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+    ...GraphQLErrorFields
+  }
+}
+    ${GraphQlErrorFieldsFragmentDoc}`;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -407,14 +587,23 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     UpdateMonthlyBudgetConfig(variables: UpdateMonthlyBudgetConfigMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetConfigMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetConfigMutation>({ document: UpdateMonthlyBudgetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudgetConfig', 'mutation', variables);
     },
-    GetMonthlyBudgetConfig(variables: GetMonthlyBudgetConfigQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetMonthlyBudgetConfigQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<GetMonthlyBudgetConfigQuery>({ document: GetMonthlyBudgetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetMonthlyBudgetConfig', 'query', variables);
+    UpdateMonthlyBudget(variables: UpdateMonthlyBudgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetMutation>({ document: UpdateMonthlyBudgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudget', 'mutation', variables);
+    },
+    SettingsPageData(variables: SettingsPageDataQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SettingsPageDataQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SettingsPageDataQuery>({ document: SettingsPageDataDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SettingsPageData', 'query', variables);
     },
     GetMonthBudget(variables: GetMonthBudgetQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetMonthBudgetQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetMonthBudgetQuery>({ document: GetMonthBudgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetMonthBudget', 'query', variables);
     },
     getConfig(variables?: GetConfigQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetConfigQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetConfigQuery>({ document: GetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'getConfig', 'query', variables);
+    },
+    Me(variables?: MeQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<MeQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<MeQuery>({ document: MeDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'Me', 'query', variables);
+    },
+    SpendingItemForm(variables: SpendingItemFormQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SpendingItemFormQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SpendingItemFormQuery>({ document: SpendingItemFormDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SpendingItemForm', 'query', variables);
     }
   };
 }

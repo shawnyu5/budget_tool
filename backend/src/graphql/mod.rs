@@ -1,14 +1,16 @@
+use crate::graphql::mutation::MutationRoot;
 use std::fs;
 
 use anyhow::{Context, Result};
 use async_graphql::{EmptySubscription, Schema};
 use tracing::info;
 
-use crate::graphql::{mutation::MutationRoot, query::QueryRoot};
+use crate::graphql::query::QueryRoot;
 
 pub mod error;
 mod mutation;
 mod query;
+mod utils;
 
 /// The type of the graphql schema
 pub type SchemaType = Schema<QueryRoot, MutationRoot, EmptySubscription>;

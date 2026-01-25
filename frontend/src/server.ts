@@ -15,14 +15,20 @@ import {
   basicAuthHandlerV2,
   saveNotificationSubscriptionHandler,
 } from "~/client/sdk.gen";
-import { handleGraphQLError, NewGraphQLSDK } from "./graphql";
+import {
+  handleGraphQLClientError,
+  handleGraphQLErrorObject,
+  NewGraphQLSDK,
+} from "./graphql";
 import {
   BudgetConfig,
   BudgetConfigInput,
+  FireflySettings,
   Month,
   MonthlyBudget,
+  SettingsPageDataQuery,
+  UpdateMonthlyBudgetConfigMutation,
 } from "./generated/graphql";
-import logger from "./logger";
 
 axiosRetry(axios, {
   retries: 4,
@@ -76,52 +82,59 @@ export async function getMonthlyBudget(
   navigate: Navigator,
 ): Promise<MonthlyBudget | null> {
   const sdk = NewGraphQLSDK();
-  let response = await sdk.GetMonthBudget({
-    year: parseInt(year),
-    month: month,
-  });
+  try {
+    let response = await sdk.GetMonthBudget({
+      year: parseInt(year),
+      month: month,
+    });
 
-  if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
-    const err = handleGraphQLError(response.monthlyBudget, navigate);
-    if (err) {
-      throw new Error(err);
+    if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
+      const err = handleGraphQLErrorObject(response.monthlyBudget, navigate);
+      if (err) {
+        throw new Error(err);
+      }
     }
+    return response.monthlyBudget as MonthlyBudget;
+  } catch (e) {
+    handleGraphQLClientError(e, navigate);
   }
-  return response.monthlyBudget as MonthlyBudget;
 }
 
-export async function getMonthlyBudgetConfig(
+export type SettingsPageDataSuccess = Omit<
+  SettingsPageDataQuery,
+  "monthlyBudgetConfig"
+> & {
+  monthlyBudgetConfig: Extract<
+    SettingsPageDataQuery["monthlyBudgetConfig"],
+    { __typename: "BudgetConfig" }
+  >;
+};
+
+export async function getSettingsPageData(
   year: string,
   month: Month,
   navigate: Navigator,
-): Promise<BudgetConfig> {
+): Promise<SettingsPageDataSuccess> {
   const sdk = NewGraphQLSDK();
-  let response = await sdk.GetMonthlyBudgetConfig({
-    year: parseInt(year),
-    month,
-  });
-
-  if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-    const err = handleGraphQLError(response.monthlyBudgetConfig, navigate);
-    if (err) {
-      throw new Error(err);
+  try {
+    let response = await sdk.SettingsPageData({
+      year: parseInt(year),
+      month,
+    });
+    if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
+      const err = handleGraphQLErrorObject(
+        response.monthlyBudgetConfig,
+        navigate,
+      );
+      if (err) {
+        throw new Error(err);
+      }
     }
+    return response as SettingsPageDataSuccess;
+  } catch (e) {
+    handleGraphQLClientError(e, navigate);
   }
-  return response.monthlyBudgetConfig as BudgetConfig;
 }
-
-// if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
-//     logger.info("Found graphql error");
-//     const err = response.monthlyBudget.code;
-//     if (err == GraphQlErrorCode.Forbidden) {
-//        navigate("/login", { replace: true });
-//        throw new Error("Forbidden, redirecting to login");
-//     } else if (GraphQlErrorCode.FailedToFetchBudget) {
-//        throw new Error("Failed to fetch monthly budget...");
-//     } else {
-//        throw new Error("Something went wrong!");
-//     }
-//  }
 
 /**
  * Updates the monthly budget for a specific year and month with a new budget
@@ -132,35 +145,53 @@ export async function getMonthlyBudgetConfig(
  */
 export async function updateMonthlyBudget(
   year: string,
-  month: string,
+  month: Month,
   monthlyBudget: MonthlyBudget | null,
+  navigate: Navigator,
 ) {
   if (!monthlyBudget) return;
+
+  const sdk = NewGraphQLSDK();
   try {
-    await axios.post(
-      `${loadLocalConfig().backendUrl}/budget/${year}/${month}`,
-      monthlyBudget,
-      {
-        headers: {
-          Authorization: `Bearer ${getLocalAuthToken()}`,
+    const response = await sdk.UpdateMonthlyBudget({
+      inputs: {
+        year: Number(year),
+        month: month,
+        budget: {
+          month: month,
+          overBudgetAmount: monthlyBudget.overBudgetAmount,
+          spending: monthlyBudget.spending,
+          totalSpending: monthlyBudget.totalSpending,
+          carriedOverFrom: monthlyBudget.carriedOverFrom,
+          budget: {
+            totalAllocation: monthlyBudget.budget.totalAllocation,
+            shawnContributionAmount:
+              monthlyBudget.budget.shawnContributionAmount,
+            shawnPercentageAllocation:
+              monthlyBudget.budget.shawnPercentageAllocation,
+            maggieContributionAmount:
+              monthlyBudget.budget.maggieContributionAmount,
+            maggiePercentageAllocation:
+              monthlyBudget.budget.maggiePercentageAllocation,
+          },
         },
       },
-    );
-  } catch (e) {
-    if (axios.isAxiosError(e)) {
-      if (e.response?.status == 404) {
-        log.info("No budget recorded for this month");
-        return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
-      } else if (e.response?.status == 403) {
-        log.info("Access forbidden");
-        return Promise.reject(MonthlyBudgetErrors.FORBIDDEN);
-      } else if (e.response?.status == 401) {
-        log.info("Authenication token expired. Needs re authenication");
-        return Promise.reject(MonthlyBudgetErrors.RE_AUTH_NEEDED);
+    });
+
+    if (response.updateMonthlyBudget.__typename == "GraphQLErrorObject") {
+      const err = handleGraphQLErrorObject(
+        response.updateMonthlyBudget,
+        navigate,
+      );
+      if (err) {
+        console.error(err);
+        throw new Error(err);
       }
+
+      return response.updateMonthlyBudget;
     }
-    log.info(`Failed to get monthly budget: ${e}`);
-    return Promise.reject(MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET);
+  } catch (e) {
+    handleGraphQLClientError(e, navigate);
   }
 }
 
@@ -168,34 +199,46 @@ export async function updateMonthlyBudget(
  * Updates the budget config for a specific month
  */
 export async function updateMonthlyBudgetConfig(
-  year: Number,
+  year: number,
   month: Month,
   budgetConfig: BudgetConfig,
+  fireflySettings: FireflySettings,
   navigate: Navigator,
-): Promise<BudgetConfig> {
+): Promise<UpdateMonthlyBudgetConfigMutation> {
   const sdk = NewGraphQLSDK();
-  const budgetConfigInput: BudgetConfigInput = {
-    totalAllocation: budgetConfig.totalAllocation,
-    maggieContributionAmount: budgetConfig.maggieContributionAmount,
-    maggiePercentageAllocation: budgetConfig.maggiePercentageAllocation,
-    shawnContributionAmount: budgetConfig.shawnContributionAmount,
-    shawnPercentageAllocation: budgetConfig.shawnPercentageAllocation,
-  };
-  const response = await sdk.UpdateMonthlyBudgetConfig({
-    inputs: {
-      year,
-      month,
-      budgetConfig: budgetConfigInput,
-    },
-  });
+  try {
+    const budgetConfigInput: BudgetConfigInput = {
+      totalAllocation: budgetConfig.totalAllocation,
+      maggieContributionAmount: budgetConfig.maggieContributionAmount,
+      maggiePercentageAllocation: budgetConfig.maggiePercentageAllocation,
+      shawnContributionAmount: budgetConfig.shawnContributionAmount,
+      shawnPercentageAllocation: budgetConfig.shawnPercentageAllocation,
+    };
+    const response = await sdk.UpdateMonthlyBudgetConfig({
+      inputs: {
+        year,
+        month,
+        budgetConfig: budgetConfigInput,
+        firefly: {
+          enabled: fireflySettings.enabled,
+          apiKey: fireflySettings.apiKey,
+        },
+      },
+    });
 
-  if (response.updateBudgetConfig.__typename == "GraphQLErrorObject") {
-    const err = handleGraphQLError(response.updateBudgetConfig, navigate);
-    if (err) {
-      throw new Error(err);
+    if (response.updateMonthlyBudgetConfig.__typename == "GraphQLErrorObject") {
+      const err = handleGraphQLErrorObject(
+        response.updateMonthlyBudgetConfig,
+        navigate,
+      );
+      if (err) {
+        throw new Error(err);
+      }
     }
+    return response;
+  } catch (e) {
+    handleGraphQLClientError(e, navigate);
   }
-  return response.updateBudgetConfig as BudgetConfig;
 }
 /**
  * Validate the JWT token with the server. If the token is invalid or expired, redirect to `/login`

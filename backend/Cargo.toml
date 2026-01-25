@@ -1,9 +1,11 @@
 [package]
 name = "backend"
 version = "1.2.1"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
+firefly_client = { path = "./firefly_client/" }
+
 anyhow = "1.0.94"
 schemars = "1.0.4"
 simd-json = "0.17.0"
@@ -23,12 +25,14 @@ web-push = "0.11.0"
 async-graphql-axum = "7.0.17"
 async-graphql = "7.0.17"
 openssl = { version = "0.10.73", features = ["vendored"] }
-jsonwebtoken = "9.3.1"
+jsonwebtoken = { version = "10.2.0", features = ["aws_lc_rs"] }
 tokio-cron-scheduler = { version = "0.15.0", features = ["signal"] }
 futures = "0.3.31"
 chrono-tz = "0.10.3"
 headers = "0.4.1"
 axum-extra = { version = "0.12.5", features = ["cookie", "typed-header"] }
+chacha20poly1305 = "0.10.1"
+reqwest = { version = "^0.12" }
 
 
 [dev-dependencies]

@@ -52,11 +52,11 @@ export default function App() {
         <MetaProvider>
           <link
             rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css"
+            href="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/css/foundation.min.css"
             crossorigin="anonymous"
           ></link>
           <script
-            src="https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js"
+            src="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/js/foundation.min.js"
             crossorigin="anonymous"
           ></script>
           <Title>Budget tool</Title>

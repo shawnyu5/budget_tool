@@ -239,7 +239,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/export/{year}/{month}/csv": {

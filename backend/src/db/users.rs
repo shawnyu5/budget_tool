@@ -1,7 +1,7 @@
 use crate::{db::DBError, routes::notification::NotificationSubscription};
 use anyhow::Result;
 use anyhow::{anyhow, Context};
-use async_graphql::SimpleObject;
+use async_graphql::{InputObject, SimpleObject};
 use chrono::Utc;
 use futures::TryStreamExt;
 use mongodb::{bson::doc, options::ReplaceOptions, results::UpdateResult};
@@ -15,7 +15,8 @@ use crate::db::DB;
 pub const USER_TABLE_NAME: &str = "Users";
 
 /// Represents a user
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, InputObject)]
+#[graphql(input_name = "UserInput")]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     /// Username of the user
@@ -23,7 +24,21 @@ pub struct User {
     /// Notification subscription
     pub notification_subscription: NotificationSubscription,
     pub last_updated: Option<String>,
-    // pub user_crons: Vec<UserCron>,
+    pub firefly: Option<FireflySettings>,
+}
+
+/// Firefly related settings
+#[derive(
+    Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default, InputObject,
+)]
+#[graphql(input_name = "FireflySettingsInput")]
+pub struct FireflySettings {
+    /// If the user has enabled Firefly integration
+    pub enabled: bool,
+    /// API key, required if `enabled` = true
+    pub api_key: Option<String>,
+    /// Base64 encoded nounce used to encrypt / decrypt the API key
+    pub encryption_nounce: Option<String>,
 }
 
 impl Default for User {
@@ -32,6 +47,7 @@ impl Default for User {
             username: Default::default(),
             notification_subscription: Default::default(),
             last_updated: Some(Utc::now().to_string()),
+            firefly: Default::default(),
         }
     }
 }
@@ -70,14 +86,19 @@ impl DB<User> {
 
     /// Save a user information to the DB
     ///
+    /// * `username`: Username of the user to update
     /// * `user`: the user whos info to save
     #[instrument(skip_all)]
-    pub async fn save_user_info(&self, user: &User) -> Result<UpdateResult, DBError> {
+    pub async fn save_user_info(
+        &self,
+        username: &str,
+        user: &User,
+    ) -> Result<UpdateResult, DBError> {
         let mut user = user.clone();
         user.last_updated = Some(Utc::now().to_string());
 
         let filter = doc! {
-            "username": user.username.clone(),
+            "username": username,
         };
 
         let options = ReplaceOptions::builder().upsert(true).build();

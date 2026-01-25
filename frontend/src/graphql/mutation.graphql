@@ -13,14 +13,46 @@ mutation saveSubscription($subscription: SubscriptionInput!) {
 }
 
 mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
-  updateBudgetConfig(inputs: $inputs) {
-    ... on BudgetConfig {
+  updateMonthlyBudgetConfig(inputs: $inputs) {
+    ... on UpdateBudgetResponse {
+      success
+    }
+    ... on GraphQLErrorObject {
       __typename
-      totalAllocation
-      shawnPercentageAllocation
-      shawnContributionAmount
-      maggiePercentageAllocation
-      maggieContributionAmount
+      code
+      message
+    }
+  }
+}
+
+mutation UpdateMonthlyBudget($inputs: UpdateMonthlyBudgetInput!) {
+  updateMonthlyBudget(inputs: $inputs) {
+    ... on MonthlyBudget {
+      __typename
+      month
+      totalSpending
+      overBudgetAmount
+      spending {
+        id
+        amount
+        date
+        description
+        notes
+      }
+      carriedOverFrom
+      budget {
+        totalAllocation
+        maggiePercentageAllocation
+        maggieContributionAmount
+        shawnPercentageAllocation
+        shawnContributionAmount
+      }
+    }
+
+    ... on GraphQLErrorObject {
+      __typename
+      code
+      message
     }
   }
 }

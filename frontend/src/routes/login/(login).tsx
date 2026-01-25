@@ -21,7 +21,7 @@ export default function Login() {
         const subscription = await getNotificationSubscription();
 
         if (subscription) {
-          console.log("Saving push notification subscription to backend");
+          log.info("Saving push notification subscription to backend");
           const sdk = NewGraphQLSDK();
           const subscriptionJson = subscription.toJSON();
           sdk.saveSubscription({
@@ -35,7 +35,7 @@ export default function Login() {
       });
       return redirect("/");
     } catch (e) {
-       console.log("Caught error in component")
+       log.error("Caught error in component")
       log.error(`Failed to login: ${e}`);
       if (axios.isAxiosError(e)) {
         if (e.response?.status == 403) {

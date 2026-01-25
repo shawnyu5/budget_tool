@@ -1,4 +1,4 @@
-import { action, Navigate, useNavigate, useParams } from "@solidjs/router";
+import { action, useNavigate, useParams } from "@solidjs/router";
 import {
   Accessor,
   createEffect,
@@ -9,9 +9,9 @@ import {
 } from "solid-js";
 import { SpendingItem } from "~/server";
 import ErrorComponent from "./errorComponent";
-import { calculatePercentage, calculatePercentageOf } from "~/utils";
-import { handleGraphQLError, NewGraphQLSDK } from "~/graphql";
-import { BudgetConfig, Month } from "~/generated/graphql";
+import { calculatePercentage } from "~/utils";
+import { handleGraphQLErrorObject, NewGraphQLSDK } from "~/graphql";
+import { BudgetConfig } from "~/generated/graphql";
 
 /**
  * A form that displays a spending item
@@ -37,14 +37,14 @@ export function SpendingItemForm(props: {
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [budgetConfig] = createResource(async () => {
     const graphql = NewGraphQLSDK();
-    let response = await graphql.GetMonthlyBudgetConfig({
+    let response = await graphql.SpendingItemForm({
       year: parseInt(year),
       // @ts-ignore
       month: month,
     });
 
     if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLError(response.monthlyBudgetConfig, navigate);
+      const err = handleGraphQLErrorObject(response.monthlyBudgetConfig, navigate);
       if (err) {
         throw new Error(err);
       }

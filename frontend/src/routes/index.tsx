@@ -67,8 +67,9 @@ export default function Home() {
     try {
       await updateMonthlyBudget(
         searchParam.year as string,
-        searchParam.month as string,
+        searchParam.month as Month,
         budget,
+        navigate,
       );
     } catch (e) {
       if (axios.isAxiosError(e)) {
@@ -83,31 +84,19 @@ export default function Home() {
           throw MonthlyBudgetErrors.RE_AUTH_NEEDED;
         }
       }
-      log.info(`Failed to get monthly budget`);
-      throw new Error("Failed to get monthly budget");
+      throw new Error(`Failed to update monthly budget: ${e}`);
     }
   });
 
-  /**
-   * Syncs monthly budget with the server, and updates the resource
-   * @param updateMonthlyBudget - updated monthly budget to sync with the server
-   */
-  const syncMonthlyBudgetWithServer = async (
-    updateMonthlyBudget: MonthlyBudget,
-  ) => {
-    setMonthlyBudget(updateMonthlyBudget);
-    await refetch();
-  };
-
   return (
     <main>
+      <NavBar />
       <ErrorBoundary fallback={<p>Failed to load budget</p>}>
         <Suspense fallback={<p>Loading...</p>}>
           <span class="flex flex-col">
             <Show when={Notification.permission === "denied"}>
               <ErrorComponent message="This app needs to send notifications! Some functionality may not work properly without this permission" />
             </Show>
-            <NavBar />
           </span>
           <ErrorComponent message={errorMessage()} />
           <MonthlySpending monthlyBudget={monthlyBudgetResource} />

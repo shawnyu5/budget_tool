@@ -1,7 +1,7 @@
 use std::convert::Infallible;
 
 use anyhow::Result;
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 use axum::http::{HeaderMap, StatusCode};
@@ -9,9 +9,9 @@ use axum_extra::TypedHeader;
 use base64::prelude::*;
 use chrono::{Duration, Utc};
 use common_axum::app_error_v2::AppError;
-use headers::authorization::{Basic, Bearer};
 use headers::Authorization;
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use headers::authorization::{Basic, Bearer};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rayon::prelude::*;
 use tracing::{error, info, instrument, warn};
 
@@ -102,9 +102,9 @@ pub async fn basic_auth_handler_v2(
         ));
     }
     assert!(
-                user.len() == 1,
-                "There should be only one user that matched the authorization header. Something is wrong if there are multiple..."
-            );
+        user.len() == 1,
+        "There should be only one user that matched the authorization header. Something is wrong if there are multiple..."
+    );
     let token = generate_jwt(auth.username());
     return Ok(token);
 }
@@ -150,9 +150,9 @@ where
 
         info!("Validating JWT");
         let claim = match decode_jwt(bearer.token()) {
-            Ok(e) => {
-                info!("JWT exipration time: {time}", time = e.exp);
-                e
+            Ok(claim) => {
+                info!("JWT exipration time: {time}", time = claim.exp);
+                claim
             }
             Err(e) => {
                 error!("Failed to verify JWT token: {e}");

@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
-use anyhow::anyhow;
 use anyhow::Context;
+use anyhow::anyhow;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use axum::body;
@@ -10,15 +10,12 @@ use axum::http::HeaderMap;
 use axum::http::StatusCode;
 use axum::middleware;
 use axum::response::IntoResponse;
-use axum::{extract::Path, Json, Router};
-use axum_extra::TypedHeader;
+use axum::{Json, Router, extract::Path};
 use chrono::Local;
 use chrono::NaiveDate;
 use common_axum::app_error_v2::AppError;
 use common_axum::axum::generate_open_api_spec_from_open_api;
 use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
-use headers::authorization::Bearer;
-use headers::Authorization;
 use mongodb::bson::doc;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -35,8 +32,8 @@ use utoipa_axum::routes;
 use crate::cron::init_all_user_crons;
 use crate::custom_middleware::check_auth_header;
 use crate::db::DBError;
-use crate::graphql::generate_graphql_schema;
 use crate::graphql::SchemaType;
+use crate::graphql::generate_graphql_schema;
 use crate::monthly_budget::MonthlyBudget;
 use crate::monthly_budget::SpendingItem;
 use crate::routes::auth::basic_auth_handler_v2;
@@ -118,7 +115,7 @@ pub async fn app() -> Router {
 #[utoipa::path(get, path = "/graphql")]
 pub async fn graphql_playground() -> impl IntoResponse {
     use crate::routes::auth::generate_jwt;
-    use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+    use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
 
     use axum::response::Html;
 
@@ -193,6 +190,7 @@ async fn get_month_budget_handler(
 }
 
 /// Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending`, and `overBudgetAmount` is up to date
+#[deprecated = "Use the graphql handler instead"]
 #[instrument(skip_all)]
 #[utoipa::path(
     post,
