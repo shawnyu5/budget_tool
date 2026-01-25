@@ -3,13 +3,14 @@ WORKDIR /app
 
 FROM chef AS planner
 COPY . .
-# RUN apk add --no-cache openssl
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
 
 RUN apk add --no-cache perl make
 COPY --from=planner /app/recipe.json recipe.json
+# Seems like firefly_client needs to be in the image for cargo chef to work properly here
+COPY ./firefly_client ./firefly_client
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
