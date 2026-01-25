@@ -17,13 +17,13 @@ import {
  * @returns a graphQL SDK
  */
 export function NewGraphQLSDK() {
-  let url = "";
-  // __AUTO_GENERATED_PRINT_VAR_START__
-  if (import.meta.env.DEV) {
-    url = `${loadLocalConfig().backendUrl}/graphql`;
-  } else {
-    url = `${window.location.origin}/${loadLocalConfig().backendUrl}/graphql`;
-  }
+   const url = `${loadLocalConfig().backendUrl}/graphql`
+  // let url = "";
+  // if (import.meta.env.DEV) {
+  //   url = `${loadLocalConfig().backendUrl}/graphql`;
+  // } else {
+  //   url = `${window.location.origin}/${loadLocalConfig().backendUrl}/graphql`;
+  // }
 
   console.log(`Creating graphql client with ${url}`);
   const client = new GraphQLClient(url, {
