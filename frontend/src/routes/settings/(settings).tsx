@@ -1,6 +1,12 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import "./settings.css";
-import { createResource, createSignal, Show, Suspense } from "solid-js";
+import {
+  createResource,
+  createSignal,
+  ErrorBoundary,
+  Show,
+  Suspense,
+} from "solid-js";
 import { getSettingsPageData, updateMonthlyBudgetConfig } from "~/server";
 import log from "~/logger";
 import NavBar from "~/components/navBar";
@@ -84,267 +90,271 @@ export default function Settings() {
       <span class="inline-flex-container">
         <NavBar />
       </span>
-      <div id="settings-form">
-        <Show when={settingsPageDataResource()} fallback="Loading...">
-          <h2>Budget allocation</h2>
-          <ErrorComponent message={errorMessage()} />
-          <Show when={errorMessage() == null && successMessage()}>
-            <SuccessComponent message={successMessage()} />
+      <ErrorBoundary fallback={<p>Failed to load settings...</p>}>
+        <div id="settings-form">
+          <Show when={settingsPageDataResource()} fallback="Loading...">
+            <h2>Budget allocation</h2>
+            <ErrorComponent message={errorMessage()} />
+            <Show when={errorMessage() == null && successMessage()}>
+              <SuccessComponent message={successMessage()} />
+            </Show>
+            <Suspense fallback="Loading...">
+              <form action={handleSubmission} method="post">
+                <label for="month-budget">Month's budget($)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="month-budget"
+                  name="month-budget"
+                  disabled
+                  value={
+                    settingsPageDataResource()?.monthlyBudgetConfig
+                      .totalAllocation
+                  }
+                  onInput={(e: InputEvent) => {
+                    hasUserModified = true;
+                    const input = (e.target as HTMLInputElement).value;
+                    mutate((prev) => {
+                      if (!prev) return prev;
+                      return {
+                        ...prev,
+                        monthlyBudgetConfig: {
+                          ...prev.monthlyBudgetConfig,
+                          totalAllocation: parseFloat(input),
+                        },
+                      };
+                    });
+                  }}
+                  required
+                />
+
+                <label for="shawn-contribution-percentage">
+                  Shawn contribution percentage:
+                </label>
+                <input
+                  type="number"
+                  id="shawn-contribution-percentage"
+                  name="shawn-contribution-percentage"
+                  step="0.01"
+                  placeholder="50"
+                  value={
+                    settingsPageDataResource()?.monthlyBudgetConfig
+                      .shawnPercentageAllocation
+                  }
+                  onInput={(e: InputEvent) => {
+                    hasUserModified = true;
+                    const input = e.target as HTMLInputElement;
+                    const shawnPercentageContribution = parseFloat(input.value);
+                    const maggiePercentageAllocation =
+                      100 - shawnPercentageContribution;
+                    // const updated: BudgetConfig = {
+                    //   ...settingsPageDataResource()!,
+                    //   ...settingsPageDataResource()!,
+                    //   shawnPercentageAllocation: shawnPercentageContribution,
+                    //   shawnContributionAmount: calculatePercentage(
+                    //     settingsPageDataResource()?.totalAllocation ?? 0,
+                    //     shawnPercentageContribution,
+                    //   ),
+                    //   maggiePercentageAllocation: maggiePercentageAllocation,
+                    //   maggieContributionAmount: calculatePercentage(
+                    //     settingsPageDataResource()?.totalAllocation ?? 0,
+                    //     maggiePercentageAllocation,
+                    //   ),
+                    // };
+                    // mutate(updated);
+                    mutate((prev) => {
+                      if (!prev) return prev;
+                      return {
+                        ...prev,
+                        monthlyBudgetConfig: {
+                          ...prev.monthlyBudgetConfig,
+                          shawnPercentageAllocation:
+                            shawnPercentageContribution,
+                          shawnContributionAmount: calculatePercentage(
+                            settingsPageDataResource()?.monthlyBudgetConfig
+                              .totalAllocation ?? 0,
+                            shawnPercentageContribution,
+                          ),
+                          maggiePercentageAllocation:
+                            maggiePercentageAllocation,
+                          maggieContributionAmount: calculatePercentage(
+                            settingsPageDataResource()?.monthlyBudgetConfig
+                              .totalAllocation ?? 0,
+                            maggiePercentageAllocation,
+                          ),
+                        },
+                      };
+                    });
+                  }}
+                  required
+                />
+
+                <label for="shawn-contribution-amount">
+                  Shawn contribution amount:
+                </label>
+                <input
+                  type="number"
+                  id="shawn-contribution-amount"
+                  name="shawn-contribution-amount"
+                  step="0.01"
+                  placeholder="50"
+                  value={
+                    settingsPageDataResource()?.monthlyBudgetConfig
+                      .shawnContributionAmount ?? 0
+                  }
+                  onInput={(e: InputEvent) => {
+                    hasUserModified = true;
+                    const input = e.target as HTMLInputElement;
+                    const shawnContribution = parseFloat(input.value);
+
+                    const totalBudget = calculatePercentageOf(
+                      shawnContribution,
+                      settingsPageDataResource()?.monthlyBudgetConfig
+                        .shawnPercentageAllocation ?? 0,
+                    );
+
+                    // const updated: BudgetConfig = {
+                    //   ...settingsPageDataResource()!,
+                    //   totalAllocation: round(totalBudget),
+                    //   maggieContributionAmount: round(
+                    //     totalBudget - shawnContribution,
+                    //   ),
+                    //   shawnContributionAmount: shawnContribution,
+                    // };
+                    // mutate(updated);
+                    mutate((prev) => {
+                      if (!prev) return prev;
+                      return {
+                        ...prev,
+                        monthlyBudgetConfig: {
+                          ...prev?.monthlyBudgetConfig,
+                          totalAllocation: round(totalBudget),
+                          maggieContributionAmount: round(
+                            totalBudget - shawnContribution,
+                          ),
+                          shawnContributionAmount: shawnContribution,
+                        },
+                      };
+                    });
+                  }}
+                  required
+                />
+
+                <hr />
+
+                <label for="maggie-contribution-percentage">
+                  Maggie contribution percentage:
+                </label>
+                <input
+                  type="number"
+                  id="maggie-contribution-percentage"
+                  placeholder="50"
+                  name="maggie-contribution-percentage"
+                  value={
+                    settingsPageDataResource()?.monthlyBudgetConfig
+                      .maggiePercentageAllocation
+                  }
+                  onInput={(e: InputEvent) => {
+                    hasUserModified = true;
+                    const input = e.target as HTMLInputElement;
+                    const contribution = parseFloat(input.value);
+                    const shawnPercentageAllocation = 100 - contribution;
+                    // const updated: BudgetConfig = {
+                    //   ...settingsPageDataResource()!,
+                    //   maggiePercentageAllocation: contribution,
+                    //   maggieContributionAmount: calculatePercentage(
+                    //     settingsPageDataResource()?.totalAllocation ?? 0,
+                    //     contribution,
+                    //   ),
+                    //   shawnPercentageAllocation: shawnPercentageAllocation,
+                    //   shawnContributionAmount: calculatePercentage(
+                    //     settingsPageDataResource()?.totalAllocation ?? 0,
+                    //     shawnPercentageAllocation,
+                    //   ),
+                    // };
+                    // mutate(updated);
+                    mutate((prev) => {
+                      if (!prev) return prev;
+
+                      return {
+                        ...prev,
+                        monthlyBudgetConfig: {
+                          ...prev.monthlyBudgetConfig,
+                          maggiePercentageAllocation: contribution,
+                          maggieContributionAmount: calculatePercentage(
+                            settingsPageDataResource()?.monthlyBudgetConfig
+                              .totalAllocation ?? 0,
+                            contribution,
+                          ),
+                          shawnPercentageAllocation: shawnPercentageAllocation,
+                          shawnContributionAmount: calculatePercentage(
+                            settingsPageDataResource()?.monthlyBudgetConfig
+                              .totalAllocation ?? 0,
+                            shawnPercentageAllocation,
+                          ),
+                        },
+                      };
+                    });
+                  }}
+                  required
+                />
+
+                <label for="maggie-contribution-amount">
+                  Maggie contribution amount:
+                </label>
+                <input
+                  type="number"
+                  id="maggie-contribution-amount"
+                  name="maggie-contribution-amount"
+                  step="0.01"
+                  placeholder="50"
+                  value={
+                    settingsPageDataResource()?.monthlyBudgetConfig
+                      .maggieContributionAmount ?? 0
+                  }
+                  onInput={(e: InputEvent) => {
+                    hasUserModified = true;
+
+                    const input = e.target as HTMLInputElement;
+                    const maggiecontribution = parseFloat(input.value);
+                    const totalBudget = calculatePercentageOf(
+                      maggiecontribution,
+                      settingsPageDataResource()?.monthlyBudgetConfig
+                        .maggiePercentageAllocation ?? 0,
+                    );
+
+                    // const updated: BudgetConfig = {
+                    //   ...settingsPageDataResource()!,
+                    //   totalAllocation: round(totalBudget),
+                    //   maggieContributionAmount: maggiecontribution,
+                    //   shawnContributionAmount: totalBudget - maggiecontribution,
+                    // };
+                    // mutate(updated);
+                    mutate((prev) => {
+                      if (!prev) return prev;
+
+                      return {
+                        ...prev,
+                        monthlyBudgetConfig: {
+                          ...prev.monthlyBudgetConfig,
+                          totalAllocation: round(totalBudget),
+                          maggieContributionAmount: maggiecontribution,
+                          shawnContributionAmount:
+                            totalBudget - maggiecontribution,
+                        },
+                      };
+                    });
+                  }}
+                  required
+                />
+
+                <FireflySettingsForm data={rawResource} />
+                <button class="submit success button">Submit</button>
+              </form>
+            </Suspense>
           </Show>
-          <Suspense fallback="Loading...">
-            <form action={handleSubmission} method="post">
-              <label for="month-budget">Month's budget($)</label>
-              <input
-                type="number"
-                step="0.01"
-                id="month-budget"
-                name="month-budget"
-                disabled
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .totalAllocation
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
-                  const input = (e.target as HTMLInputElement).value;
-                  mutate((prev) => {
-                    if (!prev) return prev;
-                    return {
-                      ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev.monthlyBudgetConfig,
-                        totalAllocation: parseFloat(input),
-                      },
-                    };
-                  });
-                }}
-                required
-              />
-
-              <label for="shawn-contribution-percentage">
-                Shawn contribution percentage:
-              </label>
-              <input
-                type="number"
-                id="shawn-contribution-percentage"
-                name="shawn-contribution-percentage"
-                step="0.01"
-                placeholder="50"
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .shawnPercentageAllocation
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
-                  const input = e.target as HTMLInputElement;
-                  const shawnPercentageContribution = parseFloat(input.value);
-                  const maggiePercentageAllocation =
-                    100 - shawnPercentageContribution;
-                  // const updated: BudgetConfig = {
-                  //   ...settingsPageDataResource()!,
-                  //   ...settingsPageDataResource()!,
-                  //   shawnPercentageAllocation: shawnPercentageContribution,
-                  //   shawnContributionAmount: calculatePercentage(
-                  //     settingsPageDataResource()?.totalAllocation ?? 0,
-                  //     shawnPercentageContribution,
-                  //   ),
-                  //   maggiePercentageAllocation: maggiePercentageAllocation,
-                  //   maggieContributionAmount: calculatePercentage(
-                  //     settingsPageDataResource()?.totalAllocation ?? 0,
-                  //     maggiePercentageAllocation,
-                  //   ),
-                  // };
-                  // mutate(updated);
-                  mutate((prev) => {
-                    if (!prev) return prev;
-                    return {
-                      ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev.monthlyBudgetConfig,
-                        shawnPercentageAllocation: shawnPercentageContribution,
-                        shawnContributionAmount: calculatePercentage(
-                          settingsPageDataResource()?.monthlyBudgetConfig
-                            .totalAllocation ?? 0,
-                          shawnPercentageContribution,
-                        ),
-                        maggiePercentageAllocation: maggiePercentageAllocation,
-                        maggieContributionAmount: calculatePercentage(
-                          settingsPageDataResource()?.monthlyBudgetConfig
-                            .totalAllocation ?? 0,
-                          maggiePercentageAllocation,
-                        ),
-                      },
-                    };
-                  });
-                }}
-                required
-              />
-
-              <label for="shawn-contribution-amount">
-                Shawn contribution amount:
-              </label>
-              <input
-                type="number"
-                id="shawn-contribution-amount"
-                name="shawn-contribution-amount"
-                step="0.01"
-                placeholder="50"
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .shawnContributionAmount ?? 0
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
-                  const input = e.target as HTMLInputElement;
-                  const shawnContribution = parseFloat(input.value);
-
-                  const totalBudget = calculatePercentageOf(
-                    shawnContribution,
-                    settingsPageDataResource()?.monthlyBudgetConfig
-                      .shawnPercentageAllocation ?? 0,
-                  );
-
-                  // const updated: BudgetConfig = {
-                  //   ...settingsPageDataResource()!,
-                  //   totalAllocation: round(totalBudget),
-                  //   maggieContributionAmount: round(
-                  //     totalBudget - shawnContribution,
-                  //   ),
-                  //   shawnContributionAmount: shawnContribution,
-                  // };
-                  // mutate(updated);
-                  mutate((prev) => {
-                    if (!prev) return prev;
-                    return {
-                      ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev?.monthlyBudgetConfig,
-                        totalAllocation: round(totalBudget),
-                        maggieContributionAmount: round(
-                          totalBudget - shawnContribution,
-                        ),
-                        shawnContributionAmount: shawnContribution,
-                      },
-                    };
-                  });
-                }}
-                required
-              />
-
-              <hr />
-
-              <label for="maggie-contribution-percentage">
-                Maggie contribution percentage:
-              </label>
-              <input
-                type="number"
-                id="maggie-contribution-percentage"
-                placeholder="50"
-                name="maggie-contribution-percentage"
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .maggiePercentageAllocation
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
-                  const input = e.target as HTMLInputElement;
-                  const contribution = parseFloat(input.value);
-                  const shawnPercentageAllocation = 100 - contribution;
-                  // const updated: BudgetConfig = {
-                  //   ...settingsPageDataResource()!,
-                  //   maggiePercentageAllocation: contribution,
-                  //   maggieContributionAmount: calculatePercentage(
-                  //     settingsPageDataResource()?.totalAllocation ?? 0,
-                  //     contribution,
-                  //   ),
-                  //   shawnPercentageAllocation: shawnPercentageAllocation,
-                  //   shawnContributionAmount: calculatePercentage(
-                  //     settingsPageDataResource()?.totalAllocation ?? 0,
-                  //     shawnPercentageAllocation,
-                  //   ),
-                  // };
-                  // mutate(updated);
-                  mutate((prev) => {
-                    if (!prev) return prev;
-
-                    return {
-                      ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev.monthlyBudgetConfig,
-                        maggiePercentageAllocation: contribution,
-                        maggieContributionAmount: calculatePercentage(
-                          settingsPageDataResource()?.monthlyBudgetConfig
-                            .totalAllocation ?? 0,
-                          contribution,
-                        ),
-                        shawnPercentageAllocation: shawnPercentageAllocation,
-                        shawnContributionAmount: calculatePercentage(
-                          settingsPageDataResource()?.monthlyBudgetConfig
-                            .totalAllocation ?? 0,
-                          shawnPercentageAllocation,
-                        ),
-                      },
-                    };
-                  });
-                }}
-                required
-              />
-
-              <label for="maggie-contribution-amount">
-                Maggie contribution amount:
-              </label>
-              <input
-                type="number"
-                id="maggie-contribution-amount"
-                name="maggie-contribution-amount"
-                step="0.01"
-                placeholder="50"
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .maggieContributionAmount ?? 0
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
-
-                  const input = e.target as HTMLInputElement;
-                  const maggiecontribution = parseFloat(input.value);
-                  const totalBudget = calculatePercentageOf(
-                    maggiecontribution,
-                    settingsPageDataResource()?.monthlyBudgetConfig
-                      .maggiePercentageAllocation ?? 0,
-                  );
-
-                  // const updated: BudgetConfig = {
-                  //   ...settingsPageDataResource()!,
-                  //   totalAllocation: round(totalBudget),
-                  //   maggieContributionAmount: maggiecontribution,
-                  //   shawnContributionAmount: totalBudget - maggiecontribution,
-                  // };
-                  // mutate(updated);
-                  mutate((prev) => {
-                    if (!prev) return prev;
-
-                    return {
-                      ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev.monthlyBudgetConfig,
-                        totalAllocation: round(totalBudget),
-                        maggieContributionAmount: maggiecontribution,
-                        shawnContributionAmount:
-                          totalBudget - maggiecontribution,
-                      },
-                    };
-                  });
-                }}
-                required
-              />
-
-              <FireflySettingsForm data={rawResource} />
-              <button class="submit success button">Submit</button>
-            </form>
-          </Suspense>
-        </Show>
-      </div>
+        </div>
+      </ErrorBoundary>
     </>
   );
 }
