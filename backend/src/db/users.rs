@@ -1,6 +1,7 @@
+use crate::encryption::{decrypt, encrypt};
 use crate::{db::DBError, routes::notification::NotificationSubscription};
 use anyhow::Result;
-use anyhow::{anyhow, Context};
+use anyhow::{Context, anyhow};
 use async_graphql::{InputObject, SimpleObject};
 use chrono::Utc;
 use futures::TryStreamExt;
@@ -25,6 +26,42 @@ pub struct User {
     pub notification_subscription: NotificationSubscription,
     pub last_updated: Option<String>,
     pub firefly: Option<FireflySettings>,
+}
+
+impl User {
+    /// Decrypt the firefly API key for the current user. Updates `self.firefly.api_key` with the decrypted value
+    pub fn decrypt_firefly_api_key(&mut self) -> Result<()> {
+        if let Some(firefly) = self.firefly.as_mut()
+            && firefly.enabled
+            && let (Some(api_key), Some(nonce)) =
+                (firefly.api_key.as_mut(), firefly.encryption_nounce.as_ref())
+        {
+            info!("Decrypting API key...");
+            let decrypted =
+                decrypt(api_key, nonce).map_err(|e| anyhow!("Failed to decrypt API key: {e}"))?;
+
+            *api_key = decrypted;
+        }
+        return Ok(());
+    }
+
+    /// Encrypts `api_key`. Updates `self.firefly.api_key` and `self.firefly.encryption_nounce`
+    ///
+    /// * `api_key`: the API key to encrypt
+    pub fn encrypt_firefly_api_key(&mut self, api_key: &str) -> Result<()> {
+        if let Some(firefly) = self.firefly.as_mut() {
+            if firefly.enabled {
+                let (secret, b64_nounce) =
+                    encrypt(api_key).map_err(|e| anyhow!("Failed to encrypt API key: {e}"))?;
+                firefly.api_key = Some(secret);
+                firefly.encryption_nounce = Some(b64_nounce);
+            } else {
+                info!("Firefly integration disabled. Skip encrypting user API key");
+            }
+        }
+
+        return Ok(());
+    }
 }
 
 /// Firefly related settings

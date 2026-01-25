@@ -3,7 +3,7 @@ use std::time::Duration;
 use anyhow::Context;
 use anyhow::Result;
 use mongodb::options::ClientOptions;
-use mongodb::{bson::doc, Client, Collection};
+use mongodb::{Client, Collection, bson::doc};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 use tracing::debug;

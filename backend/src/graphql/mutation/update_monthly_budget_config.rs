@@ -110,10 +110,8 @@ pub async fn update_budget_config_handler(
         };
 
         info!("Encrypting API key");
-        let (secret, b64_nounce) =
-            encrypt(api_key).map_err(|e| anyhow!("Failed to encrypt API key: {e}"))?;
-        *api_key = secret;
-        inputs.firefly.encryption_nounce = Some(b64_nounce);
+        user.encrypt_firefly_api_key(api_key)
+            .context("Failed to encrypt firefly API key while updating user settings")?;
 
         info!("Encrypted API key: {api_key}");
     }
