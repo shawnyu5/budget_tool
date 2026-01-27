@@ -11,13 +11,14 @@ import {
   GraphQlErrorCode,
   GraphQlErrorObject,
 } from "./generated/graphql";
+import { match } from "ts-pattern";
 
 /**
  * Construct a new GraphQL SDK that is ready to use
  * @returns a graphQL SDK
  */
 export function NewGraphQLSDK() {
-   const url = `${loadLocalConfig().backendUrl}/graphql`
+  const url = `${loadLocalConfig().backendUrl}/graphql`;
   // let url = "";
   // if (import.meta.env.DEV) {
   //   url = `${loadLocalConfig().backendUrl}/graphql`;
@@ -60,18 +61,28 @@ export function handleGraphQLHttpError(
  */
 export function handleGraphQLErrorObject(
   err: GraphQlErrorObject,
-  navigate: Navigator,
 ): string | null {
-  if (err.code == GraphQlErrorCode.FailedToFetchBudget) {
-    return "Failed to fetch budget...";
-  } else if (err.code == GraphQlErrorCode.ServerError) {
-    return "Something went wrong on the server...";
-  } else if (err.code == GraphQlErrorCode.Forbidden) {
-    navigate("/login", { replace: true });
-  } else if (err.code == GraphQlErrorCode.InvalidFireflyApiKey) {
-    return err.message;
-  }
-  return null;
+  return match(err.code)
+    .with(GraphQlErrorCode.FailedToFetchBudget, () => {
+      throw new Error("Failed to fetch budget");
+    })
+    .with(GraphQlErrorCode.ServerError, () => {
+      throw new Error("Internal server error");
+    })
+    .with(GraphQlErrorCode.InvalidFireflyApiKey, () => {
+      return "Invalid firefly API key...";
+    })
+    .with(GraphQlErrorCode.FireflyUpdateFailed, () => {
+      return `Your transaction has been created, but transaction in firefly failed to create: ${err.message}`;
+    })
+    .exhaustive();
+  // if (err.code == GraphQlErrorCode.FailedToFetchBudget) {
+  //   return "Failed to fetch budget...";
+  // } else if (err.code == GraphQlErrorCode.ServerError) {
+  //   return "Something went wrong on the server...";
+  // } else if (err.code == GraphQlErrorCode.InvalidFireflyApiKey) {
+  //   return err.message;
+  // }
 }
 
 /**

@@ -95,10 +95,10 @@ export default function Home() {
         <Suspense fallback={<p>Loading...</p>}>
           <span class="flex flex-col">
             <Show when={Notification.permission === "denied"}>
-              <ErrorComponent message="This app needs to send notifications! Some functionality may not work properly without this permission" />
+              <ErrorComponent errorMessage="This app needs to send notifications! Some functionality may not work properly without this permission" />
             </Show>
           </span>
-          <ErrorComponent message={errorMessage()} />
+          <ErrorComponent errorMessage={errorMessage()} />
           <MonthlySpending monthlyBudget={monthlyBudgetResource} />
           <SplitBudget monthlyBudget={monthlyBudgetResource} />
           <br />

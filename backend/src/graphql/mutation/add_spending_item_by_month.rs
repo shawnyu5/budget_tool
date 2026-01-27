@@ -86,7 +86,7 @@ pub async fn add_spending_item_by_month_handler(
             .await
             .context("Failed to get monthly budget config from DB")?
             .budget;
-        for user in users {
+        for mut user in users {
             let mut amount = 0.0;
             if user.username == "shawn" {
                 amount = calculate_percentage(
@@ -99,10 +99,14 @@ pub async fn add_spending_item_by_month_handler(
                     monthly_budget_config.maggie_percentage_allocation,
                 );
             } else {
-                warn!("Unsupported firefly user. Not creating firefly transaction");
+                warn!(
+                    "Unsupported firefly user: {}. Not creating firefly transaction",
+                    user.username
+                );
                 continue;
             };
 
+            user.decrypt_firefly_api_key()?;
             info!("Creating firefly transaction for user {}", &user.username);
             let t = match firefly_client::apis::transactions_api::store_transaction(
                 &firefly_client::apis::configuration::Configuration {
@@ -138,20 +142,13 @@ pub async fn add_spending_item_by_month_handler(
                         GraphQLErrorObject {
                             code: crate::graphql::error::GraphQLErrorCode::FireflyUpdateFailed,
                             message: format!(
-                                "Failed to create firfly transaction for user {}",
+                                "Failed to create firfly transaction for user {}: {e}",
                                 user.username
                             ),
                         },
                     ));
-                    // return Err(anyhow!(
-                    //     "Failed to create new transaction in Firefly: {}",
-                    //     e
-                    // ));
                 }
             };
-            // .context("Failed to create new transaction in Firefly")?;
-
-            dbg!(t);
         }
     }
 

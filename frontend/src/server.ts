@@ -89,7 +89,7 @@ export async function getMonthlyBudget(
     });
 
     if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLErrorObject(response.monthlyBudget, navigate);
+      const err = handleGraphQLErrorObject(response.monthlyBudget);
       if (err) {
         throw new Error(err);
       }
@@ -124,7 +124,6 @@ export async function getSettingsPageData(
     if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
       const err = handleGraphQLErrorObject(
         response.monthlyBudgetConfig,
-        navigate,
       );
       if (err) {
         throw new Error(err);
@@ -181,7 +180,6 @@ export async function updateMonthlyBudget(
     if (response.updateMonthlyBudget.__typename == "GraphQLErrorObject") {
       const err = handleGraphQLErrorObject(
         response.updateMonthlyBudget,
-        navigate,
       );
       if (err) {
         console.error(err);
@@ -229,7 +227,6 @@ export async function updateMonthlyBudgetConfig(
     if (response.updateMonthlyBudgetConfig.__typename == "GraphQLErrorObject") {
       const err = handleGraphQLErrorObject(
         response.updateMonthlyBudgetConfig,
-        navigate,
       );
       if (err) {
         throw new Error(err);

@@ -355,7 +355,7 @@
         "fields": [
           {
             "name": "apiKey",
-            "description": "API key, required if `enabled` = true",
+            "description": "Encrypted firefly API key, required if `enabled` = true\nMust call `User.decrypt_firefly_api_key()` to get the decrypted version",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -408,7 +408,7 @@
         "inputFields": [
           {
             "name": "apiKey",
-            "description": "API key, required if `enabled` = true",
+            "description": "Encrypted firefly API key, required if `enabled` = true\nMust call `User.decrypt_firefly_api_key()` to get the decrypted version",
             "type": {
               "kind": "SCALAR",
               "name": "String",

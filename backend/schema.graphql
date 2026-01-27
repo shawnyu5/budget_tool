@@ -70,7 +70,8 @@ type FireflySettings {
 	"""
 	enabled: Boolean!
 	"""
-	API key, required if `enabled` = true
+	Encrypted firefly API key, required if `enabled` = true
+	Must call `User.decrypt_firefly_api_key()` to get the decrypted version
 	"""
 	apiKey: String
 	"""
@@ -88,7 +89,8 @@ input FireflySettingsInput {
 	"""
 	enabled: Boolean!
 	"""
-	API key, required if `enabled` = true
+	Encrypted firefly API key, required if `enabled` = true
+	Must call `User.decrypt_firefly_api_key()` to get the decrypted version
 	"""
 	apiKey: String
 	"""

@@ -15,6 +15,7 @@ import SuccessComponent from "~/components/successComponent";
 import { calculatePercentage, calculatePercentageOf, round } from "~/utils";
 import { Month } from "~/generated/graphql";
 import { FireflySettingsForm } from "./firefly_settings";
+import { handleGraphQLErrorObject } from "~/graphql";
 
 export default function Settings() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -63,13 +64,20 @@ export default function Settings() {
       return;
     }
     try {
-      await updateMonthlyBudgetConfig(
+      const res = await updateMonthlyBudgetConfig(
         Number(searchParam.year),
         searchParam.month as Month,
         settingsPageDataResource()?.monthlyBudgetConfig!,
         settingsPageDataResource()?.me.firefly!,
         navigate,
       );
+
+      if (res.updateMonthlyBudgetConfig.__typename == "GraphQLErrorObject") {
+        const err = handleGraphQLErrorObject(res.updateMonthlyBudgetConfig);
+        if (err) {
+          throw err;
+        }
+      }
     } catch (e) {
       // @ts-ignore
       log.error("Failed to update settings: ", e);
@@ -94,7 +102,7 @@ export default function Settings() {
         <div id="settings-form">
           <Show when={settingsPageDataResource()} fallback="Loading...">
             <h2>Budget allocation</h2>
-            <ErrorComponent message={errorMessage()} />
+            <ErrorComponent errorMessage={errorMessage()} />
             <Show when={errorMessage() == null && successMessage()}>
               <SuccessComponent message={successMessage()} />
             </Show>

@@ -50,7 +50,7 @@ export default function Login() {
   return (
     <div id="login-form">
       <form action={onSubmit} method="post">
-        <ErrorComponent message={errorMessage()} />
+        <ErrorComponent errorMessage={errorMessage()} />
 
         <label>Username</label>
         <input

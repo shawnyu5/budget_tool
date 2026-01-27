@@ -1,6 +1,13 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import axios, { isAxiosError } from "axios";
-import { Accessor, createSignal, onMount, Setter, Show } from "solid-js";
+import {
+  Accessor,
+  createSignal,
+  onMount,
+  Setter,
+  Show,
+  Signal,
+} from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
 import { SpendingItemForm } from "~/components/spendingItemForm";
 import { loadLocalConfig } from "~/config";
@@ -47,9 +54,9 @@ export default function () {
 
   const onSubmit = async (
     updatedSpendingItem: SpendingItem,
-    errorMessage: Accessor<string | null>,
-    setErrorMessage: Setter<string | null>,
+    errorMessageSignal: Signal<string | null>,
   ) => {
+    const [errorMessage, setErrorMessage] = errorMessageSignal;
     if (errorMessage()) {
       log.info("There is an error message on screen. Not submitting form...");
       return;
@@ -90,7 +97,7 @@ export default function () {
   return (
     <div id="spending-item-form">
       <Show when={errorMessage()}>
-        <ErrorComponent message={errorMessage()} />
+        <ErrorComponent errorMessage={errorMessage()} />
       </Show>
       <SpendingItemForm spendingItem={spendingItem} onSubmit={onSubmit} />
     </div>

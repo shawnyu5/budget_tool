@@ -72,7 +72,8 @@ impl User {
 pub struct FireflySettings {
     /// If the user has enabled Firefly integration
     pub enabled: bool,
-    /// API key, required if `enabled` = true
+    /// Encrypted firefly API key, required if `enabled` = true
+    /// Must call `User.decrypt_firefly_api_key()` to get the decrypted version
     pub api_key: Option<String>,
     /// Base64 encoded nounce used to encrypt / decrypt the API key
     pub encryption_nounce: Option<String>,

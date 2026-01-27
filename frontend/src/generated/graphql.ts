@@ -62,7 +62,10 @@ export type DeleteSpendingItemByIdInput = {
 /** Firefly related settings */
 export type FireflySettings = {
   __typename?: 'FireflySettings';
-  /** API key, required if `enabled` = true */
+  /**
+   * Encrypted firefly API key, required if `enabled` = true
+   * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
+   */
   apiKey?: Maybe<Scalars['String']['output']>;
   /** If the user has enabled Firefly integration */
   enabled: Scalars['Boolean']['output'];
@@ -72,7 +75,10 @@ export type FireflySettings = {
 
 /** Firefly related settings */
 export type FireflySettingsInput = {
-  /** API key, required if `enabled` = true */
+  /**
+   * Encrypted firefly API key, required if `enabled` = true
+   * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
+   */
   apiKey?: InputMaybe<Scalars['String']['input']>;
   /** If the user has enabled Firefly integration */
   enabled: Scalars['Boolean']['input'];

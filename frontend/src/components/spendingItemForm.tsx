@@ -6,6 +6,7 @@ import {
   createSignal,
   Setter,
   Show,
+  Signal,
 } from "solid-js";
 import { SpendingItem } from "~/server";
 import ErrorComponent from "./errorComponent";
@@ -20,21 +21,19 @@ export function SpendingItemForm(props: {
   spendingItem: Accessor<SpendingItem | null>;
   onSubmit: (
     updatedSpendingItem: SpendingItem,
-    errorMessage: Accessor<string | null>,
-    setErrorMessage: Setter<string | null>,
+    errorMessageSignal: Signal<string | null>,
   ) => Promise<void>;
 }) {
   const param = useParams();
   const year = param.year;
   const month = param.month;
 
-  const navigate = useNavigate();
-
   const [amount, setAmount] = createSignal(0);
   const [date, setDate] = createSignal("");
   const [description, setDescription] = createSignal("");
   const [notes, setNotes] = createSignal("");
-  const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
+  const errorMessageSignal = createSignal<string | null>(null);
+  const [errorMessage, _setErrorMessage] = errorMessageSignal;
   const [budgetConfig] = createResource(async () => {
     const graphql = NewGraphQLSDK();
     let response = await graphql.SpendingItemForm({
@@ -44,7 +43,7 @@ export function SpendingItemForm(props: {
     });
 
     if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLErrorObject(response.monthlyBudgetConfig, navigate);
+      const err = handleGraphQLErrorObject(response.monthlyBudgetConfig);
       if (err) {
         throw new Error(err);
       }
@@ -93,12 +92,11 @@ export function SpendingItemForm(props: {
             description: description(),
             notes: notes(),
           },
-          errorMessage,
-          setErrorMessage,
+          errorMessageSignal
         );
       })}
     >
-      <ErrorComponent message={errorMessage()} />
+      <ErrorComponent errorMessage={errorMessage()} />
 
       <Show when={props.spendingItem()} fallback={<p>Loading...</p>}>
         <label>Amount ($)</label>
