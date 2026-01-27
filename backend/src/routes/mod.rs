@@ -2,7 +2,6 @@ use std::ops::Deref;
 
 use anyhow::Context;
 use anyhow::anyhow;
-use async_graphql::Request;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use axum::body;

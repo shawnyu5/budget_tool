@@ -102,8 +102,8 @@ pub async fn add_spending_item_by_month_handler(
                 warn!("Unsupported firefly user. Not creating firefly transaction");
                 continue;
             };
-            info!("Creating firefly transaction for user {}", &user.username);
 
+            info!("Creating firefly transaction for user {}", &user.username);
             let t = match firefly_client::apis::transactions_api::store_transaction(
                 &firefly_client::apis::configuration::Configuration {
                     base_path: config.firefly_url.clone(),

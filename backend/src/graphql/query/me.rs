@@ -1,7 +1,6 @@
-use anyhow::anyhow;
 use anyhow::{Context as _, Result};
-use async_graphql::{Context, Union};
-use tracing::{debug, info};
+use async_graphql::Context;
+use tracing::debug;
 
 use crate::{
     db::{
