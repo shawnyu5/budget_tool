@@ -2,6 +2,7 @@ use std::ops::Deref;
 
 use anyhow::Context;
 use anyhow::anyhow;
+use async_graphql::Request;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
 use axum::body;
@@ -18,6 +19,7 @@ use common_axum::axum::generate_open_api_spec_from_open_api;
 use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
 use mongodb::bson::doc;
 use rayon::prelude::*;
+use reqwest::header::ACCEPT;
 use serde::{Deserialize, Serialize};
 use simd_json::from_slice;
 use tokio_cron_scheduler::JobScheduler;
@@ -141,7 +143,19 @@ async fn graphql_handler(
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let req = req.into_inner();
-    schema.execute(req.data(jwt)).await.into()
+
+    // Tell firefly it can return errors in JSON format, rather than auto redirecting to firefly home page
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        ACCEPT,
+        reqwest::header::HeaderValue::from_static("application/json"),
+    );
+    let client = reqwest::Client::builder()
+        .default_headers(headers)
+        .build()
+        .expect("Failed to build reqest client");
+
+    schema.execute(req.data(jwt).data(client)).await.into()
 }
 
 /// Get the budget information for a specific month

@@ -71,6 +71,28 @@
         "possibleTypes": null
       },
       {
+        "kind": "UNION",
+        "name": "AddSpendingItemByMonthResponse",
+        "description": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": [
+          {
+            "kind": "OBJECT",
+            "name": "GraphQLErrorObject",
+            "ofType": null
+          },
+          {
+            "kind": "OBJECT",
+            "name": "SuccessResponse",
+            "ofType": null
+          }
+        ]
+      },
+      {
         "kind": "SCALAR",
         "name": "Boolean",
         "description": "The `Boolean` scalar type represents `true` or `false`.",
@@ -496,6 +518,12 @@
           {
             "name": "FAILED_TO_FETCH_BUDGET",
             "description": "Failed to fetch budget for some reason. Typically response 404",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "FIREFLY_UPDATE_FAILED",
+            "description": "Failed to create / update transactions in firefly",
             "isDeprecated": false,
             "deprecationReason": null
           },
@@ -953,7 +981,7 @@
               "name": null,
               "ofType": {
                 "kind": "UNION",
-                "name": "MonthlyBudgetResponse",
+                "name": "AddSpendingItemByMonthResponse",
                 "ofType": null
               }
             },
@@ -1762,6 +1790,34 @@
           }
         ],
         "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "SuccessResponse",
+        "description": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "success",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
         "enumValues": null,
         "possibleTypes": null
       },

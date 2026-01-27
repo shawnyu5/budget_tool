@@ -5,7 +5,6 @@ use chacha20poly1305::{
     aead::{Aead, AeadCore, KeyInit, OsRng},
 };
 use sha2::digest::generic_array::GenericArray;
-use tracing::info;
 
 use crate::config::Config;
 

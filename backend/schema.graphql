@@ -4,6 +4,8 @@ input AddSpendingItemByMonthInput {
 	spendingItem: SpendingItemInput!
 }
 
+union AddSpendingItemByMonthResponse = SuccessResponse | GraphQLErrorObject
+
 type BudgetConfig {
 	"""
 	Total allocated budget
@@ -122,6 +124,10 @@ enum GraphQLErrorCode {
 	"""
 	FAILED_TO_FETCH_BUDGET
 	INVALID_FIREFLY_API_KEY
+	"""
+	Failed to create / update transactions in firefly
+	"""
+	FIREFLY_UPDATE_FAILED
 }
 
 type GraphQLErrorObject {
@@ -223,7 +229,7 @@ type MutationRoot {
 	"""
 	Add a spending item to a month
 	"""
-	addSpendingItemByMonth(inputs: AddSpendingItemByMonthInput!): MonthlyBudgetResponse!
+	addSpendingItemByMonth(inputs: AddSpendingItemByMonthInput!): AddSpendingItemByMonthResponse!
 	"""
 	Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
 	"""
@@ -343,6 +349,10 @@ input SubscriptionInput {
 	p256Dh: String!
 	auth: String!
 	expirationTime: Int
+}
+
+type SuccessResponse {
+	success: Boolean!
 }
 
 input UpdateBudgetConfigInput {

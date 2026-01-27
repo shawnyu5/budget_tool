@@ -1,10 +1,9 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{Context, InputObject};
-use tracing::{info, instrument};
+use tracing::info;
 
 use crate::{
-    db::DB, graphql::mutation::add_spending_item_by_month::MonthlyBudgetResponse, month::Month,
-    monthly_budget::MonthlyBudget,
+    db::DB, graphql::mutation::MonthlyBudgetResponse, month::Month, monthly_budget::MonthlyBudget,
 };
 
 #[derive(InputObject)]

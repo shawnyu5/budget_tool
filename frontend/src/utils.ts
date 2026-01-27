@@ -40,6 +40,7 @@ export function setLocalAuthToken(token: string) {
 /**
  * Generate an ID for a spending item
  * @returns a unique ID for a spending item
+ * @deprecated use crypto.randomUUID()
  */
 export function generateSpendingItemID(): string {
   const date = new Date();

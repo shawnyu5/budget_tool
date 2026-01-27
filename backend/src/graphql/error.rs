@@ -1,4 +1,4 @@
-use async_graphql::{Enum, Error, ErrorExtensions, Object, Pos, Response, SimpleObject, Union};
+use async_graphql::{Enum, Error, ErrorExtensions, Pos, Response, SimpleObject};
 use axum::{Json, response::IntoResponse};
 use serde::Serialize;
 use thiserror::Error;
@@ -22,6 +22,10 @@ pub enum GraphQLErrorCode {
 
     #[error("Invalid Firefly API key")]
     InvalidFireflyAPIKey,
+
+    /// Failed to create / update transactions in firefly
+    #[error("Failed to update firefly")]
+    FireflyUpdateFailed,
 }
 
 impl ErrorExtensions for GraphQLErrorCode {
@@ -30,6 +34,7 @@ impl ErrorExtensions for GraphQLErrorCode {
             GraphQLErrorCode::ServerError => e.set("error", err.to_string()),
             GraphQLErrorCode::FailedToFetchBudget => e.set("error", err.to_string()),
             GraphQLErrorCode::InvalidFireflyAPIKey => e.set("error", err.to_string()),
+            GraphQLErrorCode::FireflyUpdateFailed => e.set("error", err.to_string()),
         })
     }
 }

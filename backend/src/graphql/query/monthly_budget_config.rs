@@ -1,5 +1,5 @@
 use async_graphql::Context;
-use tracing::{error, info, instrument};
+use tracing::{error, info};
 
 use crate::{
     db::DB,

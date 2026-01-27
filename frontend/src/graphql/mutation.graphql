@@ -56,3 +56,12 @@ mutation UpdateMonthlyBudget($inputs: UpdateMonthlyBudgetInput!) {
     }
   }
 }
+
+mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
+  addSpendingItemByMonth(inputs: $inputs) {
+    ... on SuccessResponse {
+      success
+    }
+    ...GraphQLErrorFields
+  }
+}

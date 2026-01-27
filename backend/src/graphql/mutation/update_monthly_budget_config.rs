@@ -1,16 +1,14 @@
-use anyhow::anyhow;
 use anyhow::{Context as AnyhowContext, Result};
 use async_graphql::{Context, InputObject, SimpleObject, Union};
 use reqwest::header::ACCEPT;
-use tracing::{error, info, instrument};
+use tracing::{error, info};
 
-use crate::config::{self, Config};
+use crate::config::Config;
 use crate::{
     db::{
         DB,
         users::{FireflySettings, USER_TABLE_NAME},
     },
-    encryption::{decrypt, encrypt},
     graphql::{
         error::{GraphQLErrorCode, GraphQLErrorObject},
         utils::extract_jwt,

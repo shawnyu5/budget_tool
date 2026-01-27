@@ -1,26 +1,31 @@
 use anyhow::Result;
-use async_graphql::{Context, Object};
+use async_graphql::{Context, Object, Union};
 use tracing::instrument;
 
 use crate::{
     db::users::User,
-    graphql::mutation::{
-        add_spending_item_by_month::{
-            add_spending_item_by_month_handler, AddSpendingItemByMonthInput, MonthlyBudgetResponse,
-        },
-        delete_spending_item_by_id::{
-            delete_spending_item_by_id_handler, DeleteSpendingItemByIdInput,
-        },
-        save_subscription::{save_subscription_handler, SubscriptionInput},
-        update_me::{update_me_handler, UpdateMe, UpdateMeResponse},
-        update_monthly_budget::{update_monthly_budget_handler, UpdateMonthlyBudgetInput},
-        update_monthly_budget_config::{
-            update_budget_config_handler, UpdateBudgetConfigInput, UpdateBudgetConfigResponse,
-        },
-        update_spending_item_by_id::{
-            update_spending_item_by_id_handler, UpdateSpendingItemByIdInput,
+    graphql::{
+        error::GraphQLErrorObject,
+        mutation::{
+            add_spending_item_by_month::{
+                AddSpendingItemByMonthInput, AddSpendingItemByMonthResponse,
+                add_spending_item_by_month_handler,
+            },
+            delete_spending_item_by_id::{
+                DeleteSpendingItemByIdInput, delete_spending_item_by_id_handler,
+            },
+            save_subscription::{SubscriptionInput, save_subscription_handler},
+            update_me::{UpdateMe, UpdateMeResponse, update_me_handler},
+            update_monthly_budget::{UpdateMonthlyBudgetInput, update_monthly_budget_handler},
+            update_monthly_budget_config::{
+                UpdateBudgetConfigInput, UpdateBudgetConfigResponse, update_budget_config_handler,
+            },
+            update_spending_item_by_id::{
+                UpdateSpendingItemByIdInput, update_spending_item_by_id_handler,
+            },
         },
     },
+    monthly_budget::MonthlyBudget,
 };
 
 pub mod add_spending_item_by_month;
@@ -30,6 +35,12 @@ pub mod update_me;
 pub mod update_monthly_budget;
 pub mod update_monthly_budget_config;
 pub mod update_spending_item_by_id;
+
+#[derive(Union)]
+pub enum MonthlyBudgetResponse {
+    MonthlyBudget(MonthlyBudget),
+    Error(GraphQLErrorObject),
+}
 
 /// Root of the Mutation
 #[derive(Default, Clone, Debug)]
@@ -63,8 +74,8 @@ impl MutationRoot {
         &self,
         ctx: &Context<'_>,
         inputs: AddSpendingItemByMonthInput,
-    ) -> Result<MonthlyBudgetResponse> {
-        return add_spending_item_by_month_handler(ctx, inputs).await;
+    ) -> Result<AddSpendingItemByMonthResponse> {
+        add_spending_item_by_month_handler(ctx, inputs).await
     }
 
     #[instrument(skip_all)]

@@ -1,4 +1,4 @@
-use crate::graphql::mutation::add_spending_item_by_month::MonthlyBudgetResponse;
+use crate::graphql::mutation::MonthlyBudgetResponse;
 use crate::monthly_budget::SpendingItem;
 use crate::{db::DB, month::Month, routes::MaybeJwt};
 use anyhow::Context as AnhowContext;

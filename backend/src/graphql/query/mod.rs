@@ -6,7 +6,7 @@ use crate::{
     db::users::User,
     graphql::{
         mutation::{
-            add_spending_item_by_month::MonthlyBudgetResponse,
+            MonthlyBudgetResponse, add_spending_item_by_month::AddSpendingItemByMonthResponse,
             update_monthly_budget_config::MonthlyBudgetConfigResponse,
         },
         query::{

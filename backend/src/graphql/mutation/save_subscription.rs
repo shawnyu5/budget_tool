@@ -1,10 +1,9 @@
 use crate::{
     db::{
-        users::{User, USER_TABLE_NAME},
         DB,
+        users::{USER_TABLE_NAME, User},
     },
     graphql::utils::extract_jwt,
-    routes::MaybeJwt,
 };
 use anyhow::{Context as AnhowContext, Result};
 use async_graphql::{Context, InputObject};

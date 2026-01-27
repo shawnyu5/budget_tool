@@ -23,6 +23,8 @@ export type AddSpendingItemByMonthInput = {
   year: Scalars['String']['input'];
 };
 
+export type AddSpendingItemByMonthResponse = GraphQlErrorObject | SuccessResponse;
+
 export type BudgetConfig = {
   __typename?: 'BudgetConfig';
   /** Maggie contribution amount. The frontend is responsible for computing this value */
@@ -91,6 +93,8 @@ export type FrontendConfig = {
 export enum GraphQlErrorCode {
   /** Failed to fetch budget for some reason. Typically response 404 */
   FailedToFetchBudget = 'FAILED_TO_FETCH_BUDGET',
+  /** Failed to create / update transactions in firefly */
+  FireflyUpdateFailed = 'FIREFLY_UPDATE_FAILED',
   InvalidFireflyApiKey = 'INVALID_FIREFLY_API_KEY',
   /** Something went wrong on the server side. Typically response 500 */
   ServerError = 'SERVER_ERROR'
@@ -163,7 +167,7 @@ export type MonthlyBudgetResponse = GraphQlErrorObject | MonthlyBudget;
 export type MutationRoot = {
   __typename?: 'MutationRoot';
   /** Add a spending item to a month */
-  addSpendingItemByMonth: MonthlyBudgetResponse;
+  addSpendingItemByMonth: AddSpendingItemByMonthResponse;
   /** Delete a spending item by ID. If the item doesnt exist, this handler will not do anything */
   deleteSpendingItemById: MonthlyBudgetResponse;
   me: UpdateMeResponse;
@@ -307,6 +311,11 @@ export type SubscriptionInput = {
   p256Dh: Scalars['String']['input'];
 };
 
+export type SuccessResponse = {
+  __typename?: 'SuccessResponse';
+  success: Scalars['Boolean']['output'];
+};
+
 export type UpdateBudgetConfigInput = {
   /** The new budget config */
   budgetConfig: BudgetConfigInput;
@@ -388,6 +397,13 @@ export type UpdateMonthlyBudgetMutationVariables = Exact<{
 
 
 export type UpdateMonthlyBudgetMutation = { __typename?: 'MutationRoot', updateMonthlyBudget: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename: 'MonthlyBudget', month: Month, totalSpending: number, overBudgetAmount: number, carriedOverFrom?: Month | null, spending: Array<{ __typename?: 'SpendingItem', id: string, amount: number, date: string, description: string, notes?: string | null }>, budget: { __typename?: 'BudgetConfig', totalAllocation: number, maggiePercentageAllocation: number, maggieContributionAmount: number, shawnPercentageAllocation: number, shawnContributionAmount: number } } };
+
+export type AddSpendingItemByMonthMutationVariables = Exact<{
+  inputs: AddSpendingItemByMonthInput;
+}>;
+
+
+export type AddSpendingItemByMonthMutation = { __typename?: 'MutationRoot', addSpendingItemByMonth: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename?: 'SuccessResponse', success: boolean } };
 
 export type GraphQlErrorFieldsFragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
 
@@ -493,6 +509,16 @@ export const UpdateMonthlyBudgetDocument = gql`
   }
 }
     `;
+export const AddSpendingItemByMonthDocument = gql`
+    mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
+  addSpendingItemByMonth(inputs: $inputs) {
+    ... on SuccessResponse {
+      success
+    }
+    ...GraphQLErrorFields
+  }
+}
+    ${GraphQlErrorFieldsFragmentDoc}`;
 export const SettingsPageDataDocument = gql`
     query SettingsPageData($year: Int!, $month: Month!) {
   monthlyBudgetConfig(year: $year, month: $month) {
@@ -589,6 +615,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     UpdateMonthlyBudget(variables: UpdateMonthlyBudgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetMutation>({ document: UpdateMonthlyBudgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudget', 'mutation', variables);
+    },
+    AddSpendingItemByMonth(variables: AddSpendingItemByMonthMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddSpendingItemByMonthMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AddSpendingItemByMonthMutation>({ document: AddSpendingItemByMonthDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddSpendingItemByMonth', 'mutation', variables);
     },
     SettingsPageData(variables: SettingsPageDataQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SettingsPageDataQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<SettingsPageDataQuery>({ document: SettingsPageDataDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SettingsPageData', 'query', variables);

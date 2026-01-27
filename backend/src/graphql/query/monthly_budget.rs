@@ -5,7 +5,7 @@ use crate::{
     db::DB,
     graphql::{
         error::{GraphQLErrorCode, GraphQLErrorObject},
-        mutation::add_spending_item_by_month::MonthlyBudgetResponse,
+        mutation::MonthlyBudgetResponse,
     },
     month::Month,
 };
