@@ -11,6 +11,68 @@
     "subscriptionType": null,
     "types": [
       {
+        "kind": "ENUM",
+        "name": "AddSpendingItemByMonthError",
+        "description": "Errors that could happen during adding an item by month",
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "FIREFLY_UPDATE_FAILED",
+            "description": "Failed to create / update transactions in firefly",
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "AddSpendingItemByMonthErrorObject",
+        "description": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "code",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "AddSpendingItemByMonthError",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "message",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
         "kind": "INPUT_OBJECT",
         "name": "AddSpendingItemByMonthInput",
         "description": null,
@@ -82,7 +144,7 @@
         "possibleTypes": [
           {
             "kind": "OBJECT",
-            "name": "GraphQLErrorObject",
+            "name": "AddSpendingItemByMonthErrorObject",
             "ofType": null
           },
           {

@@ -1,7 +1,11 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import { Accessor, createSignal, Setter, Signal } from "solid-js";
 import { SpendingItemForm } from "~/components/spendingItemForm";
-import { Month, MonthlyBudget } from "~/generated/graphql";
+import {
+  AddSpendingItemByMonthError,
+  Month,
+  MonthlyBudget,
+} from "~/generated/graphql";
 import {
   handleGraphQLClientError,
   handleGraphQLErrorObject,
@@ -51,14 +55,18 @@ export default function () {
         },
       });
 
-      if (res.addSpendingItemByMonth.__typename == "GraphQLErrorObject") {
-        const err = handleGraphQLErrorObject(res.addSpendingItemByMonth);
-        // __AUTO_GENERATED_PRINT_VAR_START__
-        console.log(
-          "custom print var (anon)#onSubmit#if err: %s",
-          JSON.stringify(err),
-        ); // __AUTO_GENERATED_PRINT_VAR_END__
-        setErrorMessage(err);
+      if (
+        res.addSpendingItemByMonth.__typename ==
+        "AddSpendingItemByMonthErrorObject"
+      ) {
+        if (
+          res.addSpendingItemByMonth.code ==
+          AddSpendingItemByMonthError.FireflyUpdateFailed
+        ) {
+          setErrorMessage(
+            `Your transaction was created in this app. However the firefly transaction failed to create: ${res.addSpendingItemByMonth.message}. Please create the Firefly transaction manually...`,
+          );
+        }
       }
     } catch (e) {
       handleGraphQLClientError(e, navigate);

@@ -1,7 +1,19 @@
-use async_graphql::{Enum, Error, ErrorExtensions, Pos, Response, SimpleObject};
+use async_graphql::{Enum, Error, ErrorExtensions, OutputType, Pos, Response, SimpleObject};
 use axum::{Json, response::IntoResponse};
 use serde::Serialize;
 use thiserror::Error;
+
+use crate::graphql::mutation::add_spending_item_by_month::AddSpendingItemByMonthError;
+
+#[derive(SimpleObject, Serialize, Debug)]
+#[graphql(concrete(
+    name = "AddSpendingItemByMonthErrorObject",
+    params(AddSpendingItemByMonthError)
+))]
+pub struct GraphQlErrorObjectV2<T: OutputType> {
+    pub code: T,
+    pub message: String,
+}
 
 #[derive(SimpleObject, Debug, Serialize)]
 pub struct GraphQLErrorObject {

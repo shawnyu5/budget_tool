@@ -4,6 +4,12 @@ fragment GraphQLErrorFields on GraphQLErrorObject {
   message
 }
 
+fragment GraphQLErrorFieldsV2 on GraphQLErrorObject {
+  __typename
+  code
+  message
+}
+
 # Get monthly budget configuration
 query SettingsPageData($year: Int!, $month: Month!) {
   monthlyBudgetConfig(year: $year, month: $month) {

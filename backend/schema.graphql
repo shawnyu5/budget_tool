@@ -1,10 +1,25 @@
+"""
+Errors that could happen during adding an item by month
+"""
+enum AddSpendingItemByMonthError {
+	"""
+	Failed to create / update transactions in firefly
+	"""
+	FIREFLY_UPDATE_FAILED
+}
+
+type AddSpendingItemByMonthErrorObject {
+	code: AddSpendingItemByMonthError!
+	message: String!
+}
+
 input AddSpendingItemByMonthInput {
 	year: String!
 	month: Month!
 	spendingItem: SpendingItemInput!
 }
 
-union AddSpendingItemByMonthResponse = SuccessResponse | GraphQLErrorObject
+union AddSpendingItemByMonthResponse = SuccessResponse | AddSpendingItemByMonthErrorObject
 
 type BudgetConfig {
 	"""

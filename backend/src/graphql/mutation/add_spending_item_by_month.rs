@@ -1,15 +1,17 @@
 use crate::config::Config;
 use crate::db::users::USER_TABLE_NAME;
-use crate::graphql::error::GraphQLErrorObject;
+use crate::graphql::error::{GraphQLErrorObject, GraphQlErrorObjectV2};
 use crate::graphql::utils::extract_jwt;
 use crate::utils::calculate_percentage;
 use crate::{db::DB, month::Month, monthly_budget::SpendingItem};
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
-use async_graphql::{Context, InputObject};
+use async_graphql::{Context, Enum, InputObject};
 use async_graphql::{SimpleObject, Union};
 use chrono::{DateTime, Utc};
 use firefly_client::models::{TransactionSplitStore, TransactionStore, TransactionTypeProperty};
+use serde::Serialize;
+use thiserror::Error;
 use tracing::{error, info, instrument, warn};
 
 #[derive(InputObject)]
@@ -22,12 +24,20 @@ pub struct AddSpendingItemByMonthInput {
 #[derive(Union)]
 pub enum AddSpendingItemByMonthResponse {
     SuccessResponse(SuccessResponse),
-    GraphQLErrorObject(GraphQLErrorObject),
+    GraphQLErrorObject(GraphQlErrorObjectV2<AddSpendingItemByMonthError>),
 }
 
 #[derive(SimpleObject)]
 pub struct SuccessResponse {
     pub success: bool,
+}
+
+/// Errors that could happen during adding an item by month
+#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, Error, Serialize)]
+pub enum AddSpendingItemByMonthError {
+    /// Failed to create / update transactions in firefly
+    #[error("Failed to update firefly")]
+    FireflyUpdateFailed,
 }
 
 #[instrument(skip_all)]
@@ -108,7 +118,7 @@ pub async fn add_spending_item_by_month_handler(
 
             user.decrypt_firefly_api_key()?;
             info!("Creating firefly transaction for user {}", &user.username);
-            let t = match firefly_client::apis::transactions_api::store_transaction(
+            match firefly_client::apis::transactions_api::store_transaction(
                 &firefly_client::apis::configuration::Configuration {
                     base_path: config.firefly_url.clone(),
                     client: client.clone(),
@@ -139,8 +149,8 @@ pub async fn add_spending_item_by_month_handler(
                 Err(e) => {
                     error!("{e:#?}");
                     return Ok(AddSpendingItemByMonthResponse::GraphQLErrorObject(
-                        GraphQLErrorObject {
-                            code: crate::graphql::error::GraphQLErrorCode::FireflyUpdateFailed,
+                        GraphQlErrorObjectV2 {
+                            code: AddSpendingItemByMonthError::FireflyUpdateFailed,
                             message: format!(
                                 "Failed to create firfly transaction for user {}: {e}",
                                 user.username

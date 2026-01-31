@@ -17,13 +17,25 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+/** Errors that could happen during adding an item by month */
+export enum AddSpendingItemByMonthError {
+  /** Failed to create / update transactions in firefly */
+  FireflyUpdateFailed = 'FIREFLY_UPDATE_FAILED'
+}
+
+export type AddSpendingItemByMonthErrorObject = {
+  __typename?: 'AddSpendingItemByMonthErrorObject';
+  code: AddSpendingItemByMonthError;
+  message: Scalars['String']['output'];
+};
+
 export type AddSpendingItemByMonthInput = {
   month: Month;
   spendingItem: SpendingItemInput;
   year: Scalars['String']['input'];
 };
 
-export type AddSpendingItemByMonthResponse = GraphQlErrorObject | SuccessResponse;
+export type AddSpendingItemByMonthResponse = AddSpendingItemByMonthErrorObject | SuccessResponse;
 
 export type BudgetConfig = {
   __typename?: 'BudgetConfig';
@@ -409,9 +421,11 @@ export type AddSpendingItemByMonthMutationVariables = Exact<{
 }>;
 
 
-export type AddSpendingItemByMonthMutation = { __typename?: 'MutationRoot', addSpendingItemByMonth: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename?: 'SuccessResponse', success: boolean } };
+export type AddSpendingItemByMonthMutation = { __typename?: 'MutationRoot', addSpendingItemByMonth: { __typename: 'AddSpendingItemByMonthErrorObject', code: AddSpendingItemByMonthError, message: string } | { __typename: 'SuccessResponse', success: boolean } };
 
 export type GraphQlErrorFieldsFragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
+
+export type GraphQlErrorFieldsV2Fragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
 
 export type SettingsPageDataQueryVariables = Exact<{
   year: Scalars['Int']['input'];
@@ -449,6 +463,13 @@ export type SpendingItemFormQuery = { __typename?: 'QueryRoot', monthlyBudgetCon
 
 export const GraphQlErrorFieldsFragmentDoc = gql`
     fragment GraphQLErrorFields on GraphQLErrorObject {
+  __typename
+  code
+  message
+}
+    `;
+export const GraphQlErrorFieldsV2FragmentDoc = gql`
+    fragment GraphQLErrorFieldsV2 on GraphQLErrorObject {
   __typename
   code
   message
@@ -519,12 +540,17 @@ export const AddSpendingItemByMonthDocument = gql`
     mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
   addSpendingItemByMonth(inputs: $inputs) {
     ... on SuccessResponse {
+      __typename
       success
     }
-    ...GraphQLErrorFields
+    ... on AddSpendingItemByMonthErrorObject {
+      __typename
+      code
+      message
+    }
   }
 }
-    ${GraphQlErrorFieldsFragmentDoc}`;
+    `;
 export const SettingsPageDataDocument = gql`
     query SettingsPageData($year: Int!, $month: Month!) {
   monthlyBudgetConfig(year: $year, month: $month) {
