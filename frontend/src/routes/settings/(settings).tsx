@@ -28,25 +28,24 @@ export default function Settings() {
   let hasUserModified = false;
 
   const rawResource = createResource(
-    // const [settingsPageDataResource, { refetch, mutate }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
       if (!searchParamSignal().year || !searchParamSignal().month) {
         return;
       }
       log.info(`Fetching settings for month ${searchParamSignal().month}`);
-      const settingsPageData = await getSettingsPageData(
+      let settingsPageData = await getSettingsPageData(
         searchParamSignal().year as string,
         searchParamSignal().month as Month,
         navigate,
       );
-
       // If fetching is successful, make sure the error message is gone
       setErrorMessage(null);
+      log.info(JSON.stringify(settingsPageData, null, 3));
       return settingsPageData;
     },
   );
-  const [settingsPageDataResource, { refetch, mutate }] = rawResource;
+  const [settingsPageDataResource, { mutate }] = rawResource;
 
   const handleSubmission = action(async () => {
     setErrorMessage(null);

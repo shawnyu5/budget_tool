@@ -108,6 +108,10 @@ export type SettingsPageDataSuccess = Omit<
     SettingsPageDataQuery["monthlyBudgetConfig"],
     { __typename: "BudgetConfig" }
   >;
+  firefly: Extract<
+    SettingsPageDataQuery["firefly"],
+    { __typename: "FireflySuccessResponse" }
+  >;
 };
 
 export async function getSettingsPageData(
@@ -122,13 +126,16 @@ export async function getSettingsPageData(
       month,
     });
     if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLErrorObject(
-        response.monthlyBudgetConfig,
-      );
+      const err = handleGraphQLErrorObject(response.monthlyBudgetConfig);
       if (err) {
         throw new Error(err);
       }
     }
+
+    if (response.firefly.__typename == "FireflyErrorObject") {
+      throw new Error(response.firefly.message);
+    }
+
     return response as SettingsPageDataSuccess;
   } catch (e) {
     handleGraphQLClientError(e, navigate);
@@ -178,9 +185,7 @@ export async function updateMonthlyBudget(
     });
 
     if (response.updateMonthlyBudget.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLErrorObject(
-        response.updateMonthlyBudget,
-      );
+      const err = handleGraphQLErrorObject(response.updateMonthlyBudget);
       if (err) {
         console.error(err);
         throw new Error(err);
@@ -203,6 +208,8 @@ export async function updateMonthlyBudgetConfig(
   fireflySettings: FireflySettings,
   navigate: Navigator,
 ): Promise<UpdateMonthlyBudgetConfigMutation> {
+  // __AUTO_GENERATED_PRINT_VAR_START__
+  console.log("updateMonthlyBudgetConfig fireflySettings:", fireflySettings); // __AUTO_GENERATED_PRINT_VAR_END__
   const sdk = NewGraphQLSDK();
   try {
     const budgetConfigInput: BudgetConfigInput = {
@@ -220,14 +227,13 @@ export async function updateMonthlyBudgetConfig(
         firefly: {
           enabled: fireflySettings.enabled,
           apiKey: fireflySettings.apiKey,
+          sourceAccount: fireflySettings.sourceAccount,
         },
       },
     });
 
     if (response.updateMonthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLErrorObject(
-        response.updateMonthlyBudgetConfig,
-      );
+      const err = handleGraphQLErrorObject(response.updateMonthlyBudgetConfig);
       if (err) {
         throw new Error(err);
       }

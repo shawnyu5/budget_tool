@@ -3,13 +3,16 @@ use axum::{Json, response::IntoResponse};
 use serde::Serialize;
 use thiserror::Error;
 
-use crate::graphql::mutation::add_spending_item_by_month::AddSpendingItemByMonthError;
+use crate::graphql::{
+    mutation::add_spending_item_by_month::AddSpendingItemByMonthError, query::firefly::FireflyError,
+};
 
 #[derive(SimpleObject, Serialize, Debug)]
 #[graphql(concrete(
     name = "AddSpendingItemByMonthErrorObject",
     params(AddSpendingItemByMonthError)
 ))]
+#[graphql(concrete(name = "FireflyErrorObject", params(FireflyError)))]
 pub struct GraphQlErrorObjectV2<T: OutputType> {
     pub code: T,
     pub message: String,

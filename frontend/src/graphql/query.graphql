@@ -29,6 +29,18 @@ query SettingsPageData($year: Int!, $month: Month!) {
     firefly {
       enabled
       apiKey
+      sourceAccount
+    }
+  }
+
+  firefly {
+    ... on FireflySuccessResponse {
+      __typename
+      accounts
+    }
+    ... on FireflyErrorObject {
+      code
+      message
     }
   }
 }

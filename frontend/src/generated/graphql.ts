@@ -71,6 +71,18 @@ export type DeleteSpendingItemByIdInput = {
   year: Scalars['Int']['input'];
 };
 
+export enum FireflyError {
+  FireflyError = 'FIREFLY_ERROR'
+}
+
+export type FireflyErrorObject = {
+  __typename?: 'FireflyErrorObject';
+  code: FireflyError;
+  message: Scalars['String']['output'];
+};
+
+export type FireflyResponse = FireflyErrorObject | FireflySuccessResponse;
+
 /** Firefly related settings */
 export type FireflySettings = {
   __typename?: 'FireflySettings';
@@ -83,6 +95,8 @@ export type FireflySettings = {
   enabled: Scalars['Boolean']['output'];
   /** Base64 encoded nounce used to encrypt / decrypt the API key */
   encryptionNounce?: Maybe<Scalars['String']['output']>;
+  /** The source account to create the transaction in */
+  sourceAccount?: Maybe<Scalars['String']['output']>;
 };
 
 /** Firefly related settings */
@@ -96,6 +110,14 @@ export type FireflySettingsInput = {
   enabled: Scalars['Boolean']['input'];
   /** Base64 encoded nounce used to encrypt / decrypt the API key */
   encryptionNounce?: InputMaybe<Scalars['String']['input']>;
+  /** The source account to create the transaction in */
+  sourceAccount?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type FireflySuccessResponse = {
+  __typename?: 'FireflySuccessResponse';
+  /** List of accounts this user has */
+  accounts?: Maybe<Array<Scalars['String']['output']>>;
 };
 
 /** Frontend configuration */
@@ -268,6 +290,8 @@ export type QueryRoot = {
   __typename?: 'QueryRoot';
   /** Configuration for the frontend to consume */
   config: FrontendConfig;
+  /** Retrieve information from Firefly it self */
+  firefly: FireflyResponse;
   me: User;
   /**
    * Get the budget for a specific month in a year
@@ -433,7 +457,7 @@ export type SettingsPageDataQueryVariables = Exact<{
 }>;
 
 
-export type SettingsPageDataQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string }, me: { __typename?: 'User', username: string, firefly?: { __typename?: 'FireflySettings', enabled: boolean, apiKey?: string | null } | null } };
+export type SettingsPageDataQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string }, me: { __typename?: 'User', username: string, firefly?: { __typename?: 'FireflySettings', enabled: boolean, apiKey?: string | null, sourceAccount?: string | null } | null }, firefly: { __typename?: 'FireflyErrorObject', code: FireflyError, message: string } | { __typename: 'FireflySuccessResponse', accounts?: Array<string> | null } };
 
 export type GetMonthBudgetQueryVariables = Exact<{
   year: Scalars['Int']['input'];
@@ -569,6 +593,17 @@ export const SettingsPageDataDocument = gql`
     firefly {
       enabled
       apiKey
+      sourceAccount
+    }
+  }
+  firefly {
+    ... on FireflySuccessResponse {
+      __typename
+      accounts
+    }
+    ... on FireflyErrorObject {
+      code
+      message
     }
   }
 }

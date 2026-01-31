@@ -76,6 +76,17 @@ input DeleteSpendingItemByIdInput {
 	id: String!
 }
 
+enum FireflyError {
+	FIREFLY_ERROR
+}
+
+type FireflyErrorObject {
+	code: FireflyError!
+	message: String!
+}
+
+union FireflyResponse = FireflySuccessResponse | FireflyErrorObject
+
 """
 Firefly related settings
 """
@@ -93,6 +104,10 @@ type FireflySettings {
 	Base64 encoded nounce used to encrypt / decrypt the API key
 	"""
 	encryptionNounce: String
+	"""
+	The source account to create the transaction in
+	"""
+	sourceAccount: String
 }
 
 """
@@ -112,6 +127,17 @@ input FireflySettingsInput {
 	Base64 encoded nounce used to encrypt / decrypt the API key
 	"""
 	encryptionNounce: String
+	"""
+	The source account to create the transaction in
+	"""
+	sourceAccount: String
+}
+
+type FireflySuccessResponse {
+	"""
+	List of accounts this user has
+	"""
+	accounts: [String!]
 }
 
 """
@@ -307,6 +333,10 @@ type QueryRoot {
 	monthlyBudget(year: Int!, month: Month!): MonthlyBudgetResponse!
 	monthlyBudgetConfig(year: Int!, month: Month!): MonthlyBudgetConfigResponse!
 	me: User!
+	"""
+	Retrieve information from Firefly it self
+	"""
+	firefly: FireflyResponse!
 }
 
 """

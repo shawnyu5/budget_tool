@@ -1,4 +1,4 @@
-import { createSignal, ResourceReturn, Show } from "solid-js";
+import { createSignal, For, ResourceReturn, Show } from "solid-js";
 import { SettingsPageDataSuccess } from "~/server";
 
 export function FireflySettingsForm(props: {
@@ -38,8 +38,11 @@ export function FireflySettingsForm(props: {
           <span class="show-for-sr">Toggle firefly settings</span>
         </label>
       </div>
-      <Show
-      when={data()?.me.firefly?.enabled}>
+
+      {
+        // Firefly specific settings
+      }
+      <Show when={data()?.me.firefly?.enabled}>
         <label for="api-key">Firefly API key:</label>
         <div id="api-key-form">
           <input
@@ -78,6 +81,36 @@ export function FireflySettingsForm(props: {
               }}
             ></input>
             Show me
+          </label>
+        </div>
+        <div id="select-default-account">
+          <label>
+            Default account
+            <select
+              value={data()?.me.firefly?.sourceAccount ?? ""}
+              onInput={(e) =>
+                mutate((prev) => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    me: {
+                      ...prev.me,
+                      firefly: {
+                        ...prev.me.firefly,
+                        enabled: prev.me.firefly?.enabled!,
+                        sourceAccount: e.target.value,
+                      },
+                    },
+                  };
+                })
+              }
+            >
+              {
+                <For each={data()?.firefly.accounts ?? []}>
+                  {(item) => <option value={item}>{item}</option>}
+                </For>
+              }
+            </select>
           </label>
         </div>
       </Show>

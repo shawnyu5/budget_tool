@@ -77,6 +77,8 @@ pub struct FireflySettings {
     pub api_key: Option<String>,
     /// Base64 encoded nounce used to encrypt / decrypt the API key
     pub encryption_nounce: Option<String>,
+    /// The source account to create the transaction in
+    pub source_account: Option<String>,
 }
 
 impl Default for User {

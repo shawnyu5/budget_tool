@@ -6,11 +6,11 @@ use crate::{
     db::users::User,
     graphql::{
         mutation::{
-            MonthlyBudgetResponse,
-            update_monthly_budget_config::MonthlyBudgetConfigResponse,
+            MonthlyBudgetResponse, update_monthly_budget_config::MonthlyBudgetConfigResponse,
         },
         query::{
             config::{FrontendConfig, config_handler},
+            firefly::{FireflyResponse, firefly_handler},
             me::me_handler,
             monthly_budget::monthly_budget_handler,
             monthly_budget_config::monthly_budget_config_handler,
@@ -21,6 +21,7 @@ use crate::{
 };
 
 mod config;
+pub mod firefly;
 mod me;
 mod monthly_budget;
 mod monthly_budget_config;
@@ -68,5 +69,12 @@ impl QueryRoot {
     #[graphql(guard = "AuthGuard")]
     async fn me(&self, ctx: &Context<'_>) -> Result<User> {
         me_handler(ctx).await
+    }
+
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
+    /// Retrieve information from Firefly it self
+    async fn firefly(&self, ctx: &Context<'_>) -> Result<FireflyResponse> {
+        firefly_handler(ctx).await
     }
 }
