@@ -1,16 +1,8 @@
 import { useNavigate, useParams } from "@solidjs/router";
-import { Accessor, createSignal, Setter, Signal } from "solid-js";
+import { createSignal, Signal } from "solid-js";
 import { SpendingItemForm } from "~/components/spendingItemForm";
-import {
-  AddSpendingItemByMonthError,
-  Month,
-  MonthlyBudget,
-} from "~/generated/graphql";
-import {
-  handleGraphQLClientError,
-  handleGraphQLErrorObject,
-  NewGraphQLSDK,
-} from "~/graphql";
+import { AddSpendingItemByMonthError, Month } from "~/generated/graphql";
+import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
 import { SpendingItem } from "~/server";
 

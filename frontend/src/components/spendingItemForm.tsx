@@ -33,6 +33,8 @@ export function SpendingItemForm(props: {
   const [description, setDescription] = createSignal("");
   const [notes, setNotes] = createSignal("");
   const errorMessageSignal = createSignal<string | null>(null);
+  // Tracks if the form has been submitted or not
+  const [formSubmitted, setFormSubmitted] = createSignal(false);
   const [errorMessage, _setErrorMessage] = errorMessageSignal;
   const [budgetConfig] = createResource(async () => {
     const graphql = NewGraphQLSDK();
@@ -84,6 +86,7 @@ export function SpendingItemForm(props: {
       id="spending-item"
       method="post"
       action={action(async () => {
+        setFormSubmitted(true);
         props.onSubmit(
           {
             id: props.spendingItem()?.id ?? "",
@@ -92,7 +95,7 @@ export function SpendingItemForm(props: {
             description: description(),
             notes: notes(),
           },
-          errorMessageSignal
+          errorMessageSignal,
         );
       })}
     >
@@ -148,7 +151,7 @@ export function SpendingItemForm(props: {
           }}
         />
 
-        <button class="button success" type="submit">
+        <button class="button success" type="submit" disabled={formSubmitted()}>
           Save
         </button>
 
