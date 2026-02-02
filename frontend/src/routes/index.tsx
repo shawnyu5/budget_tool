@@ -37,7 +37,7 @@ export default function Home() {
   }
 
   const navigate = useNavigate();
-  const [monthlyBudgetResource, { refetch, mutate }] = createResource(
+  const [monthlyBudgetResource, { mutate }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
       if (!searchParamSignal().year || !searchParamSignal().month) {
