@@ -16,7 +16,8 @@ export default function Login() {
     await validateJTWToken();
   });
 
-  const onSubmit = async (_e: Event) => {
+  const onSubmit = async (e: Event) => {
+    e.preventDefault();
     try {
       await basicAuthLogin(userName(), password()).then(async () => {
         const subscription = await getNotificationSubscription();
