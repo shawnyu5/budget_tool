@@ -11,6 +11,7 @@ export default function Login() {
   const [userName, setUserName] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
+  const navigate = useNavigate()
   onMount(async () => {
     await validateJTWToken();
   });
@@ -33,7 +34,6 @@ export default function Login() {
           });
         }
       });
-      const navigate = useNavigate();
       return navigate("/");
     } catch (e) {
       log.error("Caught error in component");
