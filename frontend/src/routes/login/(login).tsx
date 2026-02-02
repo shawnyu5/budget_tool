@@ -11,12 +11,12 @@ export default function Login() {
   const [userName, setUserName] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   onMount(async () => {
     await validateJTWToken();
   });
 
-  const onSubmit = action(async (_data: FormData) => {
+  const onSubmit = async (_e: Event) => {
     try {
       await basicAuthLogin(userName(), password()).then(async () => {
         const subscription = await getNotificationSubscription();
@@ -46,11 +46,11 @@ export default function Login() {
         }
       }
     }
-  });
+  };
 
   return (
     <div id="login-form">
-      <form action={onSubmit} method="post">
+      <form onSubmit={onSubmit} method="post">
         <ErrorComponent errorMessage={errorMessage()} />
 
         <label>Username</label>
