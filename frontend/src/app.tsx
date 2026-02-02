@@ -7,7 +7,9 @@ export default function App() {
   onMount(() => {
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
       console.error("Push notifications are not supported. Ignore this...");
-      return;
+      return
+    } else {
+       console.log("Notifications supported in current context")
     }
 
     if ("serviceWorker" in navigator) {
@@ -15,9 +17,11 @@ export default function App() {
         .getRegistration("/sw.js")
         .then(async (reg) => {
           if (reg) {
-             console.log("Found previous registered service worker. Unregistering first");
+            console.log(
+              "Found previous registered service worker. Unregistering first",
+            );
             await reg.unregister();
-             return await navigator.serviceWorker.register("/sw.js");
+            return await navigator.serviceWorker.register("/sw.js");
           } else {
             console.log("Registering service worker");
             // No existing service worker, just register new one

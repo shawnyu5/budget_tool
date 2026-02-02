@@ -122,7 +122,7 @@ pub async fn add_spending_item_by_month_handler(
                 &firefly_client::apis::configuration::Configuration {
                     base_path: config.firefly_url.clone(),
                     client: client.clone(),
-                    bearer_access_token: user.firefly.unwrap().api_key.clone(),
+                    bearer_access_token: user.firefly.clone().unwrap().api_key.clone(),
                     ..Default::default()
                 },
                 TransactionStore {
@@ -136,8 +136,10 @@ pub async fn add_spending_item_by_month_handler(
                         amount: amount.to_string(),
                         description: inputs.spending_item.clone().description,
                         notes: Some(inputs.spending_item.clone().notes),
-                        // TODO: this should be configurable
-                        source_name: Some(Some("Wealthsimple chequing".to_string())),
+                        source_name: Some(Some(
+                            user.firefly.unwrap().source_account.unwrap_or_default(),
+                        )),
+                        // source_name: Some(Some("Wealthsimple chequing".to_string())),
                         ..Default::default()
                     }],
                 },

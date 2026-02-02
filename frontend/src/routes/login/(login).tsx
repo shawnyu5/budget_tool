@@ -24,6 +24,11 @@ export default function Login() {
           log.info("Saving push notification subscription to backend");
           const sdk = NewGraphQLSDK();
           const subscriptionJson = subscription.toJSON();
+          // __AUTO_GENERATED_PRINT_VAR_START__
+          console.log(
+            "custom print var Login#(anon)#(anon)#if subscriptionJson: %s",
+            JSON.stringify(subscriptionJson, null, 3),
+          ); // __AUTO_GENERATED_PRINT_VAR_END__
           sdk.saveSubscription({
             subscription: {
               auth: subscriptionJson.keys?.auth ?? "",
@@ -35,7 +40,7 @@ export default function Login() {
       });
       return redirect("/");
     } catch (e) {
-       log.error("Caught error in component")
+      log.error("Caught error in component");
       log.error(`Failed to login: ${e}`);
       if (axios.isAxiosError(e)) {
         if (e.response?.status == 403) {

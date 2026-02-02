@@ -46,6 +46,7 @@ export function FireflySettingsForm(props: {
         <label for="api-key">Firefly API key:</label>
         <div id="api-key-form">
           <input
+            required={data()?.me.firefly?.enabled}
             type={showAPIKey() ? "text" : "password"}
             id="api-key"
             name="api-key"
@@ -87,6 +88,7 @@ export function FireflySettingsForm(props: {
           <label>
             Default account
             <select
+              required={data()?.me.firefly?.enabled}
               value={data()?.me.firefly?.sourceAccount ?? ""}
               onInput={(e) =>
                 mutate((prev) => {
