@@ -1,4 +1,4 @@
-import { action, redirect } from "@solidjs/router";
+import { action, useNavigate } from "@solidjs/router";
 import axios from "axios";
 import { createSignal, onMount } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
@@ -24,11 +24,6 @@ export default function Login() {
           log.info("Saving push notification subscription to backend");
           const sdk = NewGraphQLSDK();
           const subscriptionJson = subscription.toJSON();
-          // __AUTO_GENERATED_PRINT_VAR_START__
-          console.log(
-            "custom print var Login#(anon)#(anon)#if subscriptionJson: %s",
-            JSON.stringify(subscriptionJson, null, 3),
-          ); // __AUTO_GENERATED_PRINT_VAR_END__
           sdk.saveSubscription({
             subscription: {
               auth: subscriptionJson.keys?.auth ?? "",
@@ -38,7 +33,8 @@ export default function Login() {
           });
         }
       });
-      return redirect("/");
+      const navigate = useNavigate();
+      return navigate("/");
     } catch (e) {
       log.error("Caught error in component");
       log.error(`Failed to login: ${e}`);
