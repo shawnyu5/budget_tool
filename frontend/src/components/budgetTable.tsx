@@ -135,7 +135,7 @@ export default function (props: {
                       navigate(
                         `/spending-item/edit/${searchParams.year}/${searchParams.month}/${entry.id}`,
                         {
-                          replace: true,
+                          replace: false,
                         },
                       );
                     }}
