@@ -88,7 +88,7 @@ export function FireflySettingsForm(props: {
           <label>
             Default account
             <select
-              required={data()?.me.firefly?.enabled}
+              // required={data()?.me.firefly?.enabled}
               value={data()?.me.firefly?.sourceAccount ?? ""}
               onInput={(e) =>
                 mutate((prev) => {
