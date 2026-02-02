@@ -20,22 +20,22 @@ export default function Login() {
     e.preventDefault();
     try {
       await basicAuthLogin(userName(), password()).then(async () => {
-        const subscription = await getNotificationSubscription();
+        navigate("/");
 
-        if (subscription) {
+        getNotificationSubscription().then((subscription) => {
+          if (!subscription) return;
           log.info("Saving push notification subscription to backend");
           const sdk = NewGraphQLSDK();
-          const subscriptionJson = subscription.toJSON();
+          const s = subscription.toJSON();
           sdk.saveSubscription({
             subscription: {
-              auth: subscriptionJson.keys?.auth ?? "",
-              endpoint: subscriptionJson.endpoint ?? "",
-              p256Dh: subscriptionJson.keys?.p256dh ?? "",
+              auth: s.keys?.auth ?? "",
+              endpoint: s.endpoint ?? "",
+              p256Dh: s.keys?.p256dh ?? "",
             },
           });
-        }
+        });
       });
-      return navigate("/");
     } catch (e) {
       log.error("Caught error in component");
       log.error(`Failed to login: ${e}`);
