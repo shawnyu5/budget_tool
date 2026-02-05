@@ -7,9 +7,9 @@ export default function App() {
   onMount(() => {
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
       console.error("Push notifications are not supported. Ignore this...");
-      return
+      return;
     } else {
-       console.log("Notifications supported in current context")
+      console.log("Notifications supported in current context");
     }
 
     if ("serviceWorker" in navigator) {

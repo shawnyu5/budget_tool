@@ -51,6 +51,11 @@ export function FireflySettingsForm(props: {
             id="api-key"
             name="api-key"
             value={data()?.me.firefly?.apiKey ?? ""}
+            onBlur={() => {
+              if (data()?.me.firefly?.apiKey == null) {
+                return;
+              }
+            }}
             onInput={(e: InputEvent) => {
               const input = e.target as HTMLInputElement;
               const apiKey = input.value;
