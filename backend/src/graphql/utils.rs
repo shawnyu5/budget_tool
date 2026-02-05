@@ -45,3 +45,9 @@ pub fn extract_jwt(ctx: &Context<'_>) -> AnyhowResult<JwtClaim> {
 
     return Ok(maybe_jwt.0.clone().unwrap());
 }
+
+/// Extract the http client from the graphql context. Panics if there is no client, as there should always be a client there. No client means this is a bug
+pub fn extract_http_client<'a>(ctx: &'a Context<'_>) -> &'a reqwest::Client {
+    ctx.data::<reqwest::Client>()
+        .expect("There should always be a reqwest client here. This is a bug!")
+}
