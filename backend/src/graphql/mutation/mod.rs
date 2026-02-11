@@ -24,6 +24,7 @@ use crate::{
                 UpdateSpendingItemByIdInput, update_spending_item_by_id_handler,
             },
         },
+        utils::AuthGuard,
     },
     monthly_budget::MonthlyBudget,
 };
@@ -60,6 +61,8 @@ impl MutationRoot {
     }
 
     /// Update the budget configuration for a specific month
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
     async fn update_monthly_budget_config(
         &self,
         ctx: &Context<'_>,
@@ -69,6 +72,7 @@ impl MutationRoot {
     }
 
     #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
     /// Add a spending item to a month
     async fn add_spending_item_by_month(
         &self,
@@ -79,6 +83,7 @@ impl MutationRoot {
     }
 
     #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
     /// Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
     async fn delete_spending_item_by_id(
         &self,
@@ -90,6 +95,7 @@ impl MutationRoot {
 
     #[instrument(skip_all)]
     /// Update a spending item by ID
+    #[graphql(guard = "AuthGuard")]
     async fn update_spending_item_by_id(
         &self,
         ctx: &Context<'_>,
@@ -99,6 +105,7 @@ impl MutationRoot {
     }
 
     #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
     /// Update the budget for a specific month
     async fn update_monthly_budget(
         &self,

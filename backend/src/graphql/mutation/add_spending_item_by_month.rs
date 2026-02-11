@@ -46,8 +46,6 @@ pub async fn add_spending_item_by_month_handler(
     ctx: &Context<'_>,
     inputs: AddSpendingItemByMonthInput,
 ) -> Result<AddSpendingItemByMonthResponse> {
-    let jwt = extract_jwt(ctx)?;
-
     let budget_db = DB::new(inputs.year.as_str())
         .await
         .context("Failed to connect to DB")?;

@@ -112,11 +112,9 @@ export function FireflySettingsForm(props: {
                 })
               }
             >
-              {
-                <For each={data()?.firefly.accounts ?? []}>
-                  {(item) => <option value={item}>{item}</option>}
-                </For>
-              }
+              <For each={data()?.firefly.accounts ?? []}>
+                {(item) => <option value={item}>{item}</option>}
+              </For>
             </select>
           </label>
         </div>
