@@ -3,6 +3,7 @@ import { createEffect, createSignal, For, Resource, Show } from "solid-js";
 import { MonthlyBudget } from "~/generated/graphql";
 import log from "~/logger";
 import { MonthlySpending, SpendingItem } from "~/server";
+import { formatRfc3339Date } from "~/utils";
 
 export default function (props: {
   monthlyBudget: Resource<MonthlyBudget | null>;
@@ -32,7 +33,7 @@ export default function (props: {
     const updatedSpending = updated.spending.reduce((total, spending) => {
       return total + spending.amount;
     }, 0);
-    updated.totalSpending = updatedSpending
+    updated.totalSpending = updatedSpending;
 
     props.setMonthlyBudget(updated);
     log.info("Spending entry removed");
@@ -159,7 +160,11 @@ export default function (props: {
                       <span>$</span>
                       {entry.amount}
                     </td>
-                    <td>{entry.date}</td>
+                    <td>
+                      {entry.dateRfc3339
+                        ? formatRfc3339Date(entry.dateRfc3339)
+                        : entry.date}
+                    </td>
                     <td>{entry.description}</td>
                     <td>{entry.notes}</td>
                   </tr>

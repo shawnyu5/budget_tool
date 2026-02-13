@@ -98,3 +98,12 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
   }
   return btoa(binary);
 }
+
+/**
+ * Format a RFC 3339 date string
+ * @param date: RFC3339 date format
+ */
+export function formatRfc3339Date(date: string): string {
+  const d = new Date(date);
+  return `${d.getFullYear()}/${d.getMonth()}/${d.getDay()}`;
+}
