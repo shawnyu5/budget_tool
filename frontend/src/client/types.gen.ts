@@ -103,10 +103,6 @@ export type SpendingItem = {
      */
     date: string;
     /**
-     * Date in RFC3339 format
-     */
-    dateRfc3339?: string | null;
-    /**
      * Description of the purchase
      */
     description: string;

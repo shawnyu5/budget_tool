@@ -12,6 +12,7 @@ use axum::middleware;
 use axum::response::IntoResponse;
 use axum::{Json, Router, extract::Path};
 use chrono::Local;
+use chrono::NaiveDate;
 use common_axum::app_error_v2::AppError;
 use common_axum::axum::generate_open_api_spec_from_open_api;
 use common_axum::axum::{__path_app_version, app_version, attach_tracing_cors_middleware};
@@ -380,7 +381,6 @@ async fn update_spending_item(
                 SpendingItem {
                     id: spending_item.id.clone(),
                     date: spending_item.date.clone(),
-                    date_rfc3339: spending_item.date_rfc3339.clone(),
                     amount: spending_item.amount,
                     description: spending_item.description.clone(),
                     notes: spending_item.notes.clone(),

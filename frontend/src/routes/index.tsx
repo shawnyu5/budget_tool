@@ -10,22 +10,22 @@ import {
 import MonthlySpending from "~/components/monthlySpending";
 import BudgetTable from "~/components/budgetTable";
 import { useNavigate, useSearchParams } from "@solidjs/router";
+import {
+  getMonthlyBudget,
+  MonthlyBudgetErrors,
+  updateMonthlyBudget,
+} from "~/server";
 import log from "~/logger";
 import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import NavBar from "~/components/navBar";
+import axios from "axios";
 import { Month, MonthlyBudget } from "~/generated/graphql";
-import {
-  handleGraphQLClientError,
-  handleGraphQLErrorObject,
-  NewGraphQLSDK,
-} from "~/graphql";
 
 export default function Home() {
   const [searchParam, _setSearchParam] = useSearchParams();
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
-  const graphqlSdk = NewGraphQLSDK();
 
   /**
    * Update the budget resource
@@ -46,22 +46,12 @@ export default function Home() {
       log.info(
         `[Resource] Fetching budget for month ${searchParamSignal().month}`,
       );
-      try {
-        let response = await graphqlSdk.GetMonthBudget({
-          year: parseInt(searchParam.year as string),
-          month: searchParam.month as Month,
-        });
-
-        if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
-          const err = handleGraphQLErrorObject(response.monthlyBudget);
-          if (err) {
-            throw new Error(err);
-          }
-        }
-        return response.monthlyBudget as MonthlyBudget;
-      } catch (e) {
-        handleGraphQLClientError(e, navigate);
-      }
+      const monthlyBudget = await getMonthlyBudget(
+        searchParamSignal().year as string,
+        searchParamSignal().month as Month,
+        navigate,
+      );
+      return monthlyBudget;
     },
   );
 
@@ -74,42 +64,27 @@ export default function Home() {
     log.info(
       `Updating monthly budget in backend: ${JSON.stringify(budget, null, 3)}`,
     );
-
     try {
-      const response = await graphqlSdk.UpdateMonthlyBudget({
-        inputs: {
-          year: Number(searchParam.year),
-          month: searchParam.month as Month,
-          budget: {
-            month: searchParam.month as Month,
-            overBudgetAmount: budget.overBudgetAmount,
-            spending: budget.spending,
-            totalSpending: budget.totalSpending,
-            carriedOverFrom: budget.carriedOverFrom,
-            budget: {
-              totalAllocation: budget.budget.totalAllocation,
-              shawnContributionAmount: budget.budget.shawnContributionAmount,
-              shawnPercentageAllocation:
-                budget.budget.shawnPercentageAllocation,
-              maggieContributionAmount: budget.budget.maggieContributionAmount,
-              maggiePercentageAllocation:
-                budget.budget.maggiePercentageAllocation,
-            },
-          },
-        },
-      });
-
-      if (response.updateMonthlyBudget.__typename == "GraphQLErrorObject") {
-        const err = handleGraphQLErrorObject(response.updateMonthlyBudget);
-        if (err) {
-          console.error(err);
-          throw new Error(err);
-        }
-
-        return response.updateMonthlyBudget;
-      }
+      await updateMonthlyBudget(
+        searchParam.year as string,
+        searchParam.month as Month,
+        budget,
+        navigate,
+      );
     } catch (e) {
-      handleGraphQLClientError(e, navigate);
+      if (axios.isAxiosError(e)) {
+        if (e.response?.status == 404) {
+          log.info("No budget recorded for this month");
+          throw MonthlyBudgetErrors.FAILED_TO_FETCH_BUDGET;
+        } else if (e.response?.status == 403) {
+          log.info("Access forbidden");
+          throw MonthlyBudgetErrors.FORBIDDEN;
+        } else if (e.response?.status == 401) {
+          log.info("Authenication token expired. Needs re authenication");
+          throw MonthlyBudgetErrors.RE_AUTH_NEEDED;
+        }
+      }
+      throw new Error(`Failed to update monthly budget: ${e}`);
     }
   });
 

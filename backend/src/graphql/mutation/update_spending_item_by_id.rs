@@ -55,7 +55,6 @@ pub async fn update_spending_item_by_id_handler(
                 SpendingItem {
                     id: inputs.spending_item.id.clone(),
                     date: inputs.spending_item.date.clone(),
-                    date_rfc3339: inputs.spending_item.date_rfc3339.clone(),
                     amount: inputs.spending_item.amount,
                     description: inputs.spending_item.description.clone(),
                     notes: inputs.spending_item.notes.clone(),

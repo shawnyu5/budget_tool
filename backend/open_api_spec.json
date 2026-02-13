@@ -801,13 +801,6 @@
             "type": "string",
             "description": "The date"
           },
-          "dateRfc3339": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Date in RFC3339 format"
-          },
           "description": {
             "type": "string",
             "description": "Description of the purchase"

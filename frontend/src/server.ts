@@ -70,6 +70,36 @@ export enum MonthlyBudgetErrors {
   RE_AUTH_NEEDED,
 }
 
+/**
+ * Get the budget for a specific month in a specific year
+ * @param year - the year
+ * @param month - the month to get the budget of
+ * @throws `MonthlyBudgetErrors` when fetching the budget fails
+ */
+export async function getMonthlyBudget(
+  year: string,
+  month: Month,
+  navigate: Navigator,
+): Promise<MonthlyBudget | null> {
+  const sdk = NewGraphQLSDK();
+  try {
+    let response = await sdk.GetMonthBudget({
+      year: parseInt(year),
+      month: month,
+    });
+
+    if (response.monthlyBudget.__typename == "GraphQLErrorObject") {
+      const err = handleGraphQLErrorObject(response.monthlyBudget);
+      if (err) {
+        throw new Error(err);
+      }
+    }
+    return response.monthlyBudget as MonthlyBudget;
+  } catch (e) {
+    handleGraphQLClientError(e, navigate);
+  }
+}
+
 export type SettingsPageDataSuccess = Omit<
   SettingsPageDataQuery,
   "monthlyBudgetConfig"
@@ -107,6 +137,62 @@ export async function getSettingsPageData(
     }
 
     return response as SettingsPageDataSuccess;
+  } catch (e) {
+    handleGraphQLClientError(e, navigate);
+  }
+}
+
+/**
+ * Updates the monthly budget for a specific year and month with a new budget
+ * @param year - the year
+ * @param month - the month
+ * @param monthlyBudget - the updated monthly budget
+ * @throws `MonthlyBudgetErrors` when updating the budget fails
+ */
+export async function updateMonthlyBudget(
+  year: string,
+  month: Month,
+  monthlyBudget: MonthlyBudget | null,
+  navigate: Navigator,
+) {
+  if (!monthlyBudget) return;
+
+  const sdk = NewGraphQLSDK();
+  try {
+    const response = await sdk.UpdateMonthlyBudget({
+      inputs: {
+        year: Number(year),
+        month: month,
+        budget: {
+          month: month,
+          overBudgetAmount: monthlyBudget.overBudgetAmount,
+          spending: monthlyBudget.spending,
+          totalSpending: monthlyBudget.totalSpending,
+          carriedOverFrom: monthlyBudget.carriedOverFrom,
+          budget: {
+            totalAllocation: monthlyBudget.budget.totalAllocation,
+            shawnContributionAmount:
+              monthlyBudget.budget.shawnContributionAmount,
+            shawnPercentageAllocation:
+              monthlyBudget.budget.shawnPercentageAllocation,
+            maggieContributionAmount:
+              monthlyBudget.budget.maggieContributionAmount,
+            maggiePercentageAllocation:
+              monthlyBudget.budget.maggiePercentageAllocation,
+          },
+        },
+      },
+    });
+
+    if (response.updateMonthlyBudget.__typename == "GraphQLErrorObject") {
+      const err = handleGraphQLErrorObject(response.updateMonthlyBudget);
+      if (err) {
+        console.error(err);
+        throw new Error(err);
+      }
+
+      return response.updateMonthlyBudget;
+    }
   } catch (e) {
     handleGraphQLClientError(e, navigate);
   }

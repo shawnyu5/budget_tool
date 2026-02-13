@@ -324,8 +324,6 @@ export type SpendingItem = {
   amount: Scalars['Float']['output'];
   /** The date */
   date: Scalars['String']['output'];
-  /** Date in RFC3339 format */
-  dateRfc3339?: Maybe<Scalars['String']['output']>;
   /** Description of the purchase */
   description: Scalars['String']['output'];
   /** A unique identifier */
@@ -340,8 +338,6 @@ export type SpendingItemInput = {
   amount: Scalars['Float']['input'];
   /** The date */
   date: Scalars['String']['input'];
-  /** Date in RFC3339 format */
-  dateRfc3339?: InputMaybe<Scalars['String']['input']>;
   /** Description of the purchase */
   description: Scalars['String']['input'];
   /** A unique identifier */

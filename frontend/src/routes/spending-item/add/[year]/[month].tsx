@@ -21,7 +21,7 @@ export default function () {
   });
 
   const onSubmit = async (
-    newSpendingItem: SpendingItem,
+    updatedSpendingItem: SpendingItem,
     errorMessageSignal: Signal<string | null>,
   ) => {
     const [errorMessage, setErrorMessage] = errorMessageSignal;
@@ -39,11 +39,10 @@ export default function () {
           year: year,
           month: month,
           spendingItem: {
-            id: newSpendingItem.id,
-            amount: newSpendingItem.amount,
-            date: newSpendingItem.date,
-            dateRfc3339: new Date(newSpendingItem.date).toISOString(),
-            description: newSpendingItem.description,
+            id: updatedSpendingItem.id,
+            amount: updatedSpendingItem.amount,
+            date: updatedSpendingItem.date,
+            description: updatedSpendingItem.description,
           },
         },
       });

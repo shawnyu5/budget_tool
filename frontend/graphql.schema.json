@@ -1791,18 +1791,6 @@
             "deprecationReason": null
           },
           {
-            "name": "dateRfc3339",
-            "description": "Date in RFC3339 format",
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "description",
             "description": "Description of the purchase",
             "args": [],
@@ -1886,18 +1874,6 @@
                 "name": "String",
                 "ofType": null
               }
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "dateRfc3339",
-            "description": "Date in RFC3339 format",
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
             },
             "defaultValue": null,
             "isDeprecated": false,
