@@ -356,6 +356,10 @@ type SpendingItem {
 	"""
 	date: String!
 	"""
+	Date in RFC3339 format
+	"""
+	dateRfc3339: String
+	"""
 	Description of the purchase
 	"""
 	description: String!
@@ -381,6 +385,10 @@ input SpendingItemInput {
 	The date
 	"""
 	date: String!
+	"""
+	Date in RFC3339 format
+	"""
+	dateRfc3339: String
 	"""
 	Description of the purchase
 	"""

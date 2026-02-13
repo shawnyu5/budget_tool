@@ -1,8 +1,8 @@
 use async_graphql::{InputObject, SimpleObject};
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate, TimeZone, Utc};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
-use tracing::{debug, error, info, warn};
+use tracing::{debug, info, warn};
 use utoipa::ToSchema;
 
 use crate::{month::Month, utils::calculate_percentage};
@@ -34,25 +34,33 @@ pub struct MonthlyBudget {
 impl MonthlyBudget {
     /// Sort transactions by date
     pub fn sort_by_date(&mut self) {
-        self.spending.sort_by(|a, b| {
-            debug!("Sorting spending item by date");
-            // If we cant parse either dates into a proper date, just give up
-            let fallback_date = NaiveDate::from_ymd_opt(1, 1, 1).unwrap();
-            let a_date = NaiveDate::parse_from_str(&a.date, "%Y/%m/%d").unwrap_or_else(|e| {
-                warn!(
-                    "Failed to parse date: {e}. Using fallback date: {}",
-                    fallback_date.to_string()
-                );
-                fallback_date
-            });
+        /// Parse a date. Support both rfc3339 format and y/m/d format
+        /// If date is in neither format, returns None
+        fn parse_date(s: &str) -> Option<DateTime<Utc>> {
+            // Try parsing as rfc3339 format
+            if let Ok(dt) = DateTime::parse_from_rfc3339(s) {
+                return Some(dt.with_timezone(&Utc));
+            }
 
-            let b_date = NaiveDate::parse_from_str(&b.date, "%Y/%m/%d").unwrap_or_else(|e| {
-                warn!(
-                    "Failed to parse date: {e}. Using fallback date: {}",
-                    fallback_date.to_string()
-                );
-                fallback_date
-            });
+            if let Ok(date) = NaiveDate::parse_from_str(s, "%Y/%m/%d") {
+                return Some(Utc.from_utc_datetime(&date.and_hms_opt(0, 0, 0)?));
+            }
+
+            None
+        }
+        self.spending.sort_by(|a, b| {
+            info!("Sorting spending item by date");
+            // If we cant parse either dates into a proper date, just give up
+            let fallback_date = Utc::now();
+            let a_date = a.date_rfc3339.as_ref().unwrap_or(&a.date);
+            info!("Parsing first date: {a_date}");
+            let a_date = parse_date(a_date).unwrap_or(fallback_date);
+
+            let b_date = b.date_rfc3339.as_ref().unwrap_or(&a.date);
+            info!("Parsing second date: {b_date}");
+            let b_date = parse_date(b_date).unwrap_or(fallback_date);
+            info!("Parsed date a: {a_date}");
+            info!("Parsed date b: {b_date}");
 
             b_date.cmp(&a_date)
         });
@@ -171,6 +179,9 @@ pub struct SpendingItem {
     pub amount: f64,
     /// The date
     pub date: String,
+    /// Date in RFC3339 format
+    // This field may not always exist in DB. Use Default::default() when it does not exist
+    pub date_rfc3339: Option<String>,
     /// Description of the purchase
     pub description: String,
     /// Additional notes
