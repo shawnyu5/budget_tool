@@ -57,6 +57,7 @@ pub async fn add_spending_item_by_month_handler(
 
     month_budget.spending.push(inputs.spending_item.clone());
     month_budget.update_calculations();
+    month_budget.sort_by_date();
 
     info!("Updated budget: {:#?}", month_budget);
     budget_db

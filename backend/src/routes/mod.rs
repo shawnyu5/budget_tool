@@ -391,28 +391,29 @@ async fn update_spending_item(
         })
         .collect();
     monthly_budget.spending = updated_monthly_spending;
-    monthly_budget.spending.sort_by(|a, b| {
-        info!("Sorting spending item");
-        // If we cant parse either dates into a proper date, just give up
-        let fallback_date = NaiveDate::from_ymd_opt(1, 1, 1).unwrap();
-        let a_date = NaiveDate::parse_from_str(&a.date, "%Y/%m/%d").unwrap_or_else(|e| {
-            error!(
-                "Failed to parse date: {e}. Using fallback date: {}",
-                fallback_date.to_string()
-            );
-            fallback_date
-        });
-
-        let b_date = NaiveDate::parse_from_str(&b.date, "%Y/%m/%d").unwrap_or_else(|e| {
-            error!(
-                "Failed to parse date: {e}. Using fallback date: {}",
-                fallback_date.to_string()
-            );
-            fallback_date
-        });
-
-        b_date.cmp(&a_date)
-    });
+    monthly_budget.sort_by_date();
+    // monthly_budget.spending.sort_by(|a, b| {
+    //     info!("Sorting spending item");
+    //     // If we cant parse either dates into a proper date, just give up
+    //     let fallback_date = NaiveDate::from_ymd_opt(1, 1, 1).unwrap();
+    //     let a_date = NaiveDate::parse_from_str(&a.date, "%Y/%m/%d").unwrap_or_else(|e| {
+    //         error!(
+    //             "Failed to parse date: {e}. Using fallback date: {}",
+    //             fallback_date.to_string()
+    //         );
+    //         fallback_date
+    //     });
+    //
+    //     let b_date = NaiveDate::parse_from_str(&b.date, "%Y/%m/%d").unwrap_or_else(|e| {
+    //         error!(
+    //             "Failed to parse date: {e}. Using fallback date: {}",
+    //             fallback_date.to_string()
+    //         );
+    //         fallback_date
+    //     });
+    //
+    //     b_date.cmp(&a_date)
+    // });
     debug!("Sorted spending items: {:?}", monthly_budget.spending);
 
     monthly_budget.calculate_over_budget_amount();

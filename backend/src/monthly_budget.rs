@@ -1,7 +1,8 @@
 use async_graphql::{InputObject, SimpleObject};
+use chrono::NaiveDate;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
-use tracing::debug;
+use tracing::{debug, error, info, warn};
 use utoipa::ToSchema;
 
 use crate::{month::Month, utils::calculate_percentage};
@@ -31,6 +32,31 @@ pub struct MonthlyBudget {
 }
 
 impl MonthlyBudget {
+    /// Sort transactions by date
+    pub fn sort_by_date(&mut self) {
+        self.spending.sort_by(|a, b| {
+            debug!("Sorting spending item by date");
+            // If we cant parse either dates into a proper date, just give up
+            let fallback_date = NaiveDate::from_ymd_opt(1, 1, 1).unwrap();
+            let a_date = NaiveDate::parse_from_str(&a.date, "%Y/%m/%d").unwrap_or_else(|e| {
+                warn!(
+                    "Failed to parse date: {e}. Using fallback date: {}",
+                    fallback_date.to_string()
+                );
+                fallback_date
+            });
+
+            let b_date = NaiveDate::parse_from_str(&b.date, "%Y/%m/%d").unwrap_or_else(|e| {
+                warn!(
+                    "Failed to parse date: {e}. Using fallback date: {}",
+                    fallback_date.to_string()
+                );
+                fallback_date
+            });
+
+            b_date.cmp(&a_date)
+        });
+    }
     pub fn update_calculations(&mut self) {
         self.calculate_total_spending();
         self.calculate_total_budget_allocation();
