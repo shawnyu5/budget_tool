@@ -280,7 +280,7 @@ type MutationRoot {
 	"""
 	Update a spending item by ID
 	"""
-	updateSpendingItemById(inputs: UpdateSpendingItemByIdInput!): MonthlyBudgetResponse!
+	updateSpendingItemById(inputs: UpdateSpendingItemByIdInput!): UpdateSpendingItemByIdResponse!
 	"""
 	Update the budget for a specific month
 	"""
@@ -466,6 +466,10 @@ input UpdateSpendingItemByIdInput {
 	The new spending item to update
 	"""
 	spendingItem: SpendingItemInput!
+}
+
+type UpdateSpendingItemByIdResponse {
+	success: Boolean!
 }
 
 """

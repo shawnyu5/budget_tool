@@ -38,22 +38,17 @@ export default function () {
         },
       });
 
-      // const res = await axios.get<SpendingItem>(
-      //   `${loadLocalConfig().backendUrl}/spending-item/${year}/${month}/${spendingItemID}`,
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //   },
-      // );
+      if (!res.searchSpendingItem) {
+        return;
+      }
 
       setSpendingItem({
         id: res.searchSpendingItem?.id,
-        amount: res.data.amount,
-        date: res.data.date,
-        dateRfc3339: res.data.dateRfc3339,
-        description: res.data.description,
-        notes: res.data.notes,
+        amount: res.searchSpendingItem?.amount,
+        date: res.searchSpendingItem?.date,
+        dateRfc3339: res.searchSpendingItem?.dateRfc3339,
+        description: res.searchSpendingItem?.description,
+        notes: res.searchSpendingItem?.notes,
       });
     } catch (e) {
       handleGraphQLClientError(e, navigate);
@@ -72,34 +67,18 @@ export default function () {
     log.info("Submitting form");
 
     try {
-      await axios.post(
-        `${loadLocalConfig().backendUrl}/spending-item/${year}/${month}/${spendingItem()?.id}`,
-        updatedSpendingItem,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+      await graphqlSdk.UpdateSpendingItemByID({
+        inputs: {
+          year: parseInt(year),
+          month: month as Month,
+          spendingItem: updatedSpendingItem,
         },
-      );
-    } catch (e) {
-      if (axios.isAxiosError(e)) {
-        if (e.response?.status == 404) {
-          log.info("No budget recorded for this month");
-        } else if (e.response?.status == 403) {
-          log.info("Access forbidden. Redirecting to login page");
-          navigate("/login", { replace: true });
-        } else if (e.response?.status == 401) {
-          log.info(
-            "Authenication token expired. Needs re authenication. Redirecting to login page",
-          );
-          navigate("/login", { replace: true });
-        }
-      }
-      log.error("Failed to update budget: ", e);
-      setErrorMessage(`Failed to update budget: ${e}`);
-    }
+      });
 
-    navigate(`/?year=${year}&month=${month}`, { replace: true });
+      navigate(`/?year=${year}&month=${month}`, { replace: true });
+    } catch (e) {
+      handleGraphQLClientError(e, navigate);
+    }
   };
 
   return (

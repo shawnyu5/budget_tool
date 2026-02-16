@@ -21,7 +21,8 @@ use crate::{
                 UpdateBudgetConfigInput, UpdateBudgetConfigResponse, update_budget_config_handler,
             },
             update_spending_item_by_id::{
-                UpdateSpendingItemByIdInput, update_spending_item_by_id_handler,
+                UpdateSpendingItemByIdInput, UpdateSpendingItemByIdResponse,
+                update_spending_item_by_id_handler,
             },
         },
         utils::AuthGuard,
@@ -100,7 +101,7 @@ impl MutationRoot {
         &self,
         ctx: &Context<'_>,
         inputs: UpdateSpendingItemByIdInput,
-    ) -> Result<MonthlyBudgetResponse> {
+    ) -> Result<UpdateSpendingItemByIdResponse> {
         return update_spending_item_by_id_handler(ctx, inputs).await;
     }
 

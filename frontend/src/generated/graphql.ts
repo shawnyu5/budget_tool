@@ -221,7 +221,7 @@ export type MutationRoot = {
   /** Update the budget configuration for a specific month */
   updateMonthlyBudgetConfig: UpdateBudgetConfigResponse;
   /** Update a spending item by ID */
-  updateSpendingItemById: MonthlyBudgetResponse;
+  updateSpendingItemById: UpdateSpendingItemByIdResponse;
 };
 
 
@@ -338,7 +338,7 @@ export type SpendingItem = {
   amount: Scalars['Float']['output'];
   /** The date */
   date: Scalars['String']['output'];
-  /** Date in RFC3339 format */
+  /** Date in RFC3339 format, in Eastern timezone */
   dateRfc3339?: Maybe<Scalars['String']['output']>;
   /** Description of the purchase */
   description: Scalars['String']['output'];
@@ -354,7 +354,7 @@ export type SpendingItemInput = {
   amount: Scalars['Float']['input'];
   /** The date */
   date: Scalars['String']['input'];
-  /** Date in RFC3339 format */
+  /** Date in RFC3339 format, in Eastern timezone */
   dateRfc3339?: InputMaybe<Scalars['String']['input']>;
   /** Description of the purchase */
   description: Scalars['String']['input'];
@@ -416,6 +416,11 @@ export type UpdateSpendingItemByIdInput = {
   year: Scalars['Int']['input'];
 };
 
+export type UpdateSpendingItemByIdResponse = {
+  __typename?: 'UpdateSpendingItemByIdResponse';
+  success: Scalars['Boolean']['output'];
+};
+
 /** Represents a user */
 export type User = {
   __typename?: 'User';
@@ -464,6 +469,13 @@ export type AddSpendingItemByMonthMutationVariables = Exact<{
 
 
 export type AddSpendingItemByMonthMutation = { __typename?: 'MutationRoot', addSpendingItemByMonth: { __typename: 'AddSpendingItemByMonthErrorObject', code: AddSpendingItemByMonthError, message: string } | { __typename: 'SuccessResponse', success: boolean } };
+
+export type UpdateSpendingItemByIdMutationVariables = Exact<{
+  inputs: UpdateSpendingItemByIdInput;
+}>;
+
+
+export type UpdateSpendingItemByIdMutation = { __typename?: 'MutationRoot', updateSpendingItemById: { __typename?: 'UpdateSpendingItemByIdResponse', success: boolean } };
 
 export type GraphQlErrorFieldsFragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
 
@@ -600,6 +612,13 @@ export const AddSpendingItemByMonthDocument = gql`
   }
 }
     `;
+export const UpdateSpendingItemByIdDocument = gql`
+    mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
+  updateSpendingItemById(inputs: $inputs) {
+    success
+  }
+}
+    `;
 export const SettingsPageDataDocument = gql`
     query SettingsPageData($year: Int!, $month: Month!) {
   monthlyBudgetConfig(year: $year, month: $month) {
@@ -722,6 +741,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     AddSpendingItemByMonth(variables: AddSpendingItemByMonthMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddSpendingItemByMonthMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<AddSpendingItemByMonthMutation>({ document: AddSpendingItemByMonthDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddSpendingItemByMonth', 'mutation', variables);
+    },
+    UpdateSpendingItemByID(variables: UpdateSpendingItemByIdMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateSpendingItemByIdMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UpdateSpendingItemByIdMutation>({ document: UpdateSpendingItemByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateSpendingItemByID', 'mutation', variables);
     },
     SettingsPageData(variables: SettingsPageDataQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SettingsPageDataQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<SettingsPageDataQuery>({ document: SettingsPageDataDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SettingsPageData', 'query', variables);

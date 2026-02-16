@@ -103,7 +103,7 @@ export type SpendingItem = {
      */
     date: string;
     /**
-     * Date in RFC3339 format
+     * Date in RFC3339 format, in Eastern timezone
      */
     dateRfc3339?: string | null;
     /**

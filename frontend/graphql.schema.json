@@ -1380,8 +1380,8 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
-                "kind": "UNION",
-                "name": "MonthlyBudgetResponse",
+                "kind": "OBJECT",
+                "name": "UpdateSpendingItemByIdResponse",
                 "ofType": null
               }
             },
@@ -1881,7 +1881,7 @@
           },
           {
             "name": "dateRfc3339",
-            "description": "Date in RFC3339 format",
+            "description": "Date in RFC3339 format, in Eastern timezone",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -1982,7 +1982,7 @@
           },
           {
             "name": "dateRfc3339",
-            "description": "Date in RFC3339 format",
+            "description": "Date in RFC3339 format, in Eastern timezone",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -2451,6 +2451,34 @@
           }
         ],
         "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "UpdateSpendingItemByIdResponse",
+        "description": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "success",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
         "enumValues": null,
         "possibleTypes": null
       },

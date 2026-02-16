@@ -4,15 +4,19 @@ import {
   createEffect,
   createResource,
   createSignal,
+  onMount,
   Setter,
   Show,
   Signal,
 } from "solid-js";
-import { SpendingItem } from "~/server";
 import ErrorComponent from "./errorComponent";
 import { calculatePercentage } from "~/utils";
 import { handleGraphQLErrorObject, NewGraphQLSDK } from "~/graphql";
-import { BudgetConfig } from "~/generated/graphql";
+import { BudgetConfig, SpendingItem } from "~/generated/graphql";
+import { clientOnly } from "@solidjs/start";
+const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
+import "@rnwonder/solid-date-picker/dist/style.css";
+import { PickerValue } from "@rnwonder/solid-date-picker";
 
 /**
  * A form that displays a spending item
@@ -32,6 +36,11 @@ export function SpendingItemForm(props: {
   const [date, setDate] = createSignal("");
   const [description, setDescription] = createSignal("");
   const [notes, setNotes] = createSignal("");
+  const [pickerValue, setPickerValue] = createSignal<PickerValue>({
+    label: "",
+    value: {},
+  });
+
   const errorMessageSignal = createSignal<string | null>(null);
   // Tracks if the form has been submitted or not
   const [formSubmitted, setFormSubmitted] = createSignal(false);
@@ -75,10 +84,22 @@ export function SpendingItemForm(props: {
   };
 
   createEffect(() => {
+    // __AUTO_GENERATED_PRINT_VAR_START__
+    console.log(
+      "custom print var SpendingItemForm props.spendingItem(): %s",
+      JSON.stringify(props.spendingItem()),
+    ); // __AUTO_GENERATED_PRINT_VAR_END__
     setAmount(props.spendingItem()?.amount ?? 0);
     setDate(props.spendingItem()?.date ?? "");
     setDescription(props.spendingItem()?.description ?? "");
     setNotes(props.spendingItem()?.notes ?? "");
+    setPickerValue({
+      value: {
+        selected:
+          props.spendingItem()?.dateRfc3339 ?? props.spendingItem()?.date,
+      },
+      label: "",
+    });
   });
 
   return (
@@ -87,11 +108,15 @@ export function SpendingItemForm(props: {
       method="post"
       action={action(async () => {
         setFormSubmitted(true);
+        console.log(`Picker value: ${JSON.stringify(pickerValue())}`);
         props.onSubmit(
           {
-            id: props.spendingItem()?.id ?? "",
+            id: props.spendingItem()?.id ?? crypto.randomUUID(),
             amount: amount(),
             date: date(),
+            dateRfc3339: new Date(
+              pickerValue().value.selected ?? "",
+            ).toISOString(),
             description: description(),
             notes: notes(),
           },
@@ -116,16 +141,23 @@ export function SpendingItemForm(props: {
         />
 
         <label>Date</label>
-        <input
-          name="date"
-          type="text"
-          required
-          value={date()}
-          onInput={(e: InputEvent) => {
-            const input = (e.target as HTMLInputElement).value;
-            setDate(input);
-          }}
-        />
+        {
+          <input
+            name="date"
+            type="text"
+            required
+            value={date()}
+            onInput={(e: InputEvent) => {
+              const input = (e.target as HTMLInputElement).value;
+              setDate(input);
+            }}
+          />
+          // <DatePicker
+          //   type="single"
+          //   value={pickerValue}
+          //   setValue={setPickerValue}
+          // />
+        }
 
         <label>Description</label>
         <input

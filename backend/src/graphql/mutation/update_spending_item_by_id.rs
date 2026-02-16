@@ -3,7 +3,7 @@ use crate::monthly_budget::SpendingItem;
 use crate::{db::DB, month::Month, routes::MaybeJwt};
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
-use async_graphql::{Context, InputObject};
+use async_graphql::{Context, InputObject, SimpleObject};
 use chrono::NaiveDate;
 use mongodb::bson::doc;
 use rayon::prelude::*;
@@ -17,22 +17,16 @@ pub struct UpdateSpendingItemByIdInput {
     pub spending_item: SpendingItem,
 }
 
+#[derive(SimpleObject)]
+pub struct UpdateSpendingItemByIdResponse {
+    pub success: bool,
+}
+
 #[instrument(skip_all)]
 pub async fn update_spending_item_by_id_handler(
-    ctx: &Context<'_>,
+    _ctx: &Context<'_>,
     inputs: UpdateSpendingItemByIdInput,
-) -> Result<MonthlyBudgetResponse> {
-    let maybe_jwt = ctx
-        .data::<MaybeJwt>()
-        .expect("There should always be a JWT here!");
-    if maybe_jwt.is_none() {
-        panic!("JWT is invalid");
-        // return MonthlyBudgetResponse::Error(GraphQLErrorObject {
-        //     code: GraphQLErrorCode::Forbidden,
-        //     message: "Missing or invalid JWT".to_string(),
-        // });
-    }
-
+) -> Result<UpdateSpendingItemByIdResponse> {
     info!("New spending item: {:#?}", inputs.spending_item);
     let db = DB::new(&inputs.year.to_string())
         .await
@@ -121,5 +115,5 @@ pub async fn update_spending_item_by_id_handler(
         result.modified_count == 1,
         "Should always modify a single document"
     );
-    return Ok(MonthlyBudgetResponse::MonthlyBudget(monthly_budget));
+    return Ok(UpdateSpendingItemByIdResponse { success: true });
 }

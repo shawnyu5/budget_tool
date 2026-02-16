@@ -338,6 +338,7 @@ async fn get_spending_item(
 
 /// Update a single spending item by ID in a specific year and month. As well as updating the `totalSpending`
 #[instrument(skip_all)]
+#[deprecated = "Use the graphql endpoint instead"]
 #[utoipa::path(
     post,
     path = "/spending-item/{year}/{month}/{id}",

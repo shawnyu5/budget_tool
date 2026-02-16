@@ -70,3 +70,9 @@ mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
     }
   }
 }
+
+mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
+  updateSpendingItemById(inputs: $inputs) {
+    success
+  }
+}
