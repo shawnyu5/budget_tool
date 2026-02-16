@@ -301,6 +301,8 @@ export type QueryRoot = {
    */
   monthlyBudget: MonthlyBudgetResponse;
   monthlyBudgetConfig: MonthlyBudgetConfigResponse;
+  /** Search for a spending item by time and ID */
+  searchSpendingItem?: Maybe<SpendingItem>;
 };
 
 
@@ -313,6 +315,18 @@ export type QueryRootMonthlyBudgetArgs = {
 
 /** Root of the query */
 export type QueryRootMonthlyBudgetConfigArgs = {
+  month: Month;
+  year: Scalars['Int']['input'];
+};
+
+
+/** Root of the query */
+export type QueryRootSearchSpendingItemArgs = {
+  inputs: SearchSpendingItemInput;
+};
+
+export type SearchSpendingItemInput = {
+  id: Scalars['String']['input'];
   month: Month;
   year: Scalars['Int']['input'];
 };
@@ -488,6 +502,13 @@ export type SpendingItemFormQueryVariables = Exact<{
 
 
 export type SpendingItemFormQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename?: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } };
+
+export type SearchSpendingItemQueryVariables = Exact<{
+  inputs: SearchSpendingItemInput;
+}>;
+
+
+export type SearchSpendingItemQuery = { __typename?: 'QueryRoot', searchSpendingItem?: { __typename?: 'SpendingItem', id: string, amount: number, date: string, dateRfc3339?: string | null, description: string, notes?: string | null } | null };
 
 export const GraphQlErrorFieldsFragmentDoc = gql`
     fragment GraphQLErrorFields on GraphQLErrorObject {
@@ -670,6 +691,18 @@ export const SpendingItemFormDocument = gql`
   }
 }
     ${GraphQlErrorFieldsFragmentDoc}`;
+export const SearchSpendingItemDocument = gql`
+    query SearchSpendingItem($inputs: SearchSpendingItemInput!) {
+  searchSpendingItem(inputs: $inputs) {
+    id
+    amount
+    date
+    dateRfc3339
+    description
+    notes
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -704,6 +737,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     SpendingItemForm(variables: SpendingItemFormQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SpendingItemFormQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<SpendingItemFormQuery>({ document: SpendingItemFormDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SpendingItemForm', 'query', variables);
+    },
+    SearchSpendingItem(variables: SearchSpendingItemQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SearchSpendingItemQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SearchSpendingItemQuery>({ document: SearchSpendingItemDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SearchSpendingItem', 'query', variables);
     }
   };
 }

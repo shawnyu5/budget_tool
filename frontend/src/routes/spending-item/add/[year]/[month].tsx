@@ -1,10 +1,13 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import { createSignal, Signal } from "solid-js";
 import { SpendingItemForm } from "~/components/spendingItemForm";
-import { AddSpendingItemByMonthError, Month } from "~/generated/graphql";
+import {
+  AddSpendingItemByMonthError,
+  Month,
+  SpendingItem,
+} from "~/generated/graphql";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
-import { SpendingItem } from "~/server";
 
 export default function () {
   const params = useParams();
@@ -16,6 +19,7 @@ export default function () {
     id: crypto.randomUUID(),
     amount: 0,
     date: `${jsDate.getFullYear()}/${jsDate.getMonth() + 1}/${jsDate.getDate()}`,
+    dateRfc3339: jsDate.toISOString(),
     description: "",
     notes: "",
   });
@@ -42,7 +46,7 @@ export default function () {
             id: newSpendingItem.id,
             amount: newSpendingItem.amount,
             date: newSpendingItem.date,
-            dateRfc3339: new Date(newSpendingItem.date).toISOString(),
+            dateRfc3339: new Date(newSpendingItem.dateRfc3339 ?? "").toISOString(),
             description: newSpendingItem.description,
           },
         },

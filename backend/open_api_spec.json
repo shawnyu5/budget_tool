@@ -806,7 +806,7 @@
               "string",
               "null"
             ],
-            "description": "Date in RFC3339 format"
+            "description": "Date in RFC3339 format, in Eastern timezone"
           },
           "description": {
             "type": "string",

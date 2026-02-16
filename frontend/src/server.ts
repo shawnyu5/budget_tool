@@ -40,6 +40,9 @@ client.setConfig({
   axios: axios,
 });
 
+/**
+   @deprecated - use the graphql type instead
+*/
 export type SpendingItem =
   paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
 

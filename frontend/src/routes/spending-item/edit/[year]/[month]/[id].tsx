@@ -11,8 +11,9 @@ import {
 import ErrorComponent from "~/components/errorComponent";
 import { SpendingItemForm } from "~/components/spendingItemForm";
 import { loadLocalConfig } from "~/config";
+import { Month, SpendingItem } from "~/generated/graphql";
+import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
-import { SpendingItem } from "~/server";
 
 export default function () {
   const params = useParams();
@@ -20,6 +21,7 @@ export default function () {
   const month = params.month;
   const spendingItemID = params.id;
   const navigate = useNavigate();
+  const graphqlSdk = NewGraphQLSDK();
 
   const [spendingItem, setSpendingItem] = createSignal<SpendingItem | null>(
     null,
@@ -28,27 +30,33 @@ export default function () {
 
   onMount(async () => {
     try {
-      const res = await axios.get<SpendingItem>(
-        `${loadLocalConfig().backendUrl}/spending-item/${year}/${month}/${spendingItemID}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+      const res = await graphqlSdk.SearchSpendingItem({
+        inputs: {
+          year: parseInt(year),
+          month: month as Month,
+          id: spendingItemID,
         },
-      );
+      });
+
+      // const res = await axios.get<SpendingItem>(
+      //   `${loadLocalConfig().backendUrl}/spending-item/${year}/${month}/${spendingItemID}`,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+      //     },
+      //   },
+      // );
 
       setSpendingItem({
-        id: res.data.id,
+        id: res.searchSpendingItem?.id,
         amount: res.data.amount,
         date: res.data.date,
+        dateRfc3339: res.data.dateRfc3339,
         description: res.data.description,
         notes: res.data.notes,
       });
     } catch (e) {
-      log.error("Failed to get spending information: ", e);
-      if (isAxiosError(e)) {
-        setErrorMessage(`Failed to get spending information: ${e.message}`);
-      }
+      handleGraphQLClientError(e, navigate);
     }
   });
 

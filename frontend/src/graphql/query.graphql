@@ -102,3 +102,15 @@ query SpendingItemForm($year: Int!, $month: Month!) {
     ...GraphQLErrorFields
   }
 }
+
+# Search for a spending item by time and ID
+query SearchSpendingItem($inputs: SearchSpendingItemInput!) {
+  searchSpendingItem(inputs: $inputs) {
+    id
+    amount
+    date
+    dateRfc3339
+    description
+    notes
+  }
+}

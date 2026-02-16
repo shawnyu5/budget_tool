@@ -11,6 +11,8 @@ use tracing::info;
 
 use crate::config::Config;
 
+mod migration_table;
+pub mod migrations;
 mod monthly_budget;
 pub mod users;
 
@@ -18,7 +20,7 @@ pub mod users;
 pub struct DB<T: std::marker::Send + std::marker::Sync + DeserializeOwned> {
     /// The DB client
     client: Client,
-    /// The current collection of the current year to operate on
+    /// The current collection
     pub collection: Collection<T>,
 }
 

@@ -14,10 +14,12 @@ use crate::{
             me::me_handler,
             monthly_budget::monthly_budget_handler,
             monthly_budget_config::monthly_budget_config_handler,
+            spending_item::{SearchSpendingItemInput, search_spending_item_handler},
         },
         utils::AuthGuard,
     },
     month::Month,
+    monthly_budget::SpendingItem,
 };
 
 mod config;
@@ -25,6 +27,7 @@ pub mod firefly;
 mod me;
 mod monthly_budget;
 mod monthly_budget_config;
+pub mod spending_item;
 
 /// Root of the graphql query
 #[derive(Default, Clone, Debug)]
@@ -76,5 +79,15 @@ impl QueryRoot {
     /// Retrieve information from Firefly it self
     async fn firefly(&self, ctx: &Context<'_>) -> Result<FireflyResponse> {
         firefly_handler(ctx).await
+    }
+
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
+    /// Search for a spending item by time and ID
+    pub async fn search_spending_item(
+        &self,
+        inputs: SearchSpendingItemInput,
+    ) -> Result<Option<SpendingItem>> {
+        search_spending_item_handler(inputs).await
     }
 }
