@@ -35,13 +35,6 @@ Postgres data models:
 | ID   | UUID | PK           |
 | year | Int  |              |
 
-```sql
-CREATE TABLE years (
-    id SERIAL PRIMARY KEY,
-    year INT NOT NULL UNIQUE
-);
-```
-
 `months`
 
 Stores budget information about a single month
@@ -55,19 +48,6 @@ Stores budget information about a single month
 | total_spending     | DECIMAL(10,2) | Total spending for the month           |              | Default: 0 |
 | over_budget_amount | DECIMAL(10,2) | Over budget amount for the month       |              | Default: 0 |
 
-```sql
-CREATE TABLE months (
-    id SERIAL PRIMARY KEY,
-    year_id INT NOT NULL REFERENCES years(id),
-    month_name TEXT NOT NULL,
-    total_allocation DECIMAL(10,2) NOT NULL,
-    total_spending DECIMAL(10,2) NOT NULL DEFAULT 0,
-    over_budget_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
-    carried_over_from TEXT,
-    UNIQUE (year_id, month_name)
-);
-```
-
 `budget_allocations`
 
 | Name                  | Type          | Description                          | Relationship | Notes |
@@ -77,16 +57,6 @@ CREATE TABLE months (
 | contributor_name      | TEXT          | Name of the contributor              |              |       |
 | percentage_allocation | DECIMAL(10,2) | Percentage allocation                |              |       |
 | contriubtion amount   | DECIMAL(10,2) | Amount of contribution for the month |              |       |
-
-```sql
-CREATE TABLE budget_allocations (
-    id SERIAL PRIMARY KEY,
-    month_id INT NOT NULL REFERENCES months(id),
-    contributor_name TEXT NOT NULL,
-    percentage_allocation DECIMAL(5,2) NOT NULL,
-    contribution_amount DECIMAL(10,2) NOT NULL
-);
-```
 
 `transactions`
 
@@ -100,17 +70,6 @@ Stores all transactions
 | date        | DATE          |                                        |              |       |
 | description | TEXT          |                                        |              |       |
 | notes       | TEXT          |                                        |              |       |
-
-```sql
-CREATE TABLE transactions (
-    id UUID PRIMARY KEY,
-    month_id INT NOT NULL REFERENCES months(id),
-    amount DECIMAL(10,2) NOT NULL,
-    date DATE NOT NULL,
-    description TEXT,
-    notes TEXT
-);
-```
 
 `users`
 

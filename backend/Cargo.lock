@@ -465,6 +465,7 @@ dependencies = [
  "openssl",
  "rayon",
  "reqwest",
+ "rust_decimal",
  "schemars 1.2.1",
  "serde",
  "sha2",
@@ -480,6 +481,7 @@ dependencies = [
  "tracing-subscriber",
  "utoipa",
  "utoipa-axum",
+ "uuid",
  "web-push",
 ]
 
