@@ -2,7 +2,7 @@ use std::{collections::HashMap, pin::Pin};
 
 use crate::{
     db::{
-        DB,
+        MongoDB,
         migration_table::{MIGRATIONS_TABLE_NAME, SchemaMigration},
     },
     month::Month,
@@ -28,7 +28,7 @@ pub async fn do_db_migrations() -> Result<()> {
         Box::new(|| Box::pin(add_date_rfc3339_field())),
     );
 
-    let migration_table = DB::new(MIGRATIONS_TABLE_NAME).await?;
+    let migration_table = MongoDB::new(MIGRATIONS_TABLE_NAME).await?;
     for migration in migrations {
         info!("Executing migration {}", &migration.0.id);
         let existing_migration = migration_table
@@ -55,7 +55,7 @@ pub async fn do_db_migrations() -> Result<()> {
 /// Adds date_rfc3339 field to all transaction dates
 async fn add_date_rfc3339_field() -> Result<()> {
     for year in [2024, 2025, 2026] {
-        let db = DB::new(&year.to_string()).await?;
+        let db = MongoDB::new(&year.to_string()).await?;
         for month in [
             Month::January,
             Month::February,
@@ -99,7 +99,7 @@ async fn add_date_rfc3339_field() -> Result<()> {
         }
     }
 
-    let migration_db = DB::new(MIGRATIONS_TABLE_NAME).await?;
+    let migration_db = MongoDB::new(MIGRATIONS_TABLE_NAME).await?;
     migration_db
         .add_new_migration_record(SchemaMigration::new(
             "add_date_rfc3339_field",

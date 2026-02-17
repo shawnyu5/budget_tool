@@ -2,7 +2,7 @@ use async_graphql::Context;
 use tracing::{error, info};
 
 use crate::{
-    db::DB,
+    db::MongoDB,
     graphql::{
         error::{GraphQLErrorCode, GraphQLErrorObject},
         mutation::update_monthly_budget_config::MonthlyBudgetConfigResponse,
@@ -16,7 +16,7 @@ pub async fn monthly_budget_config_handler(
     month: Month,
 ) -> MonthlyBudgetConfigResponse {
     info!("Connecting to DB");
-    let db = DB::new(&year.to_string()).await.unwrap();
+    let db = MongoDB::new(&year.to_string()).await.unwrap();
 
     match db.get_month_budget(month).await {
         Ok(mut monthly_budget) => {

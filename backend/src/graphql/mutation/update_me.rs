@@ -3,8 +3,8 @@ use async_graphql::{Context, InputObject, SimpleObject};
 
 use crate::{
     db::{
-        users::{User, USER_TABLE_NAME},
-        DB,
+        MongoDB,
+        users::{USER_TABLE_NAME, User},
     },
     graphql::utils::extract_jwt,
 };
@@ -21,7 +21,7 @@ pub struct UpdateMeResponse {
 
 pub async fn update_me_handler(ctx: &Context<'_>, inputs: UpdateMe) -> Result<UpdateMeResponse> {
     let jwt = extract_jwt(ctx)?;
-    let db = DB::new(USER_TABLE_NAME).await?;
+    let db = MongoDB::new(USER_TABLE_NAME).await?;
     let _ = db
         .save_user_info(&jwt.username, &inputs.user)
         .await

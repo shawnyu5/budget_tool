@@ -6,7 +6,7 @@ use tracing::{error, info};
 use crate::config::Config;
 use crate::{
     db::{
-        DB,
+        MongoDB,
         users::{FireflySettings, USER_TABLE_NAME},
     },
     graphql::{
@@ -52,7 +52,7 @@ pub async fn update_budget_config_handler(
 ) -> Result<UpdateBudgetConfigResponse> {
     let jwt = extract_jwt(ctx)?;
 
-    let monthly_budget_db = DB::new(&inputs.year.to_string())
+    let monthly_budget_db = MongoDB::new(&inputs.year.to_string())
         .await
         .context("Failed to connect to database")?;
     let mut month_budget = monthly_budget_db
@@ -67,7 +67,7 @@ pub async fn update_budget_config_handler(
         .await
         .context("Failed to update budget")?;
 
-    let user_db = DB::new(USER_TABLE_NAME).await?;
+    let user_db = MongoDB::new(USER_TABLE_NAME).await?;
     let mut user = user_db
         .get_user(&jwt.username)
         .await

@@ -1,6 +1,6 @@
 use crate::{
     db::{
-        DB,
+        MongoDB,
         users::{USER_TABLE_NAME, User},
     },
     graphql::utils::extract_jwt,
@@ -28,7 +28,7 @@ pub async fn save_subscription_handler(
     // Tracks if we are updating an existing user in the DB
     let mut existing_user = true;
 
-    let db = DB::new(USER_TABLE_NAME)
+    let db = MongoDB::new(USER_TABLE_NAME)
         .await
         .context("Failed to connect to DB")?;
     let mut user = db.get_user(&jwt.username).await.unwrap_or_else(|_| {

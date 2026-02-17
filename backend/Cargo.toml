@@ -33,6 +33,7 @@ headers = "0.4.1"
 axum-extra = { version = "0.12.5", features = ["cookie", "typed-header"] }
 chacha20poly1305 = "0.10.1"
 reqwest = { version = "^0.12" }
+sqlx = { version = "0.8.6", features = ["chrono", "derive", "macros", "postgres", "runtime-tokio", "rust_decimal", "tls-native-tls", "uuid"] }
 
 
 [dev-dependencies]

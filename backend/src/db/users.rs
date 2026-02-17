@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{debug, info, instrument};
 use utoipa::ToSchema;
 
-use crate::db::DB;
+use crate::db::MongoDB;
 
 /// Name of the user table in the DB
 pub const USER_TABLE_NAME: &str = "Users";
@@ -101,7 +101,7 @@ pub struct UserCron {
     pub frequency: String,
 }
 
-impl DB<User> {
+impl MongoDB<User> {
     /// Get a user by their user name
     ///
     /// * `username`: the user name to search for

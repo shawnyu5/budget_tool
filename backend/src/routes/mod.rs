@@ -46,7 +46,7 @@ use crate::routes::notification::{
 };
 use crate::routes::notification::{__path_send_notification_handler, send_notification_handler};
 use crate::utils::calculate_percentage;
-use crate::{db::DB, month::Month};
+use crate::{db::MongoDB, month::Month};
 pub mod auth;
 pub mod notification;
 
@@ -178,7 +178,7 @@ async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
     info!("Connecting to DB");
-    let db = match DB::new(&year).await {
+    let db = match MongoDB::new(&year).await {
         Ok(db) => db,
         Err(e) => {
             error!("Error: {}", e);
@@ -225,7 +225,7 @@ async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(mut body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
-    let db = DB::new(&year)
+    let db = MongoDB::new(&year)
         .await
         .context("Failed to connect to database")?;
     body.update_calculations();
@@ -292,7 +292,7 @@ impl Deref for MaybeJwt {
 async fn get_spending_item(
     Path((year, month, id)): Path<(String, Month, String)>,
 ) -> Result<Json<Option<SpendingItem>>, AppError> {
-    let db = DB::<MonthlyBudget>::new(&year)
+    let db = MongoDB::<MonthlyBudget>::new(&year)
         .await
         .context("Failed to connect to database")?;
 
@@ -361,7 +361,7 @@ async fn update_spending_item(
     Path((year, month, id)): Path<(String, Month, String)>,
     Json(spending_item): Json<SpendingItem>,
 ) -> Result<(), AppError> {
-    let db = DB::new(&year)
+    let db = MongoDB::new(&year)
         .await
         .context("Failed to connect to database")?;
 

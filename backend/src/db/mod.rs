@@ -14,11 +14,12 @@ use crate::config::Config;
 mod migration_table;
 pub mod migrations;
 mod monthly_budget;
+pub mod postgres;
 pub mod users;
 
-/// Interface for database operations
-pub struct DB<T: std::marker::Send + std::marker::Sync + DeserializeOwned> {
-    /// The DB client
+/// Interface for database operations with MongoDB
+pub struct MongoDB<T: std::marker::Send + std::marker::Sync + DeserializeOwned> {
+    /// Mongo DB client
     client: Client,
     /// The current collection
     pub collection: Collection<T>,
@@ -38,7 +39,7 @@ pub enum DBError {
     DB(#[from] anyhow::Error),
 }
 
-impl<T: std::marker::Send + std::marker::Sync + DeserializeOwned> DB<T> {
+impl<T: std::marker::Send + std::marker::Sync + DeserializeOwned> MongoDB<T> {
     /// Creates a new db connection
     ///
     /// * `name`: name of the collection to connect to

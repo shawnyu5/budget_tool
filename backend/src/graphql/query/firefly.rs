@@ -8,7 +8,7 @@ use tracing::error;
 use crate::graphql::error::GraphQlErrorObjectV2;
 use crate::{
     config::Config,
-    db::{DB, users::USER_TABLE_NAME},
+    db::{MongoDB, users::USER_TABLE_NAME},
     graphql::utils::extract_jwt,
 };
 
@@ -32,7 +32,7 @@ pub enum FireflyError {
 
 pub async fn firefly_handler(ctx: &Context<'_>) -> Result<FireflyResponse> {
     let jwt = extract_jwt(ctx)?;
-    let user_db = DB::new(USER_TABLE_NAME).await?;
+    let user_db = MongoDB::new(USER_TABLE_NAME).await?;
     let mut user = user_db.get_user(&jwt.username).await?;
     let http_client = ctx.data::<reqwest::Client>().unwrap();
     let config = Config::load();

@@ -4,7 +4,7 @@ use chrono_tz::America::New_York;
 use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 
-use crate::db::DB;
+use crate::db::MongoDB;
 
 /// Name of the schema migration table in DB
 /// This table keeps track of all the schema migrations that were done
@@ -39,7 +39,7 @@ impl SchemaMigration {
     }
 }
 
-impl DB<SchemaMigration> {
+impl MongoDB<SchemaMigration> {
     /// Add a new schema migration
     pub async fn add_new_migration_record(&self, migration: SchemaMigration) -> Result<()> {
         self.collection

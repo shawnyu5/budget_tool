@@ -1,6 +1,6 @@
 use crate::graphql::mutation::MonthlyBudgetResponse;
 use crate::monthly_budget::SpendingItem;
-use crate::{db::DB, month::Month, routes::MaybeJwt};
+use crate::{db::MongoDB, month::Month, routes::MaybeJwt};
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
 use async_graphql::{Context, InputObject, SimpleObject};
@@ -28,7 +28,7 @@ pub async fn update_spending_item_by_id_handler(
     inputs: UpdateSpendingItemByIdInput,
 ) -> Result<UpdateSpendingItemByIdResponse> {
     info!("New spending item: {:#?}", inputs.spending_item);
-    let db = DB::new(&inputs.year.to_string())
+    let db = MongoDB::new(&inputs.year.to_string())
         .await
         .context("Failed to connect to database")?;
 

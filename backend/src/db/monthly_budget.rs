@@ -6,12 +6,12 @@ use tracing::{debug, error, info};
 
 use crate::{
     config::Config,
-    db::{DBError, DB},
+    db::{DBError, MongoDB},
     month::{Month, MonthError},
     monthly_budget::MonthlyBudget,
 };
 
-impl DB<MonthlyBudget> {
+impl MongoDB<MonthlyBudget> {
     /// Get the budget information for a selected month
     ///
     /// * `month`: the month to get budget for
@@ -73,7 +73,9 @@ impl DB<MonthlyBudget> {
                                 .context("Failed to parse collection into valid year")?;
                             let prev_collection_year = collection_year - 1;
                             trying_prev_months = true;
-                            info!("There are no more months in current year to check. Checking previous year: {prev_collection_year}");
+                            info!(
+                                "There are no more months in current year to check. Checking previous year: {prev_collection_year}"
+                            );
 
                             collection =
                                 self.client
@@ -84,7 +86,9 @@ impl DB<MonthlyBudget> {
                         }
                     }
                     if iteration == 12 {
-                        error!("Checked 12 months before target month. Assuming no budget information will be found");
+                        error!(
+                            "Checked 12 months before target month. Assuming no budget information will be found"
+                        );
                         return Err(DBError::BudgetNotFound);
                     }
 
