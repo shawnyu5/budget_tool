@@ -15,7 +15,7 @@ import SuccessComponent from "~/components/successComponent";
 import { calculatePercentage, calculatePercentageOf, round } from "~/utils";
 import { Month } from "~/generated/graphql";
 import { FireflySettingsForm } from "./firefly_settings";
-import { handleGraphQLErrorObject } from "~/graphql";
+import { handleGraphQLErrorObject, NewGraphQLSDK } from "~/graphql";
 
 export default function Settings() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -24,6 +24,7 @@ export default function Settings() {
   const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
   // // Whether to show the firefly settings form
   // const [fireflySettingsToggle, setfireFlySettingsToggle] = createSignal(false);
+  const graphqlsdk = NewGraphQLSDK();
   const navigate = useNavigate();
   let hasUserModified = false;
 
@@ -70,6 +71,36 @@ export default function Settings() {
         settingsPageDataResource()?.me.firefly!,
         navigate,
       );
+
+      await graphqlsdk.UpdateSettings({
+        inputs: {
+          year: Number(searchParam.year),
+          month: searchParam.month as Month,
+          settings: {
+            totalAllocation:
+              settingsPageDataResource()?.monthlyBudgetConfig.totalAllocation,
+            shawnPercentageAllocation:
+              settingsPageDataResource()?.monthlyBudgetConfig
+                .shawnPercentageAllocation,
+            shawnContributionAmount:
+              settingsPageDataResource()?.monthlyBudgetConfig
+                .shawnContributionAmount,
+            maggiePercentageAllocation:
+              settingsPageDataResource()?.monthlyBudgetConfig
+                .maggiePercentageAllocation,
+            maggieContributionAmount:
+              settingsPageDataResource()?.monthlyBudgetConfig
+                .maggieContributionAmount,
+            firefly: {
+              ...settingsPageDataResource()?.me.firefly,
+              enabled: settingsPageDataResource()?.me.firefly?.enabled ?? false,
+              apiKey: settingsPageDataResource()?.me.firefly?.apiKey,
+              sourceAccount:
+                settingsPageDataResource()?.me.firefly?.sourceAccount,
+            },
+          },
+        },
+      });
 
       if (res.updateMonthlyBudgetConfig.__typename == "GraphQLErrorObject") {
         const err = handleGraphQLErrorObject(res.updateMonthlyBudgetConfig);

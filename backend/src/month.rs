@@ -66,7 +66,7 @@ impl Sub for Month {
 
 impl Month {
     /// Get the numeric value of the month (1 for January, 12 for December).
-    pub fn to_number(&self) -> u8 {
+    pub fn to_number(&self) -> i32 {
         match self {
             Month::January => 1,
             Month::February => 2,
@@ -84,7 +84,7 @@ impl Month {
     }
 
     /// Convert a numeric value (1–12) into a `Month`.
-    pub fn from_number(num: u8) -> Option<Self> {
+    pub fn from_number(num: i32) -> Option<Self> {
         match num {
             1 => Some(Month::January),
             2 => Some(Month::February),

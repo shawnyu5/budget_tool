@@ -1,5 +1,6 @@
 #![allow(clippy::needless_return)]
-use anyhow::Result;
+use anyhow::{Context, Result};
+use backend::db::postgres::PostgresDB;
 use backend::routes::app;
 use backend::{config::Config, db::migrations::do_db_migrations};
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
@@ -16,10 +17,12 @@ async fn main() -> Result<()> {
     do_db_migrations()
         .await
         .expect("DB schema migration failed....");
-    // info!("Starting DB migration...");
-    // add_date_rfc3339_field()
-    //     .await
-    //     .context("DB migration add_date_rfc3999_field failed...")?;
+
+    PostgresDB::new()
+        .await
+        .do_migrations()
+        .await
+        .context("Migration failed...")?;
 
     let addr = "0.0.0.0:8000";
     let listener = TcpListener::bind(addr).await.unwrap();

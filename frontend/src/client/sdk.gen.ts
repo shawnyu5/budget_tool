@@ -158,6 +158,8 @@ export const getSpendingItem = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Update a single spending item by ID in a specific year and month. As well as updating the `totalSpending`
+ *
+ * @deprecated
  */
 export const updateSpendingItem = <ThrowOnError extends boolean = false>(options: Options<UpdateSpendingItemData, ThrowOnError>) => {
     return (options.client ?? client).post<UpdateSpendingItemResponses, UpdateSpendingItemErrors, ThrowOnError>({

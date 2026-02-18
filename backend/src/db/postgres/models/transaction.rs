@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 /// A single transaction
 #[derive(Debug, FromRow)]
-pub struct Transaction {
+pub struct TransactionRow {
     pub id: Uuid,
     pub month_id: Uuid,
     pub amount: Decimal,

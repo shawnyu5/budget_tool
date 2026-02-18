@@ -15,6 +15,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  Decimal: { input: any; output: any; }
 };
 
 /** Errors that could happen during adding an item by month */
@@ -101,6 +102,21 @@ export type FireflySettings = {
 
 /** Firefly related settings */
 export type FireflySettingsInput = {
+  /**
+   * Encrypted firefly API key, required if `enabled` = true
+   * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
+   */
+  apiKey?: InputMaybe<Scalars['String']['input']>;
+  /** If the user has enabled Firefly integration */
+  enabled: Scalars['Boolean']['input'];
+  /** Base64 encoded nounce used to encrypt / decrypt the API key */
+  encryptionNounce?: InputMaybe<Scalars['String']['input']>;
+  /** The source account to create the transaction in */
+  sourceAccount?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** Firefly related settings */
+export type FireflySettingsV2Input = {
   /**
    * Encrypted firefly API key, required if `enabled` = true
    * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
@@ -216,6 +232,8 @@ export type MutationRoot = {
    * The user is extracted from the JWT
    */
   saveSubscription: User;
+  /** Update the settings for a specific month, in the Postgres DB */
+  updateMonthSettings: UpdateMonthSettingsResponse;
   /** Update the budget for a specific month */
   updateMonthlyBudget: MonthlyBudgetResponse;
   /** Update the budget configuration for a specific month */
@@ -242,6 +260,11 @@ export type MutationRootMeArgs = {
 
 export type MutationRootSaveSubscriptionArgs = {
   subscription: SubscriptionInput;
+};
+
+
+export type MutationRootUpdateMonthSettingsArgs = {
+  inputs: UpdateMonthSettingsInput;
 };
 
 
@@ -331,6 +354,22 @@ export type SearchSpendingItemInput = {
   year: Scalars['Int']['input'];
 };
 
+/** Data on the settings page */
+export type SettingInput = {
+  /** Firefly related settings */
+  firefly: FireflySettingsV2Input;
+  /** Maggie contribution amount. The frontend is responsible for computing this value */
+  maggieContributionAmount: Scalars['Decimal']['input'];
+  /** Maggie percentage allocation */
+  maggiePercentageAllocation: Scalars['Decimal']['input'];
+  /** Shawn contribution amount. The frontend is responsible for computing this value */
+  shawnContributionAmount: Scalars['Decimal']['input'];
+  /** Shawn percentage allocation */
+  shawnPercentageAllocation: Scalars['Decimal']['input'];
+  /** Total allocated budget */
+  totalAllocation: Scalars['Decimal']['input'];
+};
+
 /** A single transaction */
 export type SpendingItem = {
   __typename?: 'SpendingItem';
@@ -403,6 +442,20 @@ export type UpdateMeResponse = {
   success: Scalars['Boolean']['output'];
 };
 
+export type UpdateMonthSettingsInput = {
+  /** The month of the budget to update */
+  month: Month;
+  /** Updated settings */
+  settings: SettingInput;
+  /** The year of the budget to update */
+  year: Scalars['Int']['input'];
+};
+
+export type UpdateMonthSettingsResponse = {
+  __typename?: 'UpdateMonthSettingsResponse';
+  success: Scalars['Boolean']['output'];
+};
+
 export type UpdateMonthlyBudgetInput = {
   budget: MonthlyBudgetInput;
   month: Month;
@@ -455,6 +508,13 @@ export type UpdateMonthlyBudgetConfigMutationVariables = Exact<{
 
 
 export type UpdateMonthlyBudgetConfigMutation = { __typename?: 'MutationRoot', updateMonthlyBudgetConfig: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename?: 'UpdateBudgetResponse', success: boolean } };
+
+export type UpdateSettingsMutationVariables = Exact<{
+  inputs: UpdateMonthSettingsInput;
+}>;
+
+
+export type UpdateSettingsMutation = { __typename?: 'MutationRoot', updateMonthSettings: { __typename?: 'UpdateMonthSettingsResponse', success: boolean } };
 
 export type UpdateMonthlyBudgetMutationVariables = Exact<{
   inputs: UpdateMonthlyBudgetInput;
@@ -562,6 +622,13 @@ export const UpdateMonthlyBudgetConfigDocument = gql`
       code
       message
     }
+  }
+}
+    `;
+export const UpdateSettingsDocument = gql`
+    mutation UpdateSettings($inputs: UpdateMonthSettingsInput!) {
+  updateMonthSettings(inputs: $inputs) {
+    success
   }
 }
     `;
@@ -735,6 +802,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     UpdateMonthlyBudgetConfig(variables: UpdateMonthlyBudgetConfigMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetConfigMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetConfigMutation>({ document: UpdateMonthlyBudgetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudgetConfig', 'mutation', variables);
+    },
+    UpdateSettings(variables: UpdateSettingsMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateSettingsMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UpdateSettingsMutation>({ document: UpdateSettingsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateSettings', 'mutation', variables);
     },
     UpdateMonthlyBudget(variables: UpdateMonthlyBudgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetMutation>({ document: UpdateMonthlyBudgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudget', 'mutation', variables);

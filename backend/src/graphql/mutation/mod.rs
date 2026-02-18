@@ -16,6 +16,9 @@ use crate::{
             },
             save_subscription::{SubscriptionInput, save_subscription_handler},
             update_me::{UpdateMe, UpdateMeResponse, update_me_handler},
+            update_month_settings::{
+                UpdateMonthSettingsInput, UpdateMonthSettingsResponse, update_month_settings,
+            },
             update_monthly_budget::{UpdateMonthlyBudgetInput, update_monthly_budget_handler},
             update_monthly_budget_config::{
                 UpdateBudgetConfigInput, UpdateBudgetConfigResponse, update_budget_config_handler,
@@ -34,6 +37,7 @@ pub mod add_spending_item_by_month;
 pub mod delete_spending_item_by_id;
 pub mod save_subscription;
 pub mod update_me;
+pub mod update_month_settings;
 pub mod update_monthly_budget;
 pub mod update_monthly_budget_config;
 pub mod update_spending_item_by_id;
@@ -70,6 +74,17 @@ impl MutationRoot {
         inputs: UpdateBudgetConfigInput,
     ) -> Result<UpdateBudgetConfigResponse> {
         return update_budget_config_handler(ctx, inputs).await;
+    }
+
+    /// Update the settings for a specific month, in the Postgres DB
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
+    async fn update_month_settings(
+        &self,
+        ctx: &Context<'_>,
+        inputs: UpdateMonthSettingsInput,
+    ) -> Result<UpdateMonthSettingsResponse> {
+        return update_month_settings(ctx, inputs).await;
     }
 
     #[instrument(skip_all)]

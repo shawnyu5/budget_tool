@@ -25,6 +25,13 @@ mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
   }
 }
 
+# V2 of UpdateMonthlyBudgetConfig, updates the postgres DB
+mutation UpdateSettings($inputs: UpdateMonthSettingsInput!) {
+  updateMonthSettings(inputs: $inputs) {
+    success
+  }
+}
+
 mutation UpdateMonthlyBudget($inputs: UpdateMonthlyBudgetInput!) {
   updateMonthlyBudget(inputs: $inputs) {
     ... on MonthlyBudget {

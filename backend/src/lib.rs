@@ -5,6 +5,7 @@ pub mod custom_middleware;
 pub mod db;
 pub mod encryption;
 pub mod graphql;
+pub mod models;
 pub mod month;
 pub mod monthly_budget;
 pub mod routes;

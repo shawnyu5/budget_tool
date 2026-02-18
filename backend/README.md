@@ -28,25 +28,18 @@ console.log("Private Key:", vapidKeys.privateKey); // base64url
 
 Postgres data models:
 
-`years`
-
-| Name | Type | Relationship |
-| ---- | ---- | ------------ |
-| ID   | UUID | PK           |
-| year | Int  |              |
-
 `months`
 
 Stores budget information about a single month
 
-| Name               | Type          | Description                            | Relationship | Notes      |
-| ------------------ | ------------- | -------------------------------------- | ------------ | ---------- |
-| ID                 | UUID          |                                        | PK           |            |
-| year_id            | UUID          | The year this month is associated with | years(ID)    | Unique     |
-| month_name         | TEXT          | Name of the month                      |              | Unique     |
-| total_allocation   | DECIMAL(10,2) | Total allocated spending               |              |            |
-| total_spending     | DECIMAL(10,2) | Total spending for the month           |              | Default: 0 |
-| over_budget_amount | DECIMAL(10,2) | Over budget amount for the month       |              | Default: 0 |
+| Name                                                                        | Type          | Description                            | Relationship | Notes      |
+| --------------------------------------------------------------------------- | ------------- | -------------------------------------- | ------------ | ---------- |
+| ID                                                                          | UUID          |                                        | PK           |            |
+| year                                                                        | INT           | The year this month is associated with |              | Unique     |
+| month                                                                       | INT           | Numeric representation of the Month    |              | Unique     |
+| total_allocation                                                            | DECIMAL(10,2) | Total allocated spending               |              |            |
+| ~~total_spending~~ Remove this, and calcuate this using sql query statement | DECIMAL(10,2) | Total spending for the month           |              | Default: 0 |
+| ~~over_budget_amount~~ Remove this and calculate at run time                | DECIMAL(10,2) | Over budget amount for the month       |              | Default: 0 |
 
 `budget_allocations`
 

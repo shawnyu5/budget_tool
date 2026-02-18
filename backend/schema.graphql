@@ -67,6 +67,8 @@ input BudgetConfigInput {
 	maggieContributionAmount: Float!
 }
 
+scalar Decimal
+
 input DeleteSpendingItemByIdInput {
 	year: Int!
 	month: Month!
@@ -114,6 +116,29 @@ type FireflySettings {
 Firefly related settings
 """
 input FireflySettingsInput {
+	"""
+	If the user has enabled Firefly integration
+	"""
+	enabled: Boolean!
+	"""
+	Encrypted firefly API key, required if `enabled` = true
+	Must call `User.decrypt_firefly_api_key()` to get the decrypted version
+	"""
+	apiKey: String
+	"""
+	Base64 encoded nounce used to encrypt / decrypt the API key
+	"""
+	encryptionNounce: String
+	"""
+	The source account to create the transaction in
+	"""
+	sourceAccount: String
+}
+
+"""
+Firefly related settings
+"""
+input FireflySettingsV2Input {
 	"""
 	If the user has enabled Firefly integration
 	"""
@@ -270,6 +295,10 @@ type MutationRoot {
 	"""
 	updateMonthlyBudgetConfig(inputs: UpdateBudgetConfigInput!): UpdateBudgetConfigResponse!
 	"""
+	Update the settings for a specific month, in the Postgres DB
+	"""
+	updateMonthSettings(inputs: UpdateMonthSettingsInput!): UpdateMonthSettingsResponse!
+	"""
 	Add a spending item to a month
 	"""
 	addSpendingItemByMonth(inputs: AddSpendingItemByMonthInput!): AddSpendingItemByMonthResponse!
@@ -347,6 +376,36 @@ input SearchSpendingItemInput {
 	year: Int!
 	month: Month!
 	id: String!
+}
+
+"""
+Data on the settings page
+"""
+input SettingInput {
+	"""
+	Total allocated budget
+	"""
+	totalAllocation: Decimal!
+	"""
+	Shawn percentage allocation
+	"""
+	shawnPercentageAllocation: Decimal!
+	"""
+	Shawn contribution amount. The frontend is responsible for computing this value
+	"""
+	shawnContributionAmount: Decimal!
+	"""
+	Maggie percentage allocation
+	"""
+	maggiePercentageAllocation: Decimal!
+	"""
+	Maggie contribution amount. The frontend is responsible for computing this value
+	"""
+	maggieContributionAmount: Decimal!
+	"""
+	Firefly related settings
+	"""
+	firefly: FireflySettingsV2Input!
 }
 
 """
@@ -450,6 +509,25 @@ input UpdateMe {
 }
 
 type UpdateMeResponse {
+	success: Boolean!
+}
+
+input UpdateMonthSettingsInput {
+	"""
+	The year of the budget to update
+	"""
+	year: Int!
+	"""
+	The month of the budget to update
+	"""
+	month: Month!
+	"""
+	Updated settings
+	"""
+	settings: SettingInput!
+}
+
+type UpdateMonthSettingsResponse {
 	success: Boolean!
 }
 

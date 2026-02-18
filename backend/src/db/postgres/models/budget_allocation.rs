@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 /// Budget allocations for a specific month
 #[derive(Debug, FromRow)]
-pub struct BudgetAllocation {
+pub struct BudgetAllocationRow {
     pub id: Uuid,
     pub month_id: Uuid,
     /// Name of the contributor

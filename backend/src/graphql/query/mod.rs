@@ -25,6 +25,7 @@ use crate::{
 mod config;
 pub mod firefly;
 mod me;
+mod month_settings;
 mod monthly_budget;
 mod monthly_budget_config;
 pub mod spending_item;

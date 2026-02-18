@@ -23,7 +23,7 @@ utoipa-axum = "0.2.0"
 csv = "1.3.1"
 web-push = "0.11.0"
 async-graphql-axum = "7.0.17"
-async-graphql = "7.0.17"
+async-graphql = { version = "7.0.17", features = ["uuid", "chrono", "decimal"] }
 openssl = { version = "0.10.73", features = ["vendored"] }
 jsonwebtoken = { version = "10.2.0", features = ["aws_lc_rs"] }
 tokio-cron-scheduler = { version = "0.15.0", features = ["signal"] }
@@ -42,6 +42,7 @@ sqlx = { version = "0.8.6", features = [
    "rust_decimal",
    "tls-native-tls",
    "uuid",
+   "migrate",
 ] }
 uuid = { version = "1.21.0", features = ["v4"] }
 rust_decimal = { version = "1.40.0" }
