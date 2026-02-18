@@ -48,7 +48,7 @@ pub enum MonthlyBudgetConfigResponse {
 
 pub async fn update_budget_config_handler(
     ctx: &Context<'_>,
-    mut inputs: UpdateBudgetConfigInput,
+    inputs: UpdateBudgetConfigInput,
 ) -> Result<UpdateBudgetConfigResponse> {
     let jwt = extract_jwt(ctx)?;
 
@@ -73,9 +73,21 @@ pub async fn update_budget_config_handler(
         .await
         .context("Failed to get user")?;
 
-    if inputs.firefly.enabled
-        && let Some(api_key) = (inputs.firefly.api_key.as_mut())
-    {
+    user.firefly = Some(inputs.firefly);
+    let should_encrypt = if let Some(firefly) = &user.firefly {
+        firefly.enabled
+    } else {
+        false
+    };
+
+    let api_key_opt = if let Some(firefly) = &user.firefly {
+        firefly.api_key.clone()
+    } else {
+        None
+    };
+
+    // If the Firefly API key should be encrypted
+    if should_encrypt {
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
             ACCEPT,
@@ -88,8 +100,7 @@ pub async fn update_budget_config_handler(
         match firefly_client::apis::about_api::get_current_user(
             &firefly_client::apis::configuration::Configuration {
                 base_path: Config::load().firefly_url,
-                // bearer_access_token: Some("hello".to_string()),
-                bearer_access_token: Some(api_key.to_string()),
+                bearer_access_token: Some(api_key_opt.clone().unwrap_or_default().to_string()),
                 client,
                 ..Default::default()
             },
@@ -108,7 +119,7 @@ pub async fn update_budget_config_handler(
         };
 
         info!("Encrypting API key");
-        user.encrypt_firefly_api_key(api_key)
+        user.encrypt_firefly_api_key(&api_key_opt.unwrap_or_default())
             .context("Failed to encrypt firefly API key while updating user settings")?;
 
         info!(
