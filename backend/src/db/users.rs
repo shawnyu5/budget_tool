@@ -48,6 +48,7 @@ impl User {
     /// Encrypts `api_key`. Updates `self.firefly.api_key` and `self.firefly.encryption_nounce`
     ///
     /// * `api_key`: the API key to encrypt
+    #[instrument[skip_all]]
     pub fn encrypt_firefly_api_key(&mut self, api_key: &str) -> Result<()> {
         if let Some(firefly) = self.firefly.as_mut() {
             if firefly.enabled {
@@ -55,6 +56,8 @@ impl User {
                     encrypt(api_key).map_err(|e| anyhow!("Failed to encrypt API key: {e}"))?;
                 firefly.api_key = Some(secret);
                 firefly.encryption_nounce = Some(b64_nounce);
+                info!("Secret: {:?}", firefly.api_key);
+                info!("Encryption nounce: {:?}", firefly.encryption_nounce);
             } else {
                 info!("Firefly integration disabled. Skip encrypting user API key");
             }
