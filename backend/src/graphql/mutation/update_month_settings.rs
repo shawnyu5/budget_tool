@@ -38,7 +38,7 @@ pub async fn update_month_settings(
 
     let tx = db.begin().await.context("Failed to start transaction")?;
 
-    if inputs.settings.firefly.enabled {
+    if inputs.settings.firefly.api_key.is_some() {
         // Make a request to firefly to validate the API token the user just gave us
         let mut headers = reqwest::header::HeaderMap::new();
         headers.insert(
