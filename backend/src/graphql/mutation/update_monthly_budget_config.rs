@@ -111,10 +111,11 @@ pub async fn update_budget_config_handler(
         user.encrypt_firefly_api_key(api_key)
             .context("Failed to encrypt firefly API key while updating user settings")?;
 
-        info!("Encrypted API key: {api_key}");
+        info!(
+            "Encrypted API key: {:?}",
+            &user.firefly.clone().unwrap().api_key
+        );
     }
-
-    user.firefly = Some(inputs.firefly);
 
     let _ = user_db
         .save_user_info(&jwt.username, &user)
