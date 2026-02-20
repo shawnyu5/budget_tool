@@ -1,20 +1,22 @@
-use std::{collections::HashMap, pin::Pin};
+use std::{collections::HashMap, pin::Pin, process::exit};
 
 use crate::{
     db::{
         MongoDB,
         migration_table::{MIGRATIONS_TABLE_NAME, SchemaMigration},
+        postgres::PostgresDB,
     },
     month::Month,
 };
 use anyhow::{Context, Result};
-use chrono::{NaiveDate, NaiveTime};
-use chrono_tz::America::New_York;
+use chrono::{DateTime, NaiveDate, NaiveTime};
+use chrono_tz::America::{New_York, Toronto};
+use rust_decimal::Decimal;
 use tracing::{error, info, instrument};
 
 /// Perform all schema migrations
 #[instrument(skip_all)]
-pub async fn do_db_migrations() -> Result<()> {
+pub async fn do_mongo_migrations() -> Result<()> {
     type MigrationFunc =
         Box<dyn Fn() -> Pin<Box<dyn Future<Output = anyhow::Result<()>> + Send>> + Send + Sync>;
 
@@ -26,6 +28,11 @@ pub async fn do_db_migrations() -> Result<()> {
             "add `dateRfc3339` field to all spending items",
         ),
         Box::new(|| Box::pin(add_date_rfc3339_field())),
+    );
+
+    migrations.insert(
+        SchemaMigration::new("migrate_to_postgres", 1, "Migrate all data to postgres"),
+        Box::new(|| Box::pin(migrate_to_postgres())),
     );
 
     let migration_table = MongoDB::new(MIGRATIONS_TABLE_NAME).await?;
@@ -45,10 +52,69 @@ pub async fn do_db_migrations() -> Result<()> {
         }
 
         match (migration.1)().await {
-            Ok(_) => info!("Migration completed successfully!"),
+            Ok(_) => {
+                info!("Migration completed successfully!");
+                info!("Adding migration record in DB");
+                let migration_db = MongoDB::new(MIGRATIONS_TABLE_NAME).await?;
+                migration_db
+                    .add_new_migration_record(migration.0)
+                    .await
+                    .context("Failed to add migration record to DB")?;
+            }
             Err(e) => error!("Migration failed: {e}"),
         };
     }
+    Ok(())
+}
+
+/// Migrate all data to Postgres
+async fn migrate_to_postgres() -> Result<()> {
+    let postgres = PostgresDB::new().await;
+    for year in [2025, 2026] {
+        let mongo = MongoDB::new(&year.to_string()).await?;
+        #[allow(clippy::never_loop)]
+        for month in [
+            Month::January,
+            Month::February,
+            Month::March,
+            Month::April,
+            Month::May,
+            Month::June,
+            Month::July,
+            Month::August,
+            Month::September,
+            Month::October,
+            Month::November,
+            Month::December,
+        ] {
+            info!("Inserting new Month row in Postgres for year {year} month {month}");
+            let month_row = postgres
+                .insert_new_month(year, month)
+                .await
+                .with_context(|| format!("Failed to insert month row for month {month}"))?;
+
+            info!("Getting previous month budget from Mongo");
+            let month_budget = mongo.get_month_budget(month).await?;
+
+            info!("Inserting new transaction into Postgres");
+            for transaction in month_budget.spending {
+                postgres
+                    .insert_new_transaction(
+                        month_row.id,
+                        Decimal::from_f64_retain(transaction.amount).expect(
+                            "Failed to convert mongo transaction amount into rust_decimal amount",
+                        ),
+                        DateTime::parse_from_rfc3339(&transaction.date_rfc3339.unwrap())
+                            .unwrap()
+                            .with_timezone(&Toronto),
+                        transaction.description,
+                        transaction.notes.unwrap_or_default(),
+                    )
+                    .await?;
+            }
+        }
+    }
+
     Ok(())
 }
 
@@ -98,15 +164,6 @@ async fn add_date_rfc3339_field() -> Result<()> {
                 .context("Failed to save updated schema in DB")?;
         }
     }
-
-    let migration_db = MongoDB::new(MIGRATIONS_TABLE_NAME).await?;
-    migration_db
-        .add_new_migration_record(SchemaMigration::new(
-            "add_date_rfc3339_field",
-            1,
-            "add `dateRfc3339` field to all spending items",
-        ))
-        .await?;
 
     Ok(())
 }

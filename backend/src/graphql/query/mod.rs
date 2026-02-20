@@ -3,17 +3,18 @@ use async_graphql::{Context, Object};
 use tracing::instrument;
 
 use crate::{
-    db::users::User,
+    db::{postgres::models::Year, users::User},
     graphql::{
         mutation::{
             MonthlyBudgetResponse, update_monthly_budget_config::MonthlyBudgetConfigResponse,
         },
         query::{
             config::{FrontendConfig, config_handler},
-            firefly::{FireflyResponse, firefly_handler},
+            firefly::{FireflySuccessResponse, firefly_handler},
             me::me_handler,
             monthly_budget::monthly_budget_handler,
             monthly_budget_config::monthly_budget_config_handler,
+            monthly_settings::{MonthlySettingsResponse, month_settings},
             spending_item::{SearchSpendingItemInput, search_spending_item_handler},
         },
         utils::AuthGuard,
@@ -25,9 +26,9 @@ use crate::{
 mod config;
 pub mod firefly;
 mod me;
-mod month_settings;
 mod monthly_budget;
 mod monthly_budget_config;
+mod monthly_settings;
 pub mod spending_item;
 
 /// Root of the graphql query
@@ -69,6 +70,18 @@ impl QueryRoot {
         monthly_budget_config_handler(ctx, year, month).await
     }
 
+    /// Get the settings for a particular month. Retrieves the data from PostgresDB
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
+    async fn month_settings_v2(
+        &self,
+        ctx: &Context<'_>,
+        year: Year,
+        month: Month,
+    ) -> Result<MonthlySettingsResponse> {
+        month_settings(ctx, year, month).await
+    }
+
     #[instrument(skip_all)]
     #[graphql(guard = "AuthGuard")]
     async fn me(&self, ctx: &Context<'_>) -> Result<User> {
@@ -78,7 +91,7 @@ impl QueryRoot {
     #[instrument(skip_all)]
     #[graphql(guard = "AuthGuard")]
     /// Retrieve information from Firefly it self
-    async fn firefly(&self, ctx: &Context<'_>) -> Result<FireflyResponse> {
+    async fn firefly(&self, ctx: &Context<'_>) -> Result<FireflySuccessResponse> {
         firefly_handler(ctx).await
     }
 

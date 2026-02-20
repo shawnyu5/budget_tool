@@ -79,7 +79,7 @@ impl MutationRoot {
     /// Update the settings for a specific month, in the Postgres DB
     #[instrument(skip_all)]
     #[graphql(guard = "AuthGuard")]
-    async fn update_month_settings(
+    async fn update_month_settings_v2(
         &self,
         ctx: &Context<'_>,
         inputs: UpdateMonthSettingsInput,

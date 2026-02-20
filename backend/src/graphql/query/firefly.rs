@@ -12,25 +12,13 @@ use crate::{
     graphql::utils::extract_jwt,
 };
 
-#[derive(Union)]
-pub enum FireflyResponse {
-    SuccessResponse(FireflySuccessResponse),
-    GraphQLErrorObject(GraphQlErrorObjectV2<FireflyError>),
-}
-
 #[derive(SimpleObject)]
 pub struct FireflySuccessResponse {
     /// List of accounts this user has
     pub accounts: Option<Vec<String>>,
 }
 
-#[derive(Enum, Copy, Clone, Eq, PartialEq, Debug, Error, Serialize)]
-pub enum FireflyError {
-    #[error("Firefly error")]
-    FireflyError,
-}
-
-pub async fn firefly_handler(ctx: &Context<'_>) -> Result<FireflyResponse> {
+pub async fn firefly_handler(ctx: &Context<'_>) -> Result<FireflySuccessResponse> {
     let jwt = extract_jwt(ctx)?;
     let user_db = MongoDB::new(USER_TABLE_NAME).await?;
     let mut user = user_db.get_user(&jwt.username).await?;
@@ -69,13 +57,11 @@ pub async fn firefly_handler(ctx: &Context<'_>) -> Result<FireflyResponse> {
             .map(|a| a.attributes.name)
             .collect();
 
-        return Ok(FireflyResponse::SuccessResponse(FireflySuccessResponse {
+        return Ok(FireflySuccessResponse {
             accounts: Some(account_names),
-        }));
+        });
     }
 
     // If firefly is disabled, return an empty accounts array
-    return Ok(FireflyResponse::SuccessResponse(FireflySuccessResponse {
-        accounts: None,
-    }));
+    return Ok(FireflySuccessResponse { accounts: None });
 }

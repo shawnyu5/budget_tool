@@ -180,7 +180,6 @@ pub struct SpendingItem {
     /// The date
     pub date: String,
     /// Date in RFC3339 format, in Eastern timezone
-    // This field may not always exist in DB. Use Default::default() when it does not exist
     pub date_rfc3339: Option<String>,
     /// Description of the purchase
     pub description: String,

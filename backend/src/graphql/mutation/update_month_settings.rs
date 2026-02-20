@@ -31,13 +31,22 @@ pub async fn update_month_settings(
 ) -> Result<UpdateMonthSettingsResponse> {
     let jwt = extract_jwt(ctx)?;
     let db = PostgresDB::new().await;
-    let user = db
+    let current_user = db
         .get_user(&jwt.username)
         .await
         .context("Failed to fetch user")?;
+    let core_users = db.get_core_users().await?;
+    let mut month_row = db.get_month(inputs.year, inputs.month).await?;
 
-    let tx = db.begin().await.context("Failed to start transaction")?;
+    if month_row.is_none() {
+        month_row = Some(
+            db.insert_new_month(inputs.year, inputs.month)
+                .await
+                .context("Failed to insert new month into months table")?,
+        );
+    }
 
+    let mut encryption_nounce = "".to_string();
     if inputs.settings.firefly.api_key.is_some() {
         // Make a request to firefly to validate the API token the user just gave us
         let mut headers = reqwest::header::HeaderMap::new();
@@ -79,26 +88,43 @@ pub async fn update_month_settings(
             encrypt(&inputs.settings.firefly.api_key.clone().unwrap_or_default())
                 .map_err(|e| anyhow!("Failed to encrypt API key: {e}"))?;
         inputs.settings.firefly.api_key = Some(secret);
-        inputs.settings.firefly.encryption_nounce = Some(b64_nounce);
+        encryption_nounce = b64_nounce.to_owned();
+        // inputs.settings.firefly.encryption_nounce = Some(b64_nounce);
     }
 
+    let tx = db.begin().await.context("Failed to start transaction")?;
+
     db.update_user_firefly_settings(
-        user.id,
+        current_user.id,
         inputs.settings.firefly.enabled,
         inputs.settings.firefly.api_key,
-        inputs.settings.firefly.encryption_nounce,
+        Some(encryption_nounce.to_string()),
         inputs.settings.firefly.source_account,
     )
     .await
     .context("Failed to update user firefly settings")?;
 
-    db.update_month(
-        inputs.year,
-        inputs.month.to_number(),
-        inputs.settings.total_allocation,
-    )
-    .await
-    .context("Failed to update months table")?;
+    for user in core_users {
+        if user.username == "shawn" {
+            info!("Updating budget allocation for user Shawn");
+            db.update_budget_allocation(
+                user.id,
+                month_row.as_ref().unwrap().id,
+                inputs.settings.shawn_percentage_allocation,
+                inputs.settings.shawn_contribution_amount,
+            )
+            .await?
+        } else if user.username == "maggie" {
+            info!("Updating budget allocation for user Maggie");
+            db.update_budget_allocation(
+                user.id,
+                month_row.as_ref().unwrap().id,
+                inputs.settings.maggie_percentage_allocation,
+                inputs.settings.maggie_percentage_allocation,
+            )
+            .await?
+        };
+    }
 
     tx.commit().await.context("Failed to commit transaction")?;
     Ok(UpdateMonthSettingsResponse { success: true })

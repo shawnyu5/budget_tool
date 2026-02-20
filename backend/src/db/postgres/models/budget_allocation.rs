@@ -6,9 +6,10 @@ use uuid::Uuid;
 #[derive(Debug, FromRow)]
 pub struct BudgetAllocationRow {
     pub id: Uuid,
+    /// Month ID this contribution is for
     pub month_id: Uuid,
-    /// Name of the contributor
-    pub contributor_name: String,
+    /// User ID of the contributor
+    pub user_id: Uuid,
     /// Percentage allocation for this month
     pub percentage_allocation: Decimal,
     /// Contribution amount for this month

@@ -78,17 +78,6 @@ input DeleteSpendingItemByIdInput {
 	id: String!
 }
 
-enum FireflyError {
-	FIREFLY_ERROR
-}
-
-type FireflyErrorObject {
-	code: FireflyError!
-	message: String!
-}
-
-union FireflyResponse = FireflySuccessResponse | FireflyErrorObject
-
 """
 Firefly related settings
 """
@@ -138,7 +127,7 @@ input FireflySettingsInput {
 """
 Firefly related settings
 """
-input FireflySettingsV2Input {
+type FireflySettingsV2 {
 	"""
 	If the user has enabled Firefly integration
 	"""
@@ -149,9 +138,24 @@ input FireflySettingsV2Input {
 	"""
 	apiKey: String
 	"""
-	Base64 encoded nounce used to encrypt / decrypt the API key
+	The source account to create the transaction in
 	"""
-	encryptionNounce: String
+	sourceAccount: String
+}
+
+"""
+Firefly related settings
+"""
+input FireflySettingsV2Input {
+	"""
+	If the user has enabled Firefly integration
+	"""
+	enabled: Boolean!
+	"""
+	Encrypted firefly API key, required if `enabled` = true
+	Must call `User.decrypt_firefly_api_key()` to get the decrypted version
+	"""
+	apiKey: String
 	"""
 	The source account to create the transaction in
 	"""
@@ -284,6 +288,10 @@ input MonthlyBudgetInput {
 
 union MonthlyBudgetResponse = MonthlyBudget | GraphQLErrorObject
 
+type MonthlySettingsResponse {
+	settings: Settings!
+}
+
 type MutationRoot {
 	"""
 	Save a notification subscription for a user
@@ -297,7 +305,7 @@ type MutationRoot {
 	"""
 	Update the settings for a specific month, in the Postgres DB
 	"""
-	updateMonthSettings(inputs: UpdateMonthSettingsInput!): UpdateMonthSettingsResponse!
+	updateMonthSettingsV2(inputs: UpdateMonthSettingsInput!): UpdateMonthSettingsResponse!
 	"""
 	Add a spending item to a month
 	"""
@@ -361,11 +369,15 @@ type QueryRoot {
 	"""
 	monthlyBudget(year: Int!, month: Month!): MonthlyBudgetResponse!
 	monthlyBudgetConfig(year: Int!, month: Month!): MonthlyBudgetConfigResponse!
+	"""
+	Get the settings for a particular month. Retrieves the data from PostgresDB
+	"""
+	monthSettingsV2(year: Int!, month: Month!): MonthlySettingsResponse!
 	me: User!
 	"""
 	Retrieve information from Firefly it self
 	"""
-	firefly: FireflyResponse!
+	firefly: FireflySuccessResponse!
 	"""
 	Search for a spending item by time and ID
 	"""
@@ -406,6 +418,36 @@ input SettingInput {
 	Firefly related settings
 	"""
 	firefly: FireflySettingsV2Input!
+}
+
+"""
+Data on the settings page
+"""
+type Settings {
+	"""
+	Total allocated budget
+	"""
+	totalAllocation: Decimal!
+	"""
+	Shawn percentage allocation
+	"""
+	shawnPercentageAllocation: Decimal!
+	"""
+	Shawn contribution amount. The frontend is responsible for computing this value
+	"""
+	shawnContributionAmount: Decimal!
+	"""
+	Maggie percentage allocation
+	"""
+	maggiePercentageAllocation: Decimal!
+	"""
+	Maggie contribution amount. The frontend is responsible for computing this value
+	"""
+	maggieContributionAmount: Decimal!
+	"""
+	Firefly related settings
+	"""
+	firefly: FireflySettingsV2!
 }
 
 """

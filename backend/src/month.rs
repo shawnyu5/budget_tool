@@ -4,6 +4,7 @@ use std::{
 };
 
 use async_graphql::Enum;
+use rust_decimal::prelude::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::ToSchema;
@@ -43,24 +44,45 @@ pub enum Month {
 }
 
 impl Add for Month {
-    type Output = Result<Self, MonthError>;
+    type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
-        match Month::from_number(self.to_number() + rhs.to_number()) {
-            Some(val) => return Ok(val),
-            None => return Err(MonthError::InvalidMonth),
-        };
+        let a = self.to_number();
+        let b = rhs.to_number();
+        let result = ((a - b - 1).rem_euclid(12) + 1) as u32;
+        Month::from_number(result.to_i32().unwrap())
     }
 }
 
 impl Sub for Month {
-    type Output = Result<Self, MonthError>;
+    type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        match Month::from_number(self.to_number() - rhs.to_number()) {
-            Some(val) => return Ok(val),
-            None => return Err(MonthError::InvalidMonth),
-        };
+        let a = self.to_number();
+        let b = rhs.to_number();
+        let result = ((a - b - 1).rem_euclid(12) + 1) as u32;
+        Month::from_number(result.to_i32().unwrap())
+    }
+}
+
+impl From<String> for Month {
+    #[track_caller]
+    fn from(value: String) -> Self {
+        match value.trim().to_lowercase().as_str() {
+            "january" => Month::January,
+            "february" => Month::February,
+            "march" => Month::March,
+            "april" => Month::April,
+            "may" => Month::May,
+            "june" => Month::June,
+            "july" => Month::July,
+            "august" => Month::August,
+            "september" => Month::September,
+            "october" => Month::October,
+            "november" => Month::November,
+            "december" => Month::December,
+            _ => panic!("Invalid month string: {}", value),
+        }
     }
 }
 
@@ -84,21 +106,23 @@ impl Month {
     }
 
     /// Convert a numeric value (1–12) into a `Month`.
-    pub fn from_number(num: i32) -> Option<Self> {
+    /// Will panic if given an invalid month number
+    #[track_caller]
+    pub fn from_number(num: i32) -> Self {
         match num {
-            1 => Some(Month::January),
-            2 => Some(Month::February),
-            3 => Some(Month::March),
-            4 => Some(Month::April),
-            5 => Some(Month::May),
-            6 => Some(Month::June),
-            7 => Some(Month::July),
-            8 => Some(Month::August),
-            9 => Some(Month::September),
-            10 => Some(Month::October),
-            11 => Some(Month::November),
-            12 => Some(Month::December),
-            _ => None,
+            1 => Month::January,
+            2 => Month::February,
+            3 => Month::March,
+            4 => Month::April,
+            5 => Month::May,
+            6 => Month::June,
+            7 => Month::July,
+            8 => Month::August,
+            9 => Month::September,
+            10 => Month::October,
+            11 => Month::November,
+            12 => Month::December,
+            _ => panic!("Invalid month number"),
         }
     }
 }

@@ -125,7 +125,7 @@ pub async fn add_spending_item_by_month_handler(
                     date: rn.clone(),
                     amount: amount.to_string(),
                     description: inputs.spending_item.clone().description,
-                    notes: Some(inputs.spending_item.clone().notes),
+                    notes: Some(Some(inputs.spending_item.clone().notes.unwrap_or_default())),
                     source_name: Some(Some(
                         user.firefly.unwrap().source_account.unwrap_or_default(),
                     )),

@@ -37,7 +37,7 @@ Stores budget information about a single month
 | ID                                                                          | UUID          |                                        | PK           |            |
 | year                                                                        | INT           | The year this month is associated with |              | Unique     |
 | month                                                                       | INT           | Numeric representation of the Month    |              | Unique     |
-| total_allocation                                                            | DECIMAL(10,2) | Total allocated spending               |              |            |
+| ~~total_allocation~~ Remove this, calculate using sql query on the fly      | DECIMAL(10,2) | Total allocated spending               |              |            |
 | ~~total_spending~~ Remove this, and calcuate this using sql query statement | DECIMAL(10,2) | Total spending for the month           |              | Default: 0 |
 | ~~over_budget_amount~~ Remove this and calculate at run time                | DECIMAL(10,2) | Over budget amount for the month       |              | Default: 0 |
 
@@ -47,22 +47,22 @@ Stores budget information about a single month
 | --------------------- | ------------- | ------------------------------------ | ------------ | ----- |
 | ID                    | UUID          |                                      | PK           |       |
 | month_id              | UUID          | The month this allocation is for     | months(id)   |       |
-| contributor_name      | TEXT          | Name of the contributor              |              |       |
+| user_id               | UUID NOT NULL | User ID of the contributor           | user(id)     |       |
 | percentage_allocation | DECIMAL(10,2) | Percentage allocation                |              |       |
-| contriubtion amount   | DECIMAL(10,2) | Amount of contribution for the month |              |       |
+| contribution amount   | DECIMAL(10,2) | Amount of contribution for the month |              |       |
 
 `transactions`
 
 Stores all transactions
 
-| Name        | Type          | Description                            | Relationship | Notes |
-| ----------- | ------------- | -------------------------------------- | ------------ | ----- |
-| ID          | UUID          |                                        | PK           |       |
-| month_id    | UUID          | The month this transactions is tied to | months(id)   |       |
-| amount      | DECIMAL(10,2) | Amount of the transaction              |              |       |
-| date        | DATE          |                                        |              |       |
-| description | TEXT          |                                        |              |       |
-| notes       | TEXT          |                                        |              |       |
+| Name        | Type                | Description                            | Relationship | Notes |
+| ----------- | ------------------- | -------------------------------------- | ------------ | ----- |
+| ID          | UUID                |                                        | PK           |       |
+| month_id    | UUID                | The month this transactions is tied to | months(id)   |       |
+| amount      | DECIMAL(10,2)       | Amount of the transaction              |              |       |
+| date        | TIMESTAMPZ NOT NULL |                                        |              |       |
+| description | TEXT                |                                        |              |       |
+| notes       | TEXT                |                                        |              |       |
 
 `users`
 

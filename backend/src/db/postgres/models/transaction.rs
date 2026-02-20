@@ -11,4 +11,6 @@ pub struct TransactionRow {
     pub month_id: Uuid,
     pub amount: Decimal,
     pub date: DateTime<Tz>,
+    pub description: String,
+    pub notes: String,
 }
