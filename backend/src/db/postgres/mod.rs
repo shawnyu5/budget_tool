@@ -17,6 +17,7 @@ use crate::{
     },
 };
 
+pub mod budget_allocation;
 pub mod models;
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
@@ -181,123 +182,6 @@ impl PostgresDB {
         .context("Failed to update firefly settings")?;
 
         Ok(())
-    }
-
-    /// Get a budget allocation for a user in a specific month. If it doesnt exist, insert it into the table,
-    /// Since there should always be a budget allocation for a specific month
-    ///
-    /// * `user_id`: The user to get the allocation for
-    /// * `month_id`: the month to the allocation is for
-    pub async fn get_or_create_budget_allocation(
-        &self,
-        user_id: Uuid,
-        month_id: Uuid,
-    ) -> Result<BudgetAllocationRow> {
-        let budget_allocation_row = query_as!(
-            BudgetAllocationRow,
-            "
-            SELECT * FROM budget_allocations
-            WHERE user_id = $1 AND month_id = $2
-            ",
-            user_id,
-            month_id
-        )
-        .fetch_optional(&self.pool)
-        .await
-        .map_err(|e| {
-            error!("{e:#?}");
-            e
-        })
-        .context("Failed to fetch from budget_allocations table")?;
-
-        if let Some(row) = budget_allocation_row {
-            Ok(row)
-        } else {
-            info!(
-                "No budget allocation record for current month. Creating from previous month record"
-            );
-            info!("Fetching current month row from DB");
-            let current_month_row = query_as!(
-                MonthRow,
-                "
-                SELECT * FROM months
-                WHERE id = $1
-                ",
-                month_id
-            )
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| {
-                error!("{e:#?}");
-                e
-            })
-            .context("Failed to fetch month row")?;
-
-            let prev_month = {
-                // If we are at the beginning of the year, then wrap to December
-                if current_month_row.month == Month::January {
-                    Month::December
-                } else {
-                    // Subtract one month
-                    current_month_row.month - Month::January
-                }
-            };
-
-            info!("Fetching previous month row from DB");
-            let prev_month_row = query_as!(
-                MonthRow,
-                "
-                SElECT * FROM months
-                WHERE year = $1 AND month = $2
-                ",
-                current_month_row.year,
-                prev_month.to_string(),
-            )
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| {
-                error!("{e:#?}");
-                e
-            })?;
-
-            let prev_budget_allocation = query_as!(
-                BudgetAllocationRow,
-                "
-                SELECT * FROM budget_allocations
-                WHERE month_id = $1 AND user_id = $2
-                ",
-                prev_month_row.id,
-                user_id
-            )
-            .fetch_one(&self.pool)
-            .await
-            .map_err(|e| {
-                error!("{e:#?}");
-                e
-            })
-            .context("Failed to fetch previous month budget allocation")?;
-
-            info!("Inserting current month budget allocation row");
-            let budget_allocation_row  = query_as!(
-                BudgetAllocationRow,
-                "
-                INSERT INTO budget_allocations (id, month_id, percentage_allocation, contribution_amount, user_id)
-                VALUES ($1, $2, $3, $4, $5)
-                RETURNING *;
-                ",
-                Uuid::new_v4(),
-                month_id,
-                prev_budget_allocation.percentage_allocation,
-                prev_budget_allocation.contribution_amount,
-                user_id
-            )
-                .fetch_one(&self.pool)
-                .await.map_err(|e| {
-                error!("{e:#?}");
-                e
-            })?;
-            Ok(budget_allocation_row)
-        }
     }
 
     pub async fn update_budget_allocation(

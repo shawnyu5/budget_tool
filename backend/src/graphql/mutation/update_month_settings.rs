@@ -120,7 +120,7 @@ pub async fn update_month_settings(
                 user.id,
                 month_row.as_ref().unwrap().id,
                 inputs.settings.maggie_percentage_allocation,
-                inputs.settings.maggie_percentage_allocation,
+                inputs.settings.maggie_contribution_amount,
             )
             .await?
         };

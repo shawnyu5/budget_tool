@@ -67,6 +67,7 @@ impl MutationRoot {
 
     /// Update the budget configuration for a specific month
     #[instrument(skip_all)]
+    #[deprecated = "prefer `update_month_settings_v2`"]
     #[graphql(guard = "AuthGuard")]
     async fn update_monthly_budget_config(
         &self,

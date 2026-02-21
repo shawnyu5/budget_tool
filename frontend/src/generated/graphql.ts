@@ -1,3 +1,4 @@
+import { Decimal } from 'decimal.js';
 import { GraphQLClient, RequestOptions } from 'graphql-request';
 import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
@@ -15,7 +16,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  Decimal: { input: any; output: any; }
+  Decimal: { input: Decimal; output: Decimal; }
 };
 
 /** Errors that could happen during adding an item by month */
@@ -72,18 +73,6 @@ export type DeleteSpendingItemByIdInput = {
   year: Scalars['Int']['input'];
 };
 
-export enum FireflyError {
-  FireflyError = 'FIREFLY_ERROR'
-}
-
-export type FireflyErrorObject = {
-  __typename?: 'FireflyErrorObject';
-  code: FireflyError;
-  message: Scalars['String']['output'];
-};
-
-export type FireflyResponse = FireflyErrorObject | FireflySuccessResponse;
-
 /** Firefly related settings */
 export type FireflySettings = {
   __typename?: 'FireflySettings';
@@ -116,6 +105,20 @@ export type FireflySettingsInput = {
 };
 
 /** Firefly related settings */
+export type FireflySettingsV2 = {
+  __typename?: 'FireflySettingsV2';
+  /**
+   * Encrypted firefly API key, required if `enabled` = true
+   * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
+   */
+  apiKey?: Maybe<Scalars['String']['output']>;
+  /** If the user has enabled Firefly integration */
+  enabled: Scalars['Boolean']['output'];
+  /** The source account to create the transaction in */
+  sourceAccount?: Maybe<Scalars['String']['output']>;
+};
+
+/** Firefly related settings */
 export type FireflySettingsV2Input = {
   /**
    * Encrypted firefly API key, required if `enabled` = true
@@ -124,8 +127,6 @@ export type FireflySettingsV2Input = {
   apiKey?: InputMaybe<Scalars['String']['input']>;
   /** If the user has enabled Firefly integration */
   enabled: Scalars['Boolean']['input'];
-  /** Base64 encoded nounce used to encrypt / decrypt the API key */
-  encryptionNounce?: InputMaybe<Scalars['String']['input']>;
   /** The source account to create the transaction in */
   sourceAccount?: InputMaybe<Scalars['String']['input']>;
 };
@@ -220,6 +221,11 @@ export type MonthlyBudgetInput = {
 
 export type MonthlyBudgetResponse = GraphQlErrorObject | MonthlyBudget;
 
+export type MonthlySettingsResponse = {
+  __typename?: 'MonthlySettingsResponse';
+  settings: Settings;
+};
+
 export type MutationRoot = {
   __typename?: 'MutationRoot';
   /** Add a spending item to a month */
@@ -233,7 +239,7 @@ export type MutationRoot = {
    */
   saveSubscription: User;
   /** Update the settings for a specific month, in the Postgres DB */
-  updateMonthSettings: UpdateMonthSettingsResponse;
+  updateMonthSettingsV2: UpdateMonthSettingsResponse;
   /** Update the budget for a specific month */
   updateMonthlyBudget: MonthlyBudgetResponse;
   /** Update the budget configuration for a specific month */
@@ -263,7 +269,7 @@ export type MutationRootSaveSubscriptionArgs = {
 };
 
 
-export type MutationRootUpdateMonthSettingsArgs = {
+export type MutationRootUpdateMonthSettingsV2Args = {
   inputs: UpdateMonthSettingsInput;
 };
 
@@ -314,8 +320,10 @@ export type QueryRoot = {
   /** Configuration for the frontend to consume */
   config: FrontendConfig;
   /** Retrieve information from Firefly it self */
-  firefly: FireflyResponse;
+  firefly: FireflySuccessResponse;
   me: User;
+  /** Get the settings for a particular month. Retrieves the data from PostgresDB */
+  monthSettingsV2: MonthlySettingsResponse;
   /**
    * Get the budget for a specific month in a year
    *
@@ -326,6 +334,13 @@ export type QueryRoot = {
   monthlyBudgetConfig: MonthlyBudgetConfigResponse;
   /** Search for a spending item by time and ID */
   searchSpendingItem?: Maybe<SpendingItem>;
+};
+
+
+/** Root of the query */
+export type QueryRootMonthSettingsV2Args = {
+  month: Month;
+  year: Scalars['Int']['input'];
 };
 
 
@@ -368,6 +383,23 @@ export type SettingInput = {
   shawnPercentageAllocation: Scalars['Decimal']['input'];
   /** Total allocated budget */
   totalAllocation: Scalars['Decimal']['input'];
+};
+
+/** Data on the settings page */
+export type Settings = {
+  __typename?: 'Settings';
+  /** Firefly related settings */
+  firefly: FireflySettingsV2;
+  /** Maggie contribution amount. The frontend is responsible for computing this value */
+  maggieContributionAmount: Scalars['Decimal']['output'];
+  /** Maggie percentage allocation */
+  maggiePercentageAllocation: Scalars['Decimal']['output'];
+  /** Shawn contribution amount. The frontend is responsible for computing this value */
+  shawnContributionAmount: Scalars['Decimal']['output'];
+  /** Shawn percentage allocation */
+  shawnPercentageAllocation: Scalars['Decimal']['output'];
+  /** Total allocated budget */
+  totalAllocation: Scalars['Decimal']['output'];
 };
 
 /** A single transaction */
@@ -514,7 +546,7 @@ export type UpdateSettingsMutationVariables = Exact<{
 }>;
 
 
-export type UpdateSettingsMutation = { __typename?: 'MutationRoot', updateMonthSettings: { __typename?: 'UpdateMonthSettingsResponse', success: boolean } };
+export type UpdateSettingsMutation = { __typename?: 'MutationRoot', updateMonthSettingsV2: { __typename?: 'UpdateMonthSettingsResponse', success: boolean } };
 
 export type UpdateMonthlyBudgetMutationVariables = Exact<{
   inputs: UpdateMonthlyBudgetInput;
@@ -547,7 +579,15 @@ export type SettingsPageDataQueryVariables = Exact<{
 }>;
 
 
-export type SettingsPageDataQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string }, me: { __typename?: 'User', username: string, firefly?: { __typename?: 'FireflySettings', enabled: boolean, apiKey?: string | null, sourceAccount?: string | null } | null }, firefly: { __typename?: 'FireflyErrorObject', code: FireflyError, message: string } | { __typename: 'FireflySuccessResponse', accounts?: Array<string> | null } };
+export type SettingsPageDataQuery = { __typename?: 'QueryRoot', monthlyBudgetConfig: { __typename: 'BudgetConfig', totalAllocation: number, shawnPercentageAllocation: number, shawnContributionAmount: number, maggiePercentageAllocation: number, maggieContributionAmount: number } | { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string }, me: { __typename?: 'User', username: string, firefly?: { __typename?: 'FireflySettings', enabled: boolean, apiKey?: string | null, sourceAccount?: string | null } | null }, firefly: { __typename?: 'FireflySuccessResponse', accounts?: Array<string> | null } };
+
+export type SettingsPageDataV2QueryVariables = Exact<{
+  year: Scalars['Int']['input'];
+  month: Month;
+}>;
+
+
+export type SettingsPageDataV2Query = { __typename?: 'QueryRoot', monthSettingsV2: { __typename?: 'MonthlySettingsResponse', settings: { __typename?: 'Settings', totalAllocation: Decimal, shawnPercentageAllocation: Decimal, shawnContributionAmount: Decimal, maggiePercentageAllocation: Decimal, maggieContributionAmount: Decimal, firefly: { __typename?: 'FireflySettingsV2', enabled: boolean, apiKey?: string | null, sourceAccount?: string | null } } }, firefly: { __typename?: 'FireflySuccessResponse', accounts?: Array<string> | null } };
 
 export type GetMonthBudgetQueryVariables = Exact<{
   year: Scalars['Int']['input'];
@@ -627,7 +667,7 @@ export const UpdateMonthlyBudgetConfigDocument = gql`
     `;
 export const UpdateSettingsDocument = gql`
     mutation UpdateSettings($inputs: UpdateMonthSettingsInput!) {
-  updateMonthSettings(inputs: $inputs) {
+  updateMonthSettingsV2(inputs: $inputs) {
     success
   }
 }
@@ -708,17 +748,31 @@ export const SettingsPageDataDocument = gql`
     }
   }
   firefly {
-    ... on FireflySuccessResponse {
-      __typename
-      accounts
-    }
-    ... on FireflyErrorObject {
-      code
-      message
-    }
+    accounts
   }
 }
     ${GraphQlErrorFieldsFragmentDoc}`;
+export const SettingsPageDataV2Document = gql`
+    query SettingsPageDataV2($year: Int!, $month: Month!) {
+  monthSettingsV2(year: $year, month: $month) {
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+      firefly {
+        enabled
+        apiKey
+        sourceAccount
+      }
+    }
+  }
+  firefly {
+    accounts
+  }
+}
+    `;
 export const GetMonthBudgetDocument = gql`
     query GetMonthBudget($year: Int!, $month: Month!) {
   monthlyBudget(year: $year, month: $month) {
@@ -817,6 +871,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     SettingsPageData(variables: SettingsPageDataQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SettingsPageDataQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<SettingsPageDataQuery>({ document: SettingsPageDataDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SettingsPageData', 'query', variables);
+    },
+    SettingsPageDataV2(variables: SettingsPageDataV2QueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SettingsPageDataV2Query> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SettingsPageDataV2Query>({ document: SettingsPageDataV2Document, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SettingsPageDataV2', 'query', variables);
     },
     GetMonthBudget(variables: GetMonthBudgetQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetMonthBudgetQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetMonthBudgetQuery>({ document: GetMonthBudgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetMonthBudget', 'query', variables);

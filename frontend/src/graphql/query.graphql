@@ -34,14 +34,28 @@ query SettingsPageData($year: Int!, $month: Month!) {
   }
 
   firefly {
-    ... on FireflySuccessResponse {
-      __typename
-      accounts
+    accounts
+  }
+}
+
+# Get settings page data from the PostgresDB
+query SettingsPageDataV2($year: Int!, $month: Month!) {
+  monthSettingsV2(year: $year, month: $month) {
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+      firefly {
+        enabled
+        apiKey
+        sourceAccount
+      }
     }
-    ... on FireflyErrorObject {
-      code
-      message
-    }
+  }
+  firefly {
+    accounts
   }
 }
 

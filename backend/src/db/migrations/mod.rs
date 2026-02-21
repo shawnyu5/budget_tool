@@ -1,4 +1,4 @@
-use std::{collections::HashMap, pin::Pin, process::exit};
+use std::{collections::HashMap, pin::Pin};
 
 use crate::{
     db::{
@@ -11,7 +11,7 @@ use crate::{
 use anyhow::{Context, Result};
 use chrono::{DateTime, NaiveDate, NaiveTime};
 use chrono_tz::America::{New_York, Toronto};
-use rust_decimal::Decimal;
+use rust_decimal::{Decimal, prelude::FromPrimitive};
 use tracing::{error, info, instrument};
 
 /// Perform all schema migrations
@@ -29,7 +29,6 @@ pub async fn do_mongo_migrations() -> Result<()> {
         ),
         Box::new(|| Box::pin(add_date_rfc3339_field())),
     );
-
     migrations.insert(
         SchemaMigration::new("migrate_to_postgres", 1, "Migrate all data to postgres"),
         Box::new(|| Box::pin(migrate_to_postgres())),
@@ -68,6 +67,7 @@ pub async fn do_mongo_migrations() -> Result<()> {
 }
 
 /// Migrate all data to Postgres
+#[instrument]
 async fn migrate_to_postgres() -> Result<()> {
     let postgres = PostgresDB::new().await;
     for year in [2025, 2026] {
@@ -94,10 +94,44 @@ async fn migrate_to_postgres() -> Result<()> {
                 .with_context(|| format!("Failed to insert month row for month {month}"))?;
 
             info!("Getting previous month budget from Mongo");
-            let month_budget = mongo.get_month_budget(month).await?;
+            let mongo_month_budget = mongo.get_month_budget(month).await?;
+
+            info!("Getting core users from Postgres");
+            let core_users = postgres.get_core_users().await?;
+            for user in core_users {
+                if user.username == "shawn" {
+                    info!("Inserting budget_allocation for user shawn for {year} {month}");
+                    postgres
+                        .insert_new_budget_allocation(
+                            month_row.id,
+                            user.id,
+                            Decimal::from_f64(
+                                mongo_month_budget.budget.shawn_percentage_allocation,
+                            )
+                            .unwrap(),
+                            Decimal::from_f64(mongo_month_budget.budget.shawn_contribution_amount)
+                                .unwrap(),
+                        )
+                        .await?;
+                } else if user.username == "maggie" {
+                    info!("Inserting budget_allocation for user maggie for {year} {month}");
+                    postgres
+                        .insert_new_budget_allocation(
+                            month_row.id,
+                            user.id,
+                            Decimal::from_f64(
+                                mongo_month_budget.budget.maggie_percentage_allocation,
+                            )
+                            .unwrap(),
+                            Decimal::from_f64(mongo_month_budget.budget.maggie_contribution_amount)
+                                .unwrap(),
+                        )
+                        .await?;
+                }
+            }
 
             info!("Inserting new transaction into Postgres");
-            for transaction in month_budget.spending {
+            for transaction in mongo_month_budget.spending {
                 postgres
                     .insert_new_transaction(
                         month_row.id,
@@ -119,6 +153,7 @@ async fn migrate_to_postgres() -> Result<()> {
 }
 
 /// Adds date_rfc3339 field to all transaction dates
+#[instrument]
 async fn add_date_rfc3339_field() -> Result<()> {
     for year in [2024, 2025, 2026] {
         let db = MongoDB::new(&year.to_string()).await?;

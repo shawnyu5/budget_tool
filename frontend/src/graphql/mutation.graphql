@@ -27,7 +27,7 @@ mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
 
 # V2 of UpdateMonthlyBudgetConfig, updates the postgres DB
 mutation UpdateSettings($inputs: UpdateMonthSettingsInput!) {
-  updateMonthSettings(inputs: $inputs) {
+  updateMonthSettingsV2(inputs: $inputs) {
     success
   }
 }

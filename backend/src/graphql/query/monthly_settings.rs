@@ -46,10 +46,10 @@ pub async fn month_settings(
     // };
 
     let shawn_allocation = db
-        .get_or_create_budget_allocation(shawn_user.id, month_row.as_ref().unwrap().id)
+        .get_or_insert_budget_allocation(shawn_user.id, month_row.as_ref().unwrap().id)
         .await?;
     let maggie_allocation = db
-        .get_or_create_budget_allocation(maggie_user.id, month_row.as_ref().unwrap().id)
+        .get_or_insert_budget_allocation(maggie_user.id, month_row.as_ref().unwrap().id)
         .await?;
     let firefly = db.get_user_firefly_settings(current_user.id).await?;
 
