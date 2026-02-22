@@ -1,11 +1,8 @@
 use anyhow::anyhow;
-use anyhow::{Context as _, Result};
-use async_graphql::{Context, Enum, SimpleObject, Union};
-use serde::Serialize;
-use thiserror::Error;
+use anyhow::Result;
+use async_graphql::{Context, SimpleObject};
 use tracing::error;
 
-use crate::graphql::error::GraphQlErrorObjectV2;
 use crate::{
     config::Config,
     db::{MongoDB, users::USER_TABLE_NAME},

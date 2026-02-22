@@ -1,14 +1,14 @@
 use crate::config::Config;
 use crate::db::users::USER_TABLE_NAME;
 use crate::graphql::error::GraphQlErrorObjectV2;
-use crate::graphql::utils::{extract_http_client, extract_jwt};
+use crate::graphql::utils::extract_http_client;
 use crate::utils::calculate_percentage;
 use crate::{db::MongoDB, month::Month, monthly_budget::SpendingItem};
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
 use async_graphql::{Context, Enum, InputObject};
 use async_graphql::{SimpleObject, Union};
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use chrono_tz::America::New_York;
 use firefly_client::models::{TransactionSplitStore, TransactionStore, TransactionTypeProperty};
 use serde::Serialize;

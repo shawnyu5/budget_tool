@@ -1,18 +1,18 @@
 use anyhow::{Context, Result};
-use chrono::{DateTime, NaiveDate};
+use chrono::DateTime;
 use chrono_tz::Tz;
 use rust_decimal::Decimal;
 use sqlx::{
     Error, Pool, Postgres, Transaction, migrate::Migrator, postgres::PgPoolOptions, query, query_as,
 };
-use tracing::{error, info, instrument};
+use tracing::{error, instrument};
 use uuid::Uuid;
 
 use crate::month::Month;
 use crate::{
     config::Config,
     db::postgres::models::{
-        Year, budget_allocation::BudgetAllocationRow, firefly::FireflyRow, month::MonthRow,
+        Year, firefly::FireflyRow, month::MonthRow,
         user::UserRow,
     },
 };

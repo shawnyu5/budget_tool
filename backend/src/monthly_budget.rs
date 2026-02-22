@@ -2,7 +2,7 @@ use async_graphql::{InputObject, SimpleObject};
 use chrono::{DateTime, NaiveDate, TimeZone, Utc};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 use utoipa::ToSchema;
 
 use crate::{month::Month, utils::calculate_percentage};

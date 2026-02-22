@@ -2,7 +2,6 @@
 use async_graphql::{InputObject, SimpleObject};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 /// Data on the settings page
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, InputObject)]
