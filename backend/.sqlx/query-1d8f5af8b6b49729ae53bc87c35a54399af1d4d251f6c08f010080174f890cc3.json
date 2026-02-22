@@ -1,0 +1,47 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT * FROM budget_allocations\n            WHERE user_id = $1 AND month_id = $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "month_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "percentage_allocation",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "contribution_amount",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "user_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "1d8f5af8b6b49729ae53bc87c35a54399af1d4d251f6c08f010080174f890cc3"
+}
