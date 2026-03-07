@@ -1,5 +1,12 @@
 # Backend
 
+<!--toc:start-->
+
+- [Backend](#backend)
+  - [Setup](#setup)
+  - [Data models](#data-models)
+  <!--toc:end-->
+
 This is an Http server that exposes a REST and GraphQL API to manage budgeting.
 
 ## Setup
@@ -68,10 +75,9 @@ Stores all transactions
 
 Stores all user information
 
-| Name     | Type | Description                            | Relationship | Notes |
-| -------- | ---- | -------------------------------------- | ------------ | ----- |
-| ID       | UUID |                                        | PK           |       |
-| username | TEXT | The month this transactions is tied to | months(id)   |       |
+| Name | Type | Description | Relationship | Notes |
+| -------- | ---- | -------------------------------------- | ------------ | ----- | | ID | UUID | | PK | |
+| username | TEXT | The month this transactions is tied to | months(id) | |
 
 `firefly`
 
@@ -107,3 +113,20 @@ Stores auth keys for a user
 | user_id | UUID | The user this notification key is tied to | users(id)    |       |
 | auth    | TEXT | Auth key                                  |              |       |
 | p256dh  | TEXT |                                           |              |       |
+
+## Adding a transaction
+
+Defines rules for adding transaction:
+
+- If current month is **not** over budget:
+  - Add a new entry in `transactions` table
+  - Set `transaction.split_mode` = `from_settings`
+- If adding current transaction **will go over budget**:
+  - Split transaction being added into 2
+  - Transaction 1 amount will be amount that can still fit within budget. Set `transaction.split_mode` to `from_settings`
+  - Transaction 2 (overflow transaction) will contain the rest of the amount. Set `transaction.split_mode` to `evenly`
+- If current month **is** over budget:
+  - Add a new entry in `transactions` table
+  - Set `transaction.split_mode` = `evenly`
+- When a transaction is deleted, the `transaction.split_mode` is not re computed for existing transactions
+    * There just leaves "head room" for other transactions to be split according to the allocated budget
