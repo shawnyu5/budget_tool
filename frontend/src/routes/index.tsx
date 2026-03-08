@@ -169,6 +169,7 @@ export default function Home() {
           <br />
           <BudgetTable
             data={dataResource}
+            mutate={mutate}
             // setMonthlyBudget={setMonthlyBudget}
           />
         </Suspense>

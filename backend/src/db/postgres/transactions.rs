@@ -92,4 +92,23 @@ impl PostgresDB {
 
         return Ok(transactions);
     }
+
+    /// Delete a transaction by ID
+    pub async fn delete_transaction_by_id(&self, id: Uuid) -> Result<()> {
+        query!(
+            "
+        DELETE FROM transactions t
+        WHERE t.id = $1
+        ",
+            id,
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| {
+            error!("{e:#?}");
+            e
+        })?;
+
+        return Ok(());
+    }
 }

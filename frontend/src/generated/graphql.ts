@@ -101,6 +101,15 @@ export type DeleteSpendingItemByIdInput = {
   year: Scalars['Int']['input'];
 };
 
+export type DeleteTransactionByIdV2Input = {
+  transactionId: Scalars['UUID']['input'];
+};
+
+export type DeleteTransactionByIdV2Response = {
+  __typename?: 'DeleteTransactionByIdV2Response';
+  success: Scalars['Boolean']['output'];
+};
+
 /** Firefly related settings */
 export type FireflySettings = {
   __typename?: 'FireflySettings';
@@ -282,6 +291,8 @@ export type MutationRoot = {
   addTransactionV2: AddTransactionResponseV2;
   /** Delete a spending item by ID. If the item doesnt exist, this handler will not do anything */
   deleteSpendingItemById: MonthlyBudgetResponse;
+  /** Delete a transaction by ID from the PostgresDB */
+  deleteTransactionByIdV2: DeleteTransactionByIdV2Response;
   me: UpdateMeResponse;
   /**
    * Save a notification subscription for a user
@@ -311,6 +322,11 @@ export type MutationRootAddTransactionV2Args = {
 
 export type MutationRootDeleteSpendingItemByIdArgs = {
   inputs: DeleteSpendingItemByIdInput;
+};
+
+
+export type MutationRootDeleteTransactionByIdV2Args = {
+  inputs: DeleteTransactionByIdV2Input;
 };
 
 
@@ -637,6 +653,13 @@ export type UpdateMonthlyBudgetMutationVariables = Exact<{
 
 export type UpdateMonthlyBudgetMutation = { __typename?: 'MutationRoot', updateMonthlyBudget: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename: 'MonthlyBudget', month: Month, totalSpending: number, overBudgetAmount: number, carriedOverFrom?: Month | null, spending: Array<{ __typename?: 'SpendingItem', id: string, amount: number, date: string, description: string, notes?: string | null }>, budget: { __typename?: 'BudgetConfig', totalAllocation: number, maggiePercentageAllocation: number, maggieContributionAmount: number, shawnPercentageAllocation: number, shawnContributionAmount: number } } };
 
+export type DeleteTransactionByIdMutationVariables = Exact<{
+  inputs: DeleteTransactionByIdV2Input;
+}>;
+
+
+export type DeleteTransactionByIdMutation = { __typename?: 'MutationRoot', deleteTransactionByIdV2: { __typename?: 'DeleteTransactionByIdV2Response', success: boolean } };
+
 export type AddSpendingItemByMonthMutationVariables = Exact<{
   inputs: AddSpendingItemByMonthInput;
 }>;
@@ -805,6 +828,13 @@ export const UpdateMonthlyBudgetDocument = gql`
       code
       message
     }
+  }
+}
+    `;
+export const DeleteTransactionByIdDocument = gql`
+    mutation DeleteTransactionByID($inputs: DeleteTransactionByIdV2Input!) {
+  deleteTransactionByIdV2(inputs: $inputs) {
+    success
   }
 }
     `;
@@ -1009,6 +1039,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     UpdateMonthlyBudget(variables: UpdateMonthlyBudgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetMutation>({ document: UpdateMonthlyBudgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudget', 'mutation', variables);
+    },
+    DeleteTransactionByID(variables: DeleteTransactionByIdMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<DeleteTransactionByIdMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<DeleteTransactionByIdMutation>({ document: DeleteTransactionByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DeleteTransactionByID', 'mutation', variables);
     },
     AddSpendingItemByMonth(variables: AddSpendingItemByMonthMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddSpendingItemByMonthMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<AddSpendingItemByMonthMutation>({ document: AddSpendingItemByMonthDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddSpendingItemByMonth', 'mutation', variables);

@@ -95,6 +95,14 @@ input DeleteSpendingItemByIdInput {
 	id: String!
 }
 
+input DeleteTransactionByIdV2Input {
+	transactionId: UUID!
+}
+
+type DeleteTransactionByIdV2Response {
+	success: Boolean!
+}
+
 """
 Firefly related settings
 """
@@ -362,6 +370,10 @@ type MutationRoot {
 	Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
 	"""
 	deleteSpendingItemById(inputs: DeleteSpendingItemByIdInput!): MonthlyBudgetResponse!
+	"""
+	Delete a transaction by ID from the PostgresDB
+	"""
+	deleteTransactionByIdV2(inputs: DeleteTransactionByIdV2Input!): DeleteTransactionByIdV2Response!
 	"""
 	Update a spending item by ID
 	"""

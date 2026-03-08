@@ -1,45 +1,96 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
-import { createEffect, createSignal, For, Resource, Show } from "solid-js";
-import { GetHomePageDataV2Query, MonthlyBudget } from "~/generated/graphql";
+import {
+  createEffect,
+  createSignal,
+  For,
+  Resource,
+  Setter,
+  Show,
+} from "solid-js";
+import {
+  GetHomePageDataV2Query,
+  MonthlyBudget,
+  Transaction,
+} from "~/generated/graphql";
 import log from "~/logger";
 import { MonthlySpending, SpendingItem } from "~/server";
 import { formatRfc3339Date, formatRfc3339DateObj } from "~/utils";
 import { PickerValue } from "@rnwonder/solid-date-picker";
 import { clientOnly } from "@solidjs/start";
+import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
 
-export default function (props: {
+export default function BudgetTable(props: {
   data: Resource<GetHomePageDataV2Query | undefined>;
+  mutate: Setter<GetHomePageDataV2Query | undefined>;
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // If the table is being edited
   const [isEditing, setIsEditing] = createSignal(false);
+  const graphqlSdk = NewGraphQLSDK();
 
   /**
    * Removes a spending item from the table
-   * @param entry - the spending entry to remove
+   * @param transaction - the spending entry to remove
    */
-  // const removeSpendingItem = (entry: SpendingItem) => {
-  //   log.info(
-  //     `Removing spending entry ID ${entry.id}, description: ${entry.description}`,
-  //   );
-  //   const prev = props.data();
-  //   if (!prev) return;
-  //
-  //   let updated = {
-  //     ...prev,
-  //     spending: (prev.spending ?? []).filter((item) => item.id !== entry.id),
-  //   };
-  //
-  //   const updatedSpending = updated.spending.reduce((total, spending) => {
-  //     return total + spending.amount;
-  //   }, 0);
-  //   updated.totalSpending = updatedSpending;
-  //
-  //   props.setMonthlyBudget(updated);
-  //   log.info("Spending entry removed");
-  // };
+  const deleteTransaction = async (transaction: Transaction) => {
+    log.info(
+      `Removing transaction with ID ${transaction.id}, description: ${transaction.description}`,
+    );
+
+    const previous = props.data()?.homePageV2.transactions;
+    props.mutate((prev) => {
+      if (!prev) return;
+      return {
+        ...prev,
+        homePageV2: {
+          ...prev.homePageV2,
+          transactions: prev?.homePageV2.transactions.filter(
+            (t) => t.id != transaction.id,
+          ),
+        },
+      };
+    });
+
+    try {
+      // Call graphql to delete transaction from DB
+      graphqlSdk.DeleteTransactionByID({
+        inputs: {
+          transactionId: transaction.id,
+        },
+      });
+    } catch (e) {
+      // If graphql call fails. Revert the mutation on screen
+      props.mutate((prev) => {
+        if (!prev) return;
+        return {
+          ...prev,
+          homePageV2: {
+            ...prev?.homePageV2,
+            transactions: previous ?? [],
+          },
+        };
+      });
+      handleGraphQLClientError(e, navigate);
+    }
+
+    // const prev = props.data();
+    // if (!prev) return;
+    //
+    // let updated = {
+    //   ...prev,
+    //   spending: (prev.spending ?? []).filter((item) => item.id !== entry.id),
+    // };
+    //
+    // const updatedSpending = updated.spending.reduce((total, spending) => {
+    //   return total + spending.amount;
+    // }, 0);
+    // updated.totalSpending = updatedSpending;
+    //
+    // props.setMonthlyBudget(updated);
+    // log.info("Spending entry removed");
+  };
 
   return (
     <div id="spending-table">
@@ -72,18 +123,10 @@ export default function (props: {
         </div>
       </Show>
       <form
-        // action={action(async () => {
-        //   if (!props.data()) return;
-        //
-        //   log.info("Spending table modified. Updating month's budget");
-        //   setIsEditing(false);
-        //
-        //   const updated: MonthlyBudget = {
-        //     ...(props.data() as MonthlyBudget),
-        //     spending: props.data()?.spending ?? [],
-        //   };
-        //   props.setMonthlyBudget(updated);
-        // })}
+        onSubmit={(e) => {
+          e.preventDefault();
+          setIsEditing(false);
+        }}
         method="post"
       >
         <Show when={isEditing()}>
@@ -165,7 +208,7 @@ export default function (props: {
                           class="alert button"
                           // style={{ width: "10%" }}
                           // TODO: add delete budget item handler
-                          // onClick={() => removeSpendingItem(entry)}
+                          onClick={() => deleteTransaction(entry)}
                         >
                           ❎
                         </button>

@@ -17,6 +17,10 @@ use crate::{
             delete_spending_item_by_id::{
                 DeleteSpendingItemByIdInput, delete_spending_item_by_id_handler,
             },
+            delete_transaction_by_id_v2::{
+                DeleteTransactionByIdV2Input, DeleteTransactionByIdV2Response,
+                delete_transaction_by_id_v2,
+            },
             save_subscription::{SubscriptionInput, save_subscription_handler},
             update_me::{UpdateMe, UpdateMeResponse, update_me_handler},
             update_month_settings::{
@@ -39,6 +43,7 @@ use crate::{
 pub mod add_spending_item_by_month;
 mod add_transaction_v2;
 pub mod delete_spending_item_by_id;
+mod delete_transaction_by_id_v2;
 pub mod save_subscription;
 pub mod update_me;
 pub mod update_month_settings;
@@ -112,6 +117,16 @@ impl MutationRoot {
         inputs: DeleteSpendingItemByIdInput,
     ) -> Result<MonthlyBudgetResponse> {
         return delete_spending_item_by_id_handler(ctx, inputs).await;
+    }
+
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
+    /// Delete a transaction by ID from the PostgresDB
+    async fn delete_transaction_by_id_v2(
+        &self,
+        inputs: DeleteTransactionByIdV2Input,
+    ) -> Result<DeleteTransactionByIdV2Response> {
+        delete_transaction_by_id_v2(inputs).await
     }
 
     #[instrument(skip_all)]

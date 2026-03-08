@@ -64,6 +64,13 @@ mutation UpdateMonthlyBudget($inputs: UpdateMonthlyBudgetInput!) {
   }
 }
 
+# Delete a transaction from PostgresDB
+mutation DeleteTransactionByID($inputs: DeleteTransactionByIdV2Input!) {
+  deleteTransactionByIdV2(inputs: $inputs) {
+    success
+  }
+}
+
 mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
   addSpendingItemByMonth(inputs: $inputs) {
     ... on SuccessResponse {
