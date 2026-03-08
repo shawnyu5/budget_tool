@@ -88,6 +88,42 @@ query GetMonthBudget($year: Int!, $month: Month!) {
   }
 }
 
+# Query data for the home page, from the Postgres DB
+query GetHomePageDataV2($inputs: HomePageV2Input!) {
+  homePageV2(inputs: $inputs) {
+    totalSpending
+    totalBudget
+    overSpending
+    transactions {
+      id
+      amount
+      date
+      description
+      notes
+    }
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+  }
+}
+
+# Data for the SplitBudget component
+query SplitBudgetData($year: Int!, $month: Month!) {
+  monthSettingsV2(year: $year, month: $month) {
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+  }
+}
+
 # Get frontend config
 query getConfig {
   config {

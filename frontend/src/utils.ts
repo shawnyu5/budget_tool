@@ -130,3 +130,7 @@ export function formatRfc3339Date(date: string): string {
   const d = new Date(date);
   return `${d.getFullYear()}/${d.getMonth()}/${d.getDay()}`;
 }
+
+export function formatRfc3339DateObj(date: Date): string {
+  return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`;
+}

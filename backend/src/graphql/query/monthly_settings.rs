@@ -11,7 +11,7 @@ use crate::{
 
 #[derive(SimpleObject)]
 pub struct MonthlySettingsResponse {
-    settings: Settings,
+    pub settings: Settings,
 }
 
 pub async fn month_settings(
@@ -55,7 +55,7 @@ pub async fn month_settings(
 
     Ok(MonthlySettingsResponse {
         settings: Settings {
-            total_allocation: db.compute_total_allocation(month_row.unwrap().id).await?,
+            total_allocation: db.compute_total_allocation(year, month).await?,
             shawn_percentage_allocation: shawn_allocation.percentage_allocation,
             shawn_contribution_amount: shawn_allocation.contribution_amount,
             maggie_percentage_allocation: maggie_allocation.percentage_allocation,

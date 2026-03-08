@@ -4,6 +4,7 @@ use anyhow::Result;
 use rust_decimal::Decimal;
 use sqlx::query;
 use sqlx::query_as;
+use tracing::instrument;
 use tracing::{error, info};
 use uuid::Uuid;
 
@@ -21,6 +22,7 @@ impl PostgresDB {
     ///
     /// * `user_id`: The user to get the allocation for
     /// * `month_id`: the month to the allocation is for
+    #[instrument(skip_all)]
     pub async fn get_or_insert_budget_allocation(
         &self,
         user_id: Uuid,
@@ -155,6 +157,36 @@ impl PostgresDB {
             percentage_allocation,
             contribution_amount).execute(&self.pool).await.map_err(|e| {
             error!("{e:#?}");
+            e
+        })?;
+
+        Ok(())
+    }
+
+    pub async fn update_budget_allocation(
+        &self,
+        user_id: Uuid,
+        month_id: Uuid,
+        percentage_allocation: Decimal,
+        contribution_amount: Decimal,
+    ) -> Result<()> {
+        query!(
+            "
+            UPDATE budget_allocations
+            SET
+                percentage_allocation = $1,
+                contribution_amount = $2
+            WHERE user_id = $3 AND month_id = $4
+            ",
+            percentage_allocation,
+            contribution_amount,
+            user_id,
+            month_id
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| {
+            error!("{:#?}", e);
             e
         })?;
 

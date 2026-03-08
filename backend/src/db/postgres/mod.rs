@@ -11,14 +11,15 @@ use uuid::Uuid;
 use crate::month::Month;
 use crate::{
     config::Config,
-    db::postgres::models::{
-        Year, firefly::FireflyRow, month::MonthRow,
-        user::UserRow,
-    },
+    db::postgres::models::{Year, firefly::FireflyRow, month::MonthRow, user::UserRow},
 };
 
 pub mod budget_allocation;
+pub mod firefly_settings;
 pub mod models;
+pub mod months;
+pub mod transactions;
+pub mod user;
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
@@ -54,76 +55,35 @@ impl PostgresDB {
         return Ok(());
     }
 
-    /// Get a user by their username
-    #[instrument(skip_all)]
-    pub async fn get_user(&self, username: &str) -> Result<UserRow> {
-        let user = query_as!(
-            UserRow,
+    /// Get the total allocation for a specific time frame
+    pub async fn compute_total_allocation(&self, year: Year, month: Month) -> Result<Decimal> {
+        let row = query!(
             "
-            SELECT * FROM users
-            WHERE username = $1
+            SELECT COALESCE(SUM(contribution_amount), 0) AS total_allocation
+            FROM budget_allocations b
+            INNER JOIN months m ON m.id = b.month_id
+            WHERE m.year = $1 AND m.month = $2
             ",
-            username
+            year,
+            month.to_string(),
         )
         .fetch_one(&self.pool)
         .await?;
 
-        Ok(user)
-    }
-    /// Update an existing user
-    #[instrument(skip_all)]
-    pub async fn update_user(&self, username: &str, user: &UserRow) -> Result<()> {
-        query!(
-            "
-        UPDATE users
-        SET username = $1
-        WHERE id = $2
-        ",
-            username,
-            user.id
-        )
-        .execute(&self.pool)
-        .await
-        .context("Failed to update user")?;
-
-        Ok(())
+        Ok(row.total_allocation.unwrap_or_default())
     }
 
-    /// Get a specific month from the Months table
-    #[instrument(skip_all)]
-    pub async fn get_month(&self, year: Year, month: Month) -> Result<Option<MonthRow>> {
-        let month_row = query_as!(
-            MonthRow,
+    /// Calculate the total spending for a time period
+    pub async fn compute_total_spend(&self, year: Year, month: Month) -> Result<Decimal> {
+        let record = query!(
             "
-            SELECT * FROM months
-            WHERE
-                year = $1 AND month = $2
+            SELECT COALESCE(SUM(t.amount), 0) AS total_spent
+            FROM months m
+            LEFT JOIN transactions t ON m.id = t.month_id
+            WHERE m.year = $1 AND m.month = $2
             ",
             year,
-            month.to_string(),
-        )
-        .fetch_optional(&self.pool)
-        .await
-        .map_err(|e| {
-            error!("{:#?}", e);
-            e
-        })
-        .context("Failed to fetch month from DB")?;
-        Ok(month_row)
-    }
-
-    /// Insert a new month into the months table
-    pub async fn insert_new_month(&self, year: Year, month: Month) -> Result<MonthRow> {
-        let month = query_as!(
-            MonthRow,
-            "
-            INSERT INTO months (id, year, month)
-            VALUES ($1, $2, $3)
-            RETURNING *;
-            ",
-            Uuid::new_v4(),
-            year,
-            month.to_string(),
+            month.to_string()
         )
         .fetch_one(&self.pool)
         .await
@@ -132,162 +92,6 @@ impl PostgresDB {
             e
         })?;
 
-        Ok(month)
-    }
-
-    #[instrument(skip_all)]
-    pub async fn get_user_firefly_settings(&self, user_id: Uuid) -> Result<FireflyRow> {
-        let firefly = query_as!(
-            FireflyRow,
-            "
-            SELECT * from firefly
-            where user_id = $1
-            ",
-            user_id
-        )
-        .fetch_one(&self.pool)
-        .await?;
-
-        Ok(firefly)
-    }
-
-    /// Update firefly settings for a specific user
-    #[instrument(skip_all)]
-    pub async fn update_user_firefly_settings(
-        &self,
-        user_id: Uuid,
-        enabled: bool,
-        api_key: Option<String>,
-        encryption_nounce: Option<String>,
-        source_account: Option<String>,
-    ) -> Result<()> {
-        query!(
-            "
-            UPDATE firefly
-            SET
-                enabled = $1,
-                api_key = $2,
-                encryption_nounce = $3,
-                source_account = $4
-            WHERE user_id = $5
-            ",
-            enabled,
-            api_key,
-            encryption_nounce,
-            source_account,
-            user_id
-        )
-        .execute(&self.pool)
-        .await
-        .context("Failed to update firefly settings")?;
-
-        Ok(())
-    }
-
-    pub async fn update_budget_allocation(
-        &self,
-        user_id: Uuid,
-        month_id: Uuid,
-        percentage_allocation: Decimal,
-        contribution_amount: Decimal,
-    ) -> Result<()> {
-        query!(
-            "
-            UPDATE budget_allocations
-            SET
-                percentage_allocation = $1,
-                contribution_amount = $2
-            WHERE user_id = $3 AND month_id = $4
-            ",
-            percentage_allocation,
-            contribution_amount,
-            user_id,
-            month_id
-        )
-        .execute(&self.pool)
-        .await
-        .map_err(|e| {
-            error!("{:#?}", e);
-            e
-        })?;
-
-        Ok(())
-    }
-
-    /// Fetch the core users (Shawn + Maggie) of the system from the DB
-    pub async fn get_core_users(&self) -> Result<Vec<UserRow>> {
-        let users = query_as!(
-            UserRow,
-            "
-            SELECT * FROM users
-            WHERE username = $1 OR username = $2
-            ",
-            "shawn",
-            "maggie"
-        )
-        .fetch_all(&self.pool)
-        .await?;
-
-        assert_eq!(
-            users.len(),
-            2,
-            "There should be no more than 2 core users fetched from DB"
-        );
-
-        Ok(users)
-    }
-
-    /// Get the total allocation for a specific month
-    pub async fn compute_total_allocation(&self, month_id: Uuid) -> Result<Decimal> {
-        let core_users = self.get_core_users().await?;
-        let row = query!(
-            "
-            SELECT COALESCE(SUM(contribution_amount), 0) AS total_allocation
-            FROM budget_allocations
-            WHERE
-            month_id = $1 AND
-            (user_id = $2 OR user_id = $3)
-            ",
-            month_id,
-            core_users[0].id,
-            core_users[1].id,
-        )
-        .fetch_one(&self.pool)
-        .await?;
-
-        Ok(row.total_allocation.unwrap_or_default())
-    }
-
-    /// Insert a new transaction for a specific month
-    ///
-    /// * `month_id`: the month this new transaction is for
-    pub async fn insert_new_transaction(
-        &self,
-        month_id: Uuid,
-        amount: Decimal,
-        date: DateTime<Tz>,
-        description: String,
-        notes: String,
-    ) -> Result<()> {
-        query!(
-            "
-            INSERT INTO transactions (id, month_id, amount, date, description, notes)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            ",
-            Uuid::new_v4(),
-            month_id,
-            amount,
-            date,
-            description,
-            notes
-        )
-        .execute(&self.pool)
-        .await
-        .map_err(|e| {
-            error!("Failed to insert new transaction: {e:#?}");
-            e
-        })?;
-
-        Ok(())
+        Ok(record.total_spent.unwrap())
     }
 }

@@ -10,7 +10,7 @@ pub struct TransactionRow {
     pub id: Uuid,
     pub month_id: Uuid,
     pub amount: Decimal,
-    pub date: DateTime<Tz>,
-    pub description: String,
-    pub notes: String,
+    pub date: DateTime<chrono::FixedOffset>,
+    pub description: Option<String>,
+    pub notes: Option<String>,
 }

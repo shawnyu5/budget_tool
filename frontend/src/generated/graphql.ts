@@ -16,7 +16,24 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  /**
+   * Implement the DateTime<FixedOffset> scalar
+   *
+   * The input/output is a string in RFC3339 format.
+   */
+  DateTime: { input: Date; output: Date; }
   Decimal: { input: Decimal; output: Decimal; }
+  /**
+   * A UUID is a unique 128-bit number, stored as 16 octets. UUIDs are parsed as
+   * Strings within GraphQL. UUIDs are used to assign unique identifiers to
+   * entities without requiring a central allocating authority.
+   *
+   * # References
+   *
+   * * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
+   * * [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+   */
+  UUID: { input: any; output: any; }
 };
 
 /** Errors that could happen during adding an item by month */
@@ -38,6 +55,17 @@ export type AddSpendingItemByMonthInput = {
 };
 
 export type AddSpendingItemByMonthResponse = AddSpendingItemByMonthErrorObject | SuccessResponse;
+
+export type AddTransactionResponseV2 = {
+  __typename?: 'AddTransactionResponseV2';
+  success: Scalars['Boolean']['output'];
+};
+
+export type AddTransactionV2Input = {
+  month: Month;
+  transaction: TransactionInput;
+  year: Scalars['Int']['input'];
+};
 
 export type BudgetConfig = {
   __typename?: 'BudgetConfig';
@@ -163,6 +191,26 @@ export type GraphQlErrorObject = {
   message: Scalars['String']['output'];
 };
 
+/** Data on the home screen */
+export type HomePage = {
+  __typename?: 'HomePage';
+  /** Amount that was over spent */
+  overSpending: Scalars['Decimal']['output'];
+  /** Settings for the particular month */
+  settings: Settings;
+  /** Total allocated budget */
+  totalBudget: Scalars['Decimal']['output'];
+  /** Total $ spend in this month */
+  totalSpending: Scalars['Decimal']['output'];
+  /** All transactions for this month */
+  transactions: Array<Transaction>;
+};
+
+export type HomePageV2Input = {
+  month: Month;
+  year: Scalars['Int']['input'];
+};
+
 export enum Month {
   April = 'April',
   August = 'August',
@@ -230,6 +278,8 @@ export type MutationRoot = {
   __typename?: 'MutationRoot';
   /** Add a spending item to a month */
   addSpendingItemByMonth: AddSpendingItemByMonthResponse;
+  /** Update a spending item by ID */
+  addTransactionV2: AddTransactionResponseV2;
   /** Delete a spending item by ID. If the item doesnt exist, this handler will not do anything */
   deleteSpendingItemById: MonthlyBudgetResponse;
   me: UpdateMeResponse;
@@ -251,6 +301,11 @@ export type MutationRoot = {
 
 export type MutationRootAddSpendingItemByMonthArgs = {
   inputs: AddSpendingItemByMonthInput;
+};
+
+
+export type MutationRootAddTransactionV2Args = {
+  inputs: AddTransactionV2Input;
 };
 
 
@@ -321,6 +376,8 @@ export type QueryRoot = {
   config: FrontendConfig;
   /** Retrieve information from Firefly it self */
   firefly: FireflySuccessResponse;
+  /** Get data to display on the home page */
+  homePageV2: HomePage;
   me: User;
   /** Get the settings for a particular month. Retrieves the data from PostgresDB */
   monthSettingsV2: MonthlySettingsResponse;
@@ -334,6 +391,12 @@ export type QueryRoot = {
   monthlyBudgetConfig: MonthlyBudgetConfigResponse;
   /** Search for a spending item by time and ID */
   searchSpendingItem?: Maybe<SpendingItem>;
+};
+
+
+/** Root of the query */
+export type QueryRootHomePageV2Args = {
+  inputs: HomePageV2Input;
 };
 
 
@@ -445,6 +508,25 @@ export type SubscriptionInput = {
 export type SuccessResponse = {
   __typename?: 'SuccessResponse';
   success: Scalars['Boolean']['output'];
+};
+
+/** Represent a single transaction */
+export type Transaction = {
+  __typename?: 'Transaction';
+  amount: Scalars['Decimal']['output'];
+  date: Scalars['DateTime']['output'];
+  description: Scalars['String']['output'];
+  id: Scalars['UUID']['output'];
+  notes: Scalars['String']['output'];
+};
+
+/** Represent a single transaction */
+export type TransactionInput = {
+  amount: Scalars['Decimal']['input'];
+  date: Scalars['DateTime']['input'];
+  description: Scalars['String']['input'];
+  id: Scalars['UUID']['input'];
+  notes: Scalars['String']['input'];
 };
 
 export type UpdateBudgetConfigInput = {
@@ -562,6 +644,13 @@ export type AddSpendingItemByMonthMutationVariables = Exact<{
 
 export type AddSpendingItemByMonthMutation = { __typename?: 'MutationRoot', addSpendingItemByMonth: { __typename: 'AddSpendingItemByMonthErrorObject', code: AddSpendingItemByMonthError, message: string } | { __typename: 'SuccessResponse', success: boolean } };
 
+export type AddTransactionV2MutationVariables = Exact<{
+  inputs: AddTransactionV2Input;
+}>;
+
+
+export type AddTransactionV2Mutation = { __typename?: 'MutationRoot', addTransactionV2: { __typename?: 'AddTransactionResponseV2', success: boolean } };
+
 export type UpdateSpendingItemByIdMutationVariables = Exact<{
   inputs: UpdateSpendingItemByIdInput;
 }>;
@@ -596,6 +685,21 @@ export type GetMonthBudgetQueryVariables = Exact<{
 
 
 export type GetMonthBudgetQuery = { __typename?: 'QueryRoot', monthlyBudget: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename: 'MonthlyBudget', month: Month, totalSpending: number, overBudgetAmount: number, carriedOverFrom?: Month | null, spending: Array<{ __typename?: 'SpendingItem', id: string, amount: number, date: string, description: string, notes?: string | null }>, budget: { __typename?: 'BudgetConfig', totalAllocation: number, maggiePercentageAllocation: number, maggieContributionAmount: number, shawnPercentageAllocation: number, shawnContributionAmount: number } } };
+
+export type GetHomePageDataV2QueryVariables = Exact<{
+  inputs: HomePageV2Input;
+}>;
+
+
+export type GetHomePageDataV2Query = { __typename?: 'QueryRoot', homePageV2: { __typename?: 'HomePage', totalSpending: Decimal, totalBudget: Decimal, overSpending: Decimal, transactions: Array<{ __typename?: 'Transaction', id: any, amount: Decimal, date: Date, description: string, notes: string }>, settings: { __typename?: 'Settings', totalAllocation: Decimal, shawnPercentageAllocation: Decimal, shawnContributionAmount: Decimal, maggiePercentageAllocation: Decimal, maggieContributionAmount: Decimal } } };
+
+export type SplitBudgetDataQueryVariables = Exact<{
+  year: Scalars['Int']['input'];
+  month: Month;
+}>;
+
+
+export type SplitBudgetDataQuery = { __typename?: 'QueryRoot', monthSettingsV2: { __typename?: 'MonthlySettingsResponse', settings: { __typename?: 'Settings', totalAllocation: Decimal, shawnPercentageAllocation: Decimal, shawnContributionAmount: Decimal, maggiePercentageAllocation: Decimal, maggieContributionAmount: Decimal } } };
 
 export type GetConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -719,6 +823,13 @@ export const AddSpendingItemByMonthDocument = gql`
   }
 }
     `;
+export const AddTransactionV2Document = gql`
+    mutation AddTransactionV2($inputs: AddTransactionV2Input!) {
+  addTransactionV2(inputs: $inputs) {
+    success
+  }
+}
+    `;
 export const UpdateSpendingItemByIdDocument = gql`
     mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
   updateSpendingItemById(inputs: $inputs) {
@@ -802,6 +913,42 @@ export const GetMonthBudgetDocument = gql`
   }
 }
     ${GraphQlErrorFieldsFragmentDoc}`;
+export const GetHomePageDataV2Document = gql`
+    query GetHomePageDataV2($inputs: HomePageV2Input!) {
+  homePageV2(inputs: $inputs) {
+    totalSpending
+    totalBudget
+    overSpending
+    transactions {
+      id
+      amount
+      date
+      description
+      notes
+    }
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+  }
+}
+    `;
+export const SplitBudgetDataDocument = gql`
+    query SplitBudgetData($year: Int!, $month: Month!) {
+  monthSettingsV2(year: $year, month: $month) {
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+  }
+}
+    `;
 export const GetConfigDocument = gql`
     query getConfig {
   config {
@@ -866,6 +1013,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     AddSpendingItemByMonth(variables: AddSpendingItemByMonthMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddSpendingItemByMonthMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<AddSpendingItemByMonthMutation>({ document: AddSpendingItemByMonthDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddSpendingItemByMonth', 'mutation', variables);
     },
+    AddTransactionV2(variables: AddTransactionV2MutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddTransactionV2Mutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AddTransactionV2Mutation>({ document: AddTransactionV2Document, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddTransactionV2', 'mutation', variables);
+    },
     UpdateSpendingItemByID(variables: UpdateSpendingItemByIdMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateSpendingItemByIdMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateSpendingItemByIdMutation>({ document: UpdateSpendingItemByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateSpendingItemByID', 'mutation', variables);
     },
@@ -877,6 +1027,12 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     GetMonthBudget(variables: GetMonthBudgetQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetMonthBudgetQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetMonthBudgetQuery>({ document: GetMonthBudgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetMonthBudget', 'query', variables);
+    },
+    GetHomePageDataV2(variables: GetHomePageDataV2QueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetHomePageDataV2Query> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetHomePageDataV2Query>({ document: GetHomePageDataV2Document, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetHomePageDataV2', 'query', variables);
+    },
+    SplitBudgetData(variables: SplitBudgetDataQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SplitBudgetDataQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SplitBudgetDataQuery>({ document: SplitBudgetDataDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SplitBudgetData', 'query', variables);
     },
     getConfig(variables?: GetConfigQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetConfigQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<GetConfigQuery>({ document: GetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'getConfig', 'query', variables);

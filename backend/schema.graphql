@@ -21,6 +21,16 @@ input AddSpendingItemByMonthInput {
 
 union AddSpendingItemByMonthResponse = SuccessResponse | AddSpendingItemByMonthErrorObject
 
+type AddTransactionResponseV2 {
+	success: Boolean!
+}
+
+input AddTransactionV2Input {
+	year: Int!
+	month: Month!
+	transaction: TransactionInput!
+}
+
 type BudgetConfig {
 	"""
 	Total allocated budget
@@ -66,6 +76,13 @@ input BudgetConfigInput {
 	"""
 	maggieContributionAmount: Float!
 }
+
+"""
+Implement the DateTime<FixedOffset> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
 
 scalar Decimal
 
@@ -207,6 +224,37 @@ type GraphQLErrorObject {
 	message: String!
 }
 
+"""
+Data on the home screen
+"""
+type HomePage {
+	"""
+	Total $ spend in this month
+	"""
+	totalSpending: Decimal!
+	"""
+	Total allocated budget
+	"""
+	totalBudget: Decimal!
+	"""
+	Amount that was over spent
+	"""
+	overSpending: Decimal!
+	"""
+	All transactions for this month
+	"""
+	transactions: [Transaction!]!
+	"""
+	Settings for the particular month
+	"""
+	settings: Settings!
+}
+
+input HomePageV2Input {
+	year: Int!
+	month: Month!
+}
+
 enum Month {
 	January
 	February
@@ -319,6 +367,10 @@ type MutationRoot {
 	"""
 	updateSpendingItemById(inputs: UpdateSpendingItemByIdInput!): UpdateSpendingItemByIdResponse!
 	"""
+	Update a spending item by ID
+	"""
+	addTransactionV2(inputs: AddTransactionV2Input!): AddTransactionResponseV2!
+	"""
 	Update the budget for a specific month
 	"""
 	updateMonthlyBudget(inputs: UpdateMonthlyBudgetInput!): MonthlyBudgetResponse!
@@ -382,6 +434,10 @@ type QueryRoot {
 	Search for a spending item by time and ID
 	"""
 	searchSpendingItem(inputs: SearchSpendingItemInput!): SpendingItem
+	"""
+	Get data to display on the home page
+	"""
+	homePageV2(inputs: HomePageV2Input!): HomePage!
 }
 
 input SearchSpendingItemInput {
@@ -521,6 +577,40 @@ type SuccessResponse {
 	success: Boolean!
 }
 
+"""
+Represent a single transaction
+"""
+type Transaction {
+	id: UUID!
+	amount: Decimal!
+	date: DateTime!
+	description: String!
+	notes: String!
+}
+
+"""
+Represent a single transaction
+"""
+input TransactionInput {
+	id: UUID!
+	amount: Decimal!
+	date: DateTime!
+	description: String!
+	notes: String!
+}
+
+"""
+A UUID is a unique 128-bit number, stored as 16 octets. UUIDs are parsed as
+Strings within GraphQL. UUIDs are used to assign unique identifiers to
+entities without requiring a central allocating authority.
+
+# References
+
+* [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
+* [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+"""
+scalar UUID
+
 input UpdateBudgetConfigInput {
 	"""
 	The year of the budget to update
@@ -632,6 +722,10 @@ directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 Directs the executor to skip this field or fragment when the `if` argument is true.
 """
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Provides a scalar specification URL for specifying the behavior of custom scalar types.
+"""
+directive @specifiedBy(url: String!) on SCALAR
 schema {
 	query: QueryRoot
 	mutation: MutationRoot

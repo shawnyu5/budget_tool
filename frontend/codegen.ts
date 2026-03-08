@@ -13,7 +13,8 @@ const config: CodegenConfig = {
       ],
       config: {
         scalars: {
-           Decimal: "decimal.js#Decimal"
+           Decimal: "decimal.js#Decimal",
+           DateTime: "Date"
         },
       },
     },

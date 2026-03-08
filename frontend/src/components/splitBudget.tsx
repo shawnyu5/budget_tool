@@ -1,47 +1,93 @@
+import Decimal from "decimal.js";
 import { Resource, Show } from "solid-js";
-import { MonthlyBudget } from "~/server";
+import { GetHomePageDataV2Query } from "~/generated/graphql";
 import { calculatePercentage, round } from "~/utils";
 
 /**
  * The amount each person is responsible to pay, based on the month's budget. Including displaying any amount that is over budget
  */
 export default function SplitBudget(props: {
-  monthlyBudget: Resource<MonthlyBudget | null>;
+  data: Resource<GetHomePageDataV2Query | undefined>;
 }) {
   return (
     <div id="split-budget">
       <p>
-        <b>Shawn</b> ({props.monthlyBudget()?.budget?.shawnPercentageAllocation}
+        <b>Shawn</b> (
+        {(
+          props.data()?.homePageV2.settings.shawnPercentageAllocation ??
+          new Decimal(0)
+        ).toNumber()}
         %): $
-        {round(
-          calculatePercentage(
-            (props.monthlyBudget()?.totalSpending ?? 0) -
-              (props.monthlyBudget()?.overBudgetAmount ?? 0),
-            props.monthlyBudget()?.budget?.shawnPercentageAllocation ?? 0,
-          ) +
-            (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2,
-        )}
+        {calculatePercentage(
+          (props.data()?.homePageV2.totalSpending ?? new Decimal(0)).minus(
+            props.data()?.homePageV2.overSpending ?? new Decimal(0),
+          ),
+          (
+            props.data()?.homePageV2.settings.shawnPercentageAllocation ??
+            new Decimal(0)
+          )
+            .plus(props.data()?.homePageV2.overSpending ?? new Decimal(0))
+            .dividedBy(2),
+        ).toNumber()}
+        {
+          // {round(
+          //   calculatePercentage(
+          //     (props.data()?.totalSpending ?? 0) -
+          //       (props.data()?.overBudgetAmount ?? 0),
+          //     props.data()?.budget?.shawnPercentageAllocation ?? 0,
+          //   ) +
+          //     (props.data()?.overBudgetAmount ?? 0) / 2,
+          // )}
+        }
       </p>
 
       <p>
         <b>Maggie</b> (
-        {props.monthlyBudget()?.budget?.maggiePercentageAllocation}
+        {(
+          props.data()?.homePageV2.settings.maggiePercentageAllocation ??
+          new Decimal(0)
+        ).toNumber()}
         %): $
-        {round(
-          calculatePercentage(
-            (props.monthlyBudget()?.totalSpending ?? 0) -
-              (props.monthlyBudget()?.overBudgetAmount ?? 0),
-            props.monthlyBudget()?.budget?.maggiePercentageAllocation ?? 0,
-          ) +
-            (props.monthlyBudget()?.overBudgetAmount ?? 0) / 2,
-        )}
+        {calculatePercentage(
+          (props.data()?.homePageV2.totalSpending ?? new Decimal(0)).minus(
+            props.data()?.homePageV2.overSpending ?? new Decimal(0),
+          ),
+          (
+            props.data()?.homePageV2.settings.maggiePercentageAllocation ??
+            new Decimal(0)
+          )
+            .plus(props.data()?.homePageV2.overSpending ?? new Decimal(0))
+            .dividedBy(2),
+        ).toNumber()}
+        {
+          // {round(
+          //   calculatePercentage(
+          //     (props.data()?.totalSpending ?? 0) -
+          //       (props.data()?.overBudgetAmount ?? 0),
+          //     props.data()?.budget?.maggiePercentageAllocation ?? 0,
+          //   ) +
+          //     (props.data()?.overBudgetAmount ?? 0) / 2,
+          // )}
+        }
       </p>
 
-      <Show when={props.monthlyBudget()?.overBudgetAmount != 0}>
+      <Show
+        when={
+          (
+            props.data()?.homePageV2.overSpending ?? new Decimal(0)
+          ).toNumber() != 0
+        }
+      >
         <p style="color: red">
-          Over budget by ${round(props.monthlyBudget()?.overBudgetAmount ?? 0)}. Splitting
-          50/50 -{" "}
-          <b>${round((props.monthlyBudget()?.overBudgetAmount ?? 0) / 2)}</b>{" "}
+          Over budget by $
+          {(props.data()?.homePageV2.overSpending ?? new Decimal(0)).toNumber()}
+          . Splitting 50/50 -{" "}
+          <b>
+            $
+            {(
+              props.data()?.homePageV2.overSpending ?? new Decimal(0)
+            ).toNumber() / 2}
+          </b>{" "}
           per person (Total included in above calculation)
         </p>
       </Show>

@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO transactions (id, month_id, amount, date, description, notes)\n            SELECT $1, m.id, $4, $5, $6, $7\n            FROM months m\n            WHERE m.month = $2 AND m.year = $3\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Int4",
+        "Numeric",
+        "Timestamptz",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c9731c29564436b90e686c5e5f12b331347777595f6459187e2d1d7d72732cac"
+}

@@ -12,11 +12,12 @@ import {
 import ErrorComponent from "./errorComponent";
 import { calculatePercentage } from "~/utils";
 import { handleGraphQLErrorObject, NewGraphQLSDK } from "~/graphql";
-import { BudgetConfig, SpendingItem } from "~/generated/graphql";
+import { BudgetConfig, SpendingItem, Transaction } from "~/generated/graphql";
 import { clientOnly } from "@solidjs/start";
 const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
 import "@rnwonder/solid-date-picker/dist/style.css";
 import { PickerValue } from "@rnwonder/solid-date-picker";
+import Decimal from "decimal.js";
 
 /**
  * A form that displays a spending item
@@ -24,7 +25,7 @@ import { PickerValue } from "@rnwonder/solid-date-picker";
 export function SpendingItemForm(props: {
   spendingItem: Accessor<SpendingItem | null>;
   onSubmit: (
-    updatedSpendingItem: SpendingItem,
+    transaction: Transaction,
     errorMessageSignal: Signal<string | null>,
   ) => Promise<void>;
 }) {
@@ -33,12 +34,16 @@ export function SpendingItemForm(props: {
   const month = param.month;
 
   const [amount, setAmount] = createSignal(0);
-  const [date, setDate] = createSignal("");
+  // const [date, setDate] = createSignal("");
   const [description, setDescription] = createSignal("");
   const [notes, setNotes] = createSignal("");
   const [pickerValue, setPickerValue] = createSignal<PickerValue>({
     label: "",
     value: {},
+  });
+
+  createEffect(() => {
+    console.log(pickerValue().value);
   });
 
   const errorMessageSignal = createSignal<string | null>(null);
@@ -67,8 +72,8 @@ export function SpendingItemForm(props: {
     }
 
     return calculatePercentage(
-      amount(),
-      budgetConfig()?.shawnPercentageAllocation ?? 0,
+      new Decimal(amount()),
+      new Decimal(budgetConfig()?.shawnPercentageAllocation ?? 0),
     );
   };
 
@@ -78,25 +83,18 @@ export function SpendingItemForm(props: {
     }
 
     return calculatePercentage(
-      amount(),
-      budgetConfig()?.maggiePercentageAllocation ?? 0,
+      new Decimal(amount()),
+      new Decimal(budgetConfig()?.maggiePercentageAllocation ?? 0),
     );
   };
 
   createEffect(() => {
-    // __AUTO_GENERATED_PRINT_VAR_START__
-    console.log(
-      "custom print var SpendingItemForm props.spendingItem(): %s",
-      JSON.stringify(props.spendingItem()),
-    ); // __AUTO_GENERATED_PRINT_VAR_END__
     setAmount(props.spendingItem()?.amount ?? 0);
-    setDate(props.spendingItem()?.date ?? "");
     setDescription(props.spendingItem()?.description ?? "");
     setNotes(props.spendingItem()?.notes ?? "");
     setPickerValue({
       value: {
-        selected:
-          props.spendingItem()?.dateRfc3339 ?? props.spendingItem()?.date,
+        selected: props.spendingItem()?.date,
       },
       label: "",
     });
@@ -112,11 +110,8 @@ export function SpendingItemForm(props: {
         props.onSubmit(
           {
             id: props.spendingItem()?.id ?? crypto.randomUUID(),
-            amount: amount(),
-            date: date(),
-            dateRfc3339: new Date(
-              pickerValue().value.selected ?? "",
-            ).toISOString(),
+            amount: new Decimal(amount()),
+            date: new Date(pickerValue().value.selected ?? ""),
             description: description(),
             notes: notes(),
           },
@@ -142,21 +137,21 @@ export function SpendingItemForm(props: {
 
         <label>Date</label>
         {
-          <input
-            name="date"
-            type="text"
-            required
-            value={date()}
-            onInput={(e: InputEvent) => {
-              const input = (e.target as HTMLInputElement).value;
-              setDate(input);
-            }}
-          />
-          // <DatePicker
-          //   type="single"
-          //   value={pickerValue}
-          //   setValue={setPickerValue}
+          // <input
+          //   name="date"
+          //   type="text"
+          //   required
+          //   value={date()}
+          //   onInput={(e: InputEvent) => {
+          //     const input = (e.target as HTMLInputElement).value;
+          //     setDate(input);
+          //   }}
           // />
+          <DatePicker
+            type="single"
+            value={pickerValue}
+            setValue={setPickerValue}
+          />
         }
 
         <label>Description</label>
@@ -187,8 +182,8 @@ export function SpendingItemForm(props: {
           Save
         </button>
 
-        <p>Shawn - ${shawnSplit()}</p>
-        <p>Maggie - ${maggieSplit()}</p>
+        <p>Shawn - ${shawnSplit().toString()}</p>
+        <p>Maggie - ${maggieSplit().toString()}</p>
       </Show>
     </form>
   );

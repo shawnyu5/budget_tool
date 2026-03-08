@@ -78,6 +78,13 @@ mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
   }
 }
 
+# Add a transaction to the Postgres DB
+mutation AddTransactionV2($inputs: AddTransactionV2Input!) {
+  addTransactionV2(inputs: $inputs) {
+    success
+  }
+}
+
 mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
   updateSpendingItemById(inputs: $inputs) {
     success

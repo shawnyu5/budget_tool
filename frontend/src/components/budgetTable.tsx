@@ -1,13 +1,15 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
 import { createEffect, createSignal, For, Resource, Show } from "solid-js";
-import { MonthlyBudget } from "~/generated/graphql";
+import { GetHomePageDataV2Query, MonthlyBudget } from "~/generated/graphql";
 import log from "~/logger";
 import { MonthlySpending, SpendingItem } from "~/server";
-import { formatRfc3339Date } from "~/utils";
+import { formatRfc3339Date, formatRfc3339DateObj } from "~/utils";
+import { PickerValue } from "@rnwonder/solid-date-picker";
+import { clientOnly } from "@solidjs/start";
+const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
 
 export default function (props: {
-  monthlyBudget: Resource<MonthlyBudget | null>;
-  setMonthlyBudget: (monthlyBudget: MonthlyBudget) => void;
+  data: Resource<GetHomePageDataV2Query | undefined>;
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -18,26 +20,26 @@ export default function (props: {
    * Removes a spending item from the table
    * @param entry - the spending entry to remove
    */
-  const removeSpendingItem = (entry: SpendingItem) => {
-    log.info(
-      `Removing spending entry ID ${entry.id}, description: ${entry.description}`,
-    );
-    const prev = props.monthlyBudget();
-    if (!prev) return;
-
-    let updated = {
-      ...prev,
-      spending: (prev.spending ?? []).filter((item) => item.id !== entry.id),
-    };
-
-    const updatedSpending = updated.spending.reduce((total, spending) => {
-      return total + spending.amount;
-    }, 0);
-    updated.totalSpending = updatedSpending;
-
-    props.setMonthlyBudget(updated);
-    log.info("Spending entry removed");
-  };
+  // const removeSpendingItem = (entry: SpendingItem) => {
+  //   log.info(
+  //     `Removing spending entry ID ${entry.id}, description: ${entry.description}`,
+  //   );
+  //   const prev = props.data();
+  //   if (!prev) return;
+  //
+  //   let updated = {
+  //     ...prev,
+  //     spending: (prev.spending ?? []).filter((item) => item.id !== entry.id),
+  //   };
+  //
+  //   const updatedSpending = updated.spending.reduce((total, spending) => {
+  //     return total + spending.amount;
+  //   }, 0);
+  //   updated.totalSpending = updatedSpending;
+  //
+  //   props.setMonthlyBudget(updated);
+  //   log.info("Spending entry removed");
+  // };
 
   return (
     <div id="spending-table">
@@ -70,18 +72,18 @@ export default function (props: {
         </div>
       </Show>
       <form
-        action={action(async () => {
-          if (!props.monthlyBudget()) return;
-
-          log.info("Spending table modified. Updating month's budget");
-          setIsEditing(false);
-
-          const updated: MonthlyBudget = {
-            ...(props.monthlyBudget() as MonthlyBudget),
-            spending: props.monthlyBudget()?.spending ?? [],
-          };
-          props.setMonthlyBudget(updated);
-        })}
+        // action={action(async () => {
+        //   if (!props.data()) return;
+        //
+        //   log.info("Spending table modified. Updating month's budget");
+        //   setIsEditing(false);
+        //
+        //   const updated: MonthlyBudget = {
+        //     ...(props.data() as MonthlyBudget),
+        //     spending: props.data()?.spending ?? [],
+        //   };
+        //   props.setMonthlyBudget(updated);
+        // })}
         method="post"
       >
         <Show when={isEditing()}>
@@ -122,8 +124,20 @@ export default function (props: {
             </tr>
           </thead>
           <tbody>
-            <For each={props.monthlyBudget()?.spending ?? []}>
+            <For each={props.data()?.homePageV2.transactions ?? []}>
               {(entry) => {
+                const [date, setDate] = createSignal<PickerValue>({
+                  value: {
+                    selected: entry.date.toISOString(),
+                  },
+                  label: "",
+                });
+                // const date: PickerValue = {
+                //   value: {
+                //     selected: entry.date.toISOString(),
+                //   },
+                //   label: "",
+                // };
                 return (
                   <tr
                     style="cursor: pointer"
@@ -150,7 +164,8 @@ export default function (props: {
                           type="button"
                           class="alert button"
                           // style={{ width: "10%" }}
-                          onClick={() => removeSpendingItem(entry)}
+                          // TODO: add delete budget item handler
+                          // onClick={() => removeSpendingItem(entry)}
                         >
                           ❎
                         </button>
@@ -158,13 +173,9 @@ export default function (props: {
                     </Show>
                     <td>
                       <span>$</span>
-                      {entry.amount}
+                      {entry.amount.toNumber()}
                     </td>
-                    <td>
-                      {entry.dateRfc3339
-                        ? formatRfc3339Date(entry.dateRfc3339)
-                        : entry.date}
-                    </td>
+                    <td>{formatRfc3339DateObj(entry.date)}</td>
                     <td>{entry.description}</td>
                     <td>{entry.notes}</td>
                   </tr>

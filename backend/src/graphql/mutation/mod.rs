@@ -11,6 +11,9 @@ use crate::{
                 AddSpendingItemByMonthInput, AddSpendingItemByMonthResponse,
                 add_spending_item_by_month_handler,
             },
+            add_transaction_v2::{
+                AddTransactionResponseV2, AddTransactionV2Input, add_transaction_v2,
+            },
             delete_spending_item_by_id::{
                 DeleteSpendingItemByIdInput, delete_spending_item_by_id_handler,
             },
@@ -34,6 +37,7 @@ use crate::{
 };
 
 pub mod add_spending_item_by_month;
+mod add_transaction_v2;
 pub mod delete_spending_item_by_id;
 pub mod save_subscription;
 pub mod update_me;
@@ -119,6 +123,16 @@ impl MutationRoot {
         inputs: UpdateSpendingItemByIdInput,
     ) -> Result<UpdateSpendingItemByIdResponse> {
         return update_spending_item_by_id_handler(ctx, inputs).await;
+    }
+
+    #[instrument(skip_all)]
+    /// Update a spending item by ID
+    #[graphql(guard = "AuthGuard")]
+    async fn add_transaction_v2(
+        &self,
+        inputs: AddTransactionV2Input,
+    ) -> Result<AddTransactionResponseV2> {
+        add_transaction_v2(inputs).await
     }
 
     #[instrument(skip_all)]

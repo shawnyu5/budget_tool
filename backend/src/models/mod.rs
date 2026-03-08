@@ -1,7 +1,9 @@
 /// Domain models
 use async_graphql::{InputObject, SimpleObject};
+use chrono::{DateTime, FixedOffset};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 /// Data on the settings page
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, InputObject)]
@@ -32,4 +34,30 @@ pub struct FireflySettings {
     pub api_key: Option<String>,
     /// The source account to create the transaction in
     pub source_account: Option<String>,
+}
+
+/// Represent a single transaction
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, Default, InputObject)]
+#[graphql(input_name = "TransactionInput")]
+pub struct Transaction {
+    pub id: Uuid,
+    pub amount: Decimal,
+    pub date: DateTime<FixedOffset>,
+    pub description: String,
+    pub notes: String,
+}
+
+/// Data on the home screen
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, Default, InputObject)]
+pub struct HomePage {
+    /// Total $ spend in this month
+    pub total_spending: Decimal,
+    /// Total allocated budget
+    pub total_budget: Decimal,
+    /// Amount that was over spent
+    pub over_spending: Decimal,
+    /// All transactions for this month
+    pub transactions: Vec<Transaction>,
+    /// Settings for the particular month
+    pub settings: Settings,
 }

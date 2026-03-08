@@ -11,6 +11,7 @@ use crate::{
         query::{
             config::{FrontendConfig, config_handler},
             firefly::{FireflySuccessResponse, firefly_handler},
+            home_page::{HomePageV2Input, home_page_v2},
             me::me_handler,
             monthly_budget::monthly_budget_handler,
             monthly_budget_config::monthly_budget_config_handler,
@@ -19,12 +20,14 @@ use crate::{
         },
         utils::AuthGuard,
     },
+    models::HomePage,
     month::Month,
     monthly_budget::SpendingItem,
 };
 
 mod config;
 pub mod firefly;
+mod home_page;
 mod me;
 mod monthly_budget;
 mod monthly_budget_config;
@@ -103,5 +106,16 @@ impl QueryRoot {
         inputs: SearchSpendingItemInput,
     ) -> Result<Option<SpendingItem>> {
         search_spending_item_handler(inputs).await
+    }
+
+    /// Get data to display on the home page
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
+    pub async fn home_page_v2(
+        &self,
+        ctx: &Context<'_>,
+        inputs: HomePageV2Input,
+    ) -> Result<HomePage> {
+        home_page_v2(ctx, inputs).await
     }
 }
