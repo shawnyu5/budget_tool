@@ -17,14 +17,13 @@ export default function () {
   const month = params.month as Month;
   const navigate = useNavigate();
   const jsDate = new Date();
-  const [spendingItem] = createSignal<SpendingItem>({
-    id: crypto.randomUUID(),
-    amount: 0,
-    date: `${jsDate.getFullYear()}/${jsDate.getMonth() + 1}/${jsDate.getDate()}`,
-    dateRfc3339: jsDate.toISOString(),
-    description: "",
-    notes: "",
-  });
+  // const [transaction] = createSignal<Transaction>({
+  //   id: crypto.randomUUID(),
+  //   amount: new Decimal(0),
+  //   date: new Date(),
+  //   description: "",
+  //   notes: "",
+  // });
 
   const onSubmit = async (
     transaction: Transaction,
@@ -65,5 +64,5 @@ export default function () {
     navigate(`/?year=${year}&month=${month}`, { replace: true });
   };
 
-  return <SpendingItemForm spendingItem={spendingItem} onSubmit={onSubmit} />;
+  return <SpendingItemForm onSubmit={onSubmit} />;
 }

@@ -1,18 +1,17 @@
-import { action, useNavigate, useParams } from "@solidjs/router";
+import { action, useParams } from "@solidjs/router";
 import {
   Accessor,
   createEffect,
   createResource,
   createSignal,
-  onMount,
-  Setter,
+  Resource,
   Show,
   Signal,
 } from "solid-js";
 import ErrorComponent from "./errorComponent";
-import { calculatePercentage } from "~/utils";
+import { calculatePercentage, formatRfc3339DateObj } from "~/utils";
 import { handleGraphQLErrorObject, NewGraphQLSDK } from "~/graphql";
-import { BudgetConfig, SpendingItem, Transaction } from "~/generated/graphql";
+import { BudgetConfig, Month, Transaction } from "~/generated/graphql";
 import { clientOnly } from "@solidjs/start";
 const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
 import "@rnwonder/solid-date-picker/dist/style.css";
@@ -23,7 +22,7 @@ import Decimal from "decimal.js";
  * A form that displays a spending item
  */
 export function SpendingItemForm(props: {
-  spendingItem: Accessor<SpendingItem | null>;
+  transaction?: Resource<Transaction | undefined>;
   onSubmit: (
     transaction: Transaction,
     errorMessageSignal: Signal<string | null>,
@@ -33,17 +32,12 @@ export function SpendingItemForm(props: {
   const year = param.year;
   const month = param.month;
 
-  const [amount, setAmount] = createSignal(0);
-  // const [date, setDate] = createSignal("");
+  const [amount, setAmount] = createSignal<string>();
   const [description, setDescription] = createSignal("");
   const [notes, setNotes] = createSignal("");
-  const [pickerValue, setPickerValue] = createSignal<PickerValue>({
+  const [datePicker, setDatePicker] = createSignal<PickerValue>({
     label: "",
     value: {},
-  });
-
-  createEffect(() => {
-    console.log(pickerValue().value);
   });
 
   const errorMessageSignal = createSignal<string | null>(null);
@@ -54,8 +48,7 @@ export function SpendingItemForm(props: {
     const graphql = NewGraphQLSDK();
     let response = await graphql.SpendingItemForm({
       year: parseInt(year),
-      // @ts-ignore
-      month: month,
+      month: month as Month,
     });
 
     if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
@@ -72,7 +65,7 @@ export function SpendingItemForm(props: {
     }
 
     return calculatePercentage(
-      new Decimal(amount()),
+      new Decimal(amount() || "0"),
       new Decimal(budgetConfig()?.shawnPercentageAllocation ?? 0),
     );
   };
@@ -83,21 +76,36 @@ export function SpendingItemForm(props: {
     }
 
     return calculatePercentage(
-      new Decimal(amount()),
+      new Decimal(amount() || "0"),
       new Decimal(budgetConfig()?.maggiePercentageAllocation ?? 0),
     );
   };
 
   createEffect(() => {
-    setAmount(props.spendingItem()?.amount ?? 0);
-    setDescription(props.spendingItem()?.description ?? "");
-    setNotes(props.spendingItem()?.notes ?? "");
-    setPickerValue({
-      value: {
-        selected: props.spendingItem()?.date,
-      },
-      label: "",
-    });
+    const tx = props.transaction?.();
+    // __AUTO_GENERATED_PRINT_VAR_START__
+    console.log(
+      "custom print var SpendingItemForm#(anon) tx: %s",
+      JSON.stringify(tx),
+    ); // __AUTO_GENERATED_PRINT_VAR_END__
+    if (tx) {
+      setAmount(tx.amount.toString());
+      setDescription(tx.description);
+      setNotes(tx.notes);
+      setDatePicker({
+        value: {
+          selected: formatRfc3339DateObj(tx.date ?? new Date()),
+        },
+        label: "",
+      });
+    } else {
+      setDatePicker({
+        value: {
+          selected: formatRfc3339DateObj(new Date()),
+        },
+        label: "",
+      });
+    }
   });
 
   return (
@@ -106,22 +114,21 @@ export function SpendingItemForm(props: {
       method="post"
       action={action(async () => {
         setFormSubmitted(true);
-        console.log(`Picker value: ${JSON.stringify(pickerValue())}`);
         props.onSubmit(
           {
-            id: props.spendingItem()?.id ?? crypto.randomUUID(),
-            amount: new Decimal(amount()),
-            date: new Date(pickerValue().value.selected ?? ""),
+            id: props.transaction?.()?.id ?? crypto.randomUUID(),
+            amount: new Decimal(amount() ?? "0"),
+            date: new Date(datePicker().value.selected ?? ""),
             description: description(),
             notes: notes(),
-          },
+          } satisfies Transaction,
           errorMessageSignal,
         );
       })}
     >
       <ErrorComponent errorMessage={errorMessage()} />
 
-      <Show when={props.spendingItem()} fallback={<p>Loading...</p>}>
+      <Show when={!props.transaction?.loading} fallback={<p>Loading...</p>}>
         <label>Amount ($)</label>
         <input
           name="amount"
@@ -131,7 +138,7 @@ export function SpendingItemForm(props: {
           value={amount()}
           onInput={(e: InputEvent) => {
             const input = (e.target as HTMLInputElement).value;
-            setAmount(parseFloat(input));
+            setAmount(input);
           }}
         />
 
@@ -149,8 +156,8 @@ export function SpendingItemForm(props: {
           // />
           <DatePicker
             type="single"
-            value={pickerValue}
-            setValue={setPickerValue}
+            value={datePicker}
+            setValue={setDatePicker}
           />
         }
 

@@ -9,13 +9,10 @@ import {
 } from "solid-js";
 import {
   GetHomePageDataV2Query,
-  MonthlyBudget,
   Transaction,
 } from "~/generated/graphql";
 import log from "~/logger";
-import { MonthlySpending, SpendingItem } from "~/server";
-import { formatRfc3339Date, formatRfc3339DateObj } from "~/utils";
-import { PickerValue } from "@rnwonder/solid-date-picker";
+import { formatRfc3339DateObj } from "~/utils";
 import { clientOnly } from "@solidjs/start";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
