@@ -68,15 +68,6 @@ export default function Home() {
             totalSpending: new Decimal(response.homePageV2.totalSpending),
             transactions: response.homePageV2.transactions.map(
               (transaction) => {
-                console.log(
-                  `description: ${transaction.description} - date: ${transaction.date}`,
-                );
-                const d = new Date(transaction.date);
-                // __AUTO_GENERATED_PRINT_VAR_START__
-                console.log(
-                  "custom print var Home#(anon)#(anon) d: %s",
-                  JSON.stringify(d),
-                ); // __AUTO_GENERATED_PRINT_VAR_END__
                 return {
                   id: transaction.id,
                   amount: new Decimal(transaction.amount),

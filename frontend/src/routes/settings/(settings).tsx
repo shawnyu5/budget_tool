@@ -379,11 +379,6 @@ export default function Settings() {
                         },
                       },
                     };
-                    // __AUTO_GENERATED_PRINT_VAR_START__
-                    console.log(
-                      "custom print var Settings#(anon)#(anon) a: %s",
-                      JSON.stringify(a, "", 3),
-                    ); // __AUTO_GENERATED_PRINT_VAR_END__
                     return a;
                   });
                 }}

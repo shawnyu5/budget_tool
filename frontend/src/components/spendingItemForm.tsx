@@ -83,11 +83,6 @@ export function SpendingItemForm(props: {
 
   createEffect(() => {
     const tx = props.transaction?.();
-    // __AUTO_GENERATED_PRINT_VAR_START__
-    console.log(
-      "custom print var SpendingItemForm#(anon) tx: %s",
-      JSON.stringify(tx),
-    ); // __AUTO_GENERATED_PRINT_VAR_END__
     if (tx) {
       setAmount(tx.amount.toString());
       setDescription(tx.description);

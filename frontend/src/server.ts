@@ -125,8 +125,6 @@ export async function updateMonthlyBudgetConfig(
   fireflySettings: FireflySettings,
   navigate: Navigator,
 ): Promise<UpdateMonthlyBudgetConfigMutation> {
-  // __AUTO_GENERATED_PRINT_VAR_START__
-  console.log("updateMonthlyBudgetConfig fireflySettings:", fireflySettings); // __AUTO_GENERATED_PRINT_VAR_END__
   const sdk = NewGraphQLSDK();
   try {
     const budgetConfigInput: BudgetConfigInput = {
