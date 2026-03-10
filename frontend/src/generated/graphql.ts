@@ -285,11 +285,17 @@ export type MonthlySettingsResponse = {
 
 export type MutationRoot = {
   __typename?: 'MutationRoot';
-  /** Add a spending item to a month */
+  /**
+   * Add a spending item to a month
+   * @deprecated use `add_transaction_v2` to save to the PostgresDB
+   */
   addSpendingItemByMonth: AddSpendingItemByMonthResponse;
-  /** Update a spending item by ID */
+  /** Add a transaction */
   addTransactionV2: AddTransactionResponseV2;
-  /** Delete a spending item by ID. If the item doesnt exist, this handler will not do anything */
+  /**
+   * Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
+   * @deprecated use `delete_transaction_by_id_v2` to delete from the PostgresDB
+   */
   deleteSpendingItemById: MonthlyBudgetResponse;
   /** Delete a transaction by ID from the PostgresDB */
   deleteTransactionByIdV2: DeleteTransactionByIdV2Response;
@@ -297,16 +303,25 @@ export type MutationRoot = {
   /**
    * Save a notification subscription for a user
    * The user is extracted from the JWT
+   * @deprecated Save to the PostgresDB instead
    */
   saveSubscription: User;
   /** Update the settings for a specific month, in the Postgres DB */
   updateMonthSettingsV2: UpdateMonthSettingsResponse;
-  /** Update the budget for a specific month */
+  /**
+   * Update the budget for a specific month
+   * @deprecated Do not use this handler anymore. Prefer the more finegrained updates instead
+   */
   updateMonthlyBudget: MonthlyBudgetResponse;
-  /** Update the budget configuration for a specific month */
+  /**
+   * Update the budget configuration for a specific month
+   * @deprecated use `update_month_settings_v2` to save to the PostgresDB
+   */
   updateMonthlyBudgetConfig: UpdateBudgetConfigResponse;
   /** Update a spending item by ID */
   updateSpendingItemById: UpdateSpendingItemByIdResponse;
+  /** Update a transaction by ID */
+  updateTransactionByIdV2: UpdateTransactionByIdV2Response;
 };
 
 
@@ -359,6 +374,11 @@ export type MutationRootUpdateSpendingItemByIdArgs = {
   inputs: UpdateSpendingItemByIdInput;
 };
 
+
+export type MutationRootUpdateTransactionByIdV2Args = {
+  inputs: UpdateTransactionByIdV2Input;
+};
+
 export type NotificationKeys = {
   __typename?: 'NotificationKeys';
   auth: Scalars['String']['output'];
@@ -407,6 +427,8 @@ export type QueryRoot = {
   monthlyBudgetConfig: MonthlyBudgetConfigResponse;
   /** Search for a spending item by time and ID */
   searchSpendingItem?: Maybe<SpendingItem>;
+  /** Search for a transaction from the PostgresDB */
+  searchTransactionV2: SearchTransactionV2Response;
 };
 
 
@@ -442,10 +464,26 @@ export type QueryRootSearchSpendingItemArgs = {
   inputs: SearchSpendingItemInput;
 };
 
+
+/** Root of the query */
+export type QueryRootSearchTransactionV2Args = {
+  inputs: SearchTransactionV2Inputs;
+};
+
 export type SearchSpendingItemInput = {
   id: Scalars['String']['input'];
   month: Month;
   year: Scalars['Int']['input'];
+};
+
+export type SearchTransactionV2Inputs = {
+  /** ID of the transaction to search for */
+  transactionId: Scalars['UUID']['input'];
+};
+
+export type SearchTransactionV2Response = {
+  __typename?: 'SearchTransactionV2Response';
+  transaction?: Maybe<Transaction>;
 };
 
 /** Data on the settings page */
@@ -604,6 +642,19 @@ export type UpdateSpendingItemByIdResponse = {
   success: Scalars['Boolean']['output'];
 };
 
+export type UpdateTransactionByIdV2Input = {
+  amount: Scalars['Decimal']['input'];
+  date: Scalars['DateTime']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  notes?: InputMaybe<Scalars['String']['input']>;
+  transactionId: Scalars['UUID']['input'];
+};
+
+export type UpdateTransactionByIdV2Response = {
+  __typename?: 'UpdateTransactionByIdV2Response';
+  success: Scalars['Boolean']['output'];
+};
+
 /** Represents a user */
 export type User = {
   __typename?: 'User';
@@ -681,6 +732,13 @@ export type UpdateSpendingItemByIdMutationVariables = Exact<{
 
 export type UpdateSpendingItemByIdMutation = { __typename?: 'MutationRoot', updateSpendingItemById: { __typename?: 'UpdateSpendingItemByIdResponse', success: boolean } };
 
+export type UpdateTransactionByIdMutationVariables = Exact<{
+  inputs: UpdateTransactionByIdV2Input;
+}>;
+
+
+export type UpdateTransactionByIdMutation = { __typename?: 'MutationRoot', updateTransactionByIdV2: { __typename?: 'UpdateTransactionByIdV2Response', success: boolean } };
+
 export type GraphQlErrorFieldsFragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
 
 export type GraphQlErrorFieldsV2Fragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
@@ -748,6 +806,13 @@ export type SearchSpendingItemQueryVariables = Exact<{
 
 
 export type SearchSpendingItemQuery = { __typename?: 'QueryRoot', searchSpendingItem?: { __typename?: 'SpendingItem', id: string, amount: number, date: string, dateRfc3339?: string | null, description: string, notes?: string | null } | null };
+
+export type SearchTransactionByIdQueryVariables = Exact<{
+  inputs: SearchTransactionV2Inputs;
+}>;
+
+
+export type SearchTransactionByIdQuery = { __typename?: 'QueryRoot', searchTransactionV2: { __typename?: 'SearchTransactionV2Response', transaction?: { __typename?: 'Transaction', id: any, amount: Decimal, date: Date, description: string, notes: string } | null } };
 
 export const GraphQlErrorFieldsFragmentDoc = gql`
     fragment GraphQLErrorFields on GraphQLErrorObject {
@@ -863,6 +928,13 @@ export const AddTransactionV2Document = gql`
 export const UpdateSpendingItemByIdDocument = gql`
     mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
   updateSpendingItemById(inputs: $inputs) {
+    success
+  }
+}
+    `;
+export const UpdateTransactionByIdDocument = gql`
+    mutation UpdateTransactionByID($inputs: UpdateTransactionByIdV2Input!) {
+  updateTransactionByIdV2(inputs: $inputs) {
     success
   }
 }
@@ -1020,6 +1092,19 @@ export const SearchSpendingItemDocument = gql`
   }
 }
     `;
+export const SearchTransactionByIdDocument = gql`
+    query SearchTransactionByID($inputs: SearchTransactionV2Inputs!) {
+  searchTransactionV2(inputs: $inputs) {
+    transaction {
+      id
+      amount
+      date
+      description
+      notes
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -1052,6 +1137,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     UpdateSpendingItemByID(variables: UpdateSpendingItemByIdMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateSpendingItemByIdMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateSpendingItemByIdMutation>({ document: UpdateSpendingItemByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateSpendingItemByID', 'mutation', variables);
     },
+    UpdateTransactionByID(variables: UpdateTransactionByIdMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateTransactionByIdMutation> {
+      return withWrapper((wrappedRequestHeaders) => client.request<UpdateTransactionByIdMutation>({ document: UpdateTransactionByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateTransactionByID', 'mutation', variables);
+    },
     SettingsPageData(variables: SettingsPageDataQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SettingsPageDataQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<SettingsPageDataQuery>({ document: SettingsPageDataDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SettingsPageData', 'query', variables);
     },
@@ -1078,6 +1166,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     SearchSpendingItem(variables: SearchSpendingItemQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SearchSpendingItemQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<SearchSpendingItemQuery>({ document: SearchSpendingItemDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SearchSpendingItem', 'query', variables);
+    },
+    SearchTransactionByID(variables: SearchTransactionByIdQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SearchTransactionByIdQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<SearchTransactionByIdQuery>({ document: SearchTransactionByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SearchTransactionByID', 'query', variables);
     }
   };
 }

@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "@solidjs/router";
 import axios, { isAxiosError } from "axios";
 import {
   Accessor,
+  createResource,
   createSignal,
   onMount,
   Setter,
@@ -11,7 +12,7 @@ import {
 import ErrorComponent from "~/components/errorComponent";
 import { SpendingItemForm } from "~/components/spendingItemForm";
 import { loadLocalConfig } from "~/config";
-import { Month, SpendingItem } from "~/generated/graphql";
+import { Month, SpendingItem, Transaction } from "~/generated/graphql";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
 
@@ -23,40 +24,34 @@ export default function () {
   const navigate = useNavigate();
   const graphqlSdk = NewGraphQLSDK();
 
-  const [spendingItem, setSpendingItem] = createSignal<SpendingItem | null>(
-    null,
-  );
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
-
-  onMount(async () => {
+  const [transaction] = createResource(async () => {
     try {
-      const res = await graphqlSdk.SearchSpendingItem({
+      const res = await graphqlSdk.SearchTransactionByID({
         inputs: {
-          year: parseInt(year),
-          month: month as Month,
-          id: spendingItemID,
+          transactionId: spendingItemID,
         },
       });
 
-      if (!res.searchSpendingItem) {
-        return;
+      const t = res.searchTransactionV2.transaction;
+      if (t) {
+        return {
+          id: t.id,
+          amount: t.amount,
+          date: new Date(t.date),
+          description: t.description,
+          notes: t.notes,
+        } satisfies Transaction;
+      } else {
+        return undefined;
       }
-
-      setSpendingItem({
-        id: res.searchSpendingItem?.id,
-        amount: res.searchSpendingItem?.amount,
-        date: res.searchSpendingItem?.date,
-        dateRfc3339: res.searchSpendingItem?.dateRfc3339,
-        description: res.searchSpendingItem?.description,
-        notes: res.searchSpendingItem?.notes,
-      });
     } catch (e) {
       handleGraphQLClientError(e, navigate);
     }
   });
 
   const onSubmit = async (
-    updatedSpendingItem: SpendingItem,
+    transaction: Transaction,
     errorMessageSignal: Signal<string | null>,
   ) => {
     const [errorMessage, setErrorMessage] = errorMessageSignal;
@@ -67,15 +62,16 @@ export default function () {
     log.info("Submitting form");
 
     try {
-      await graphqlSdk.UpdateSpendingItemByID({
+      await graphqlSdk.UpdateTransactionByID({
         inputs: {
-          year: parseInt(year),
-          month: month as Month,
-          spendingItem: updatedSpendingItem,
+          transactionId: transaction.id,
+          amount: transaction.amount,
+          date: transaction.date,
+          description: transaction.description,
+          notes: transaction.notes,
         },
       });
-
-      navigate(`/?year=${year}&month=${month}`, { replace: true });
+      navigate(`/?year=${year}&month=${month}`, { replace: false });
     } catch (e) {
       handleGraphQLClientError(e, navigate);
     }
@@ -86,7 +82,7 @@ export default function () {
       <Show when={errorMessage()}>
         <ErrorComponent errorMessage={errorMessage()} />
       </Show>
-      <SpendingItemForm spendingItem={spendingItem} onSubmit={onSubmit} />
+      <SpendingItemForm transaction={transaction} onSubmit={onSubmit} />
     </div>
   );
 }

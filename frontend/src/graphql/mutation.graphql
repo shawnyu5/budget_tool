@@ -97,3 +97,10 @@ mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
     success
   }
 }
+
+# update a transaction by ID
+mutation UpdateTransactionByID($inputs: UpdateTransactionByIdV2Input!) {
+  updateTransactionByIdV2(inputs: $inputs) {
+    success
+  }
+}

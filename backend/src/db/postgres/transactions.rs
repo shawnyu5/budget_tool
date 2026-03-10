@@ -12,6 +12,7 @@ use uuid::Uuid;
 
 use crate::db::postgres::models::Year;
 use crate::db::postgres::models::transaction::TransactionRow;
+use crate::models::Transaction;
 use crate::{
     db::postgres::{
         PostgresDB,
@@ -49,18 +50,6 @@ impl PostgresDB {
             description,
             notes,
         )
-        // query!(
-        //     "
-        //     INSERT INTO transactions (id, month_id, amount, date, description, notes)
-        //     VALUES ($1, $2, $3, $4, $5, $6)
-        //     ",
-        //     Uuid::new_v4(),
-        //     month_id,
-        //     amount,
-        //     date,
-        //     description,
-        //     notes
-        // )
         .execute(&self.pool)
         .await
         .map_err(|e| {
@@ -92,6 +81,61 @@ impl PostgresDB {
         })?;
 
         return Ok(transactions);
+    }
+
+    /// Get a single transaction by ID
+    pub async fn get_transaction_by_id(&self, id: Uuid) -> Result<Option<TransactionRow>> {
+        let transaction = query_as!(
+            TransactionRow,
+            "
+            SELECT * from transactions t
+            WHERE t.id = $1
+            ",
+            id
+        )
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| {
+            error!("{e:#?}");
+            e
+        })?;
+
+        return Ok(transaction);
+    }
+
+    /// Update a transaction by ID
+    pub async fn update_transaction_by_id(
+        &self,
+        id: Uuid,
+        amount: Decimal,
+        date: DateTime<chrono::FixedOffset>,
+        description: Option<String>,
+        notes: Option<String>,
+    ) -> Result<()> {
+        query!(
+            "
+            UPDATE transactions
+            SET
+                amount = $2,
+                date = $3,
+                description = $4,
+                notes = $5
+            WHERE id = $1
+            ",
+            id,
+            amount,
+            date,
+            description,
+            notes
+        )
+        .execute(&self.pool)
+        .await
+        .map_err(|e| {
+            error!("{e:#?}");
+            e
+        })?;
+
+        return Ok(());
     }
 
     /// Delete a transaction by ID

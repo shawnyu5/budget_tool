@@ -34,6 +34,10 @@ use crate::{
                 UpdateSpendingItemByIdInput, UpdateSpendingItemByIdResponse,
                 update_spending_item_by_id_handler,
             },
+            update_transaction_by_id_v2::{
+                UpdateTransactionByIdV2Input, UpdateTransactionByIdV2Response,
+                update_transaction_by_id_v2,
+            },
         },
         utils::AuthGuard,
     },
@@ -50,6 +54,7 @@ pub mod update_month_settings;
 pub mod update_monthly_budget;
 pub mod update_monthly_budget_config;
 pub mod update_spending_item_by_id;
+mod update_transaction_by_id_v2;
 
 #[derive(Union)]
 pub enum MonthlyBudgetResponse {
@@ -65,6 +70,8 @@ pub struct MutationRoot;
 impl MutationRoot {
     /// Save a notification subscription for a user
     /// The user is extracted from the JWT
+    #[deprecated = "Save to the PostgresDB instead"]
+    #[graphql(deprecation = "Save to the PostgresDB instead")]
     #[instrument(skip_all)]
     async fn save_subscription(
         &self,
@@ -77,7 +84,10 @@ impl MutationRoot {
     /// Update the budget configuration for a specific month
     #[instrument(skip_all)]
     #[deprecated = "prefer `update_month_settings_v2`"]
-    #[graphql(guard = "AuthGuard")]
+    #[graphql(
+        guard = "AuthGuard",
+        deprecation = "use `update_month_settings_v2` to save to the PostgresDB"
+    )]
     async fn update_monthly_budget_config(
         &self,
         ctx: &Context<'_>,
@@ -98,7 +108,10 @@ impl MutationRoot {
     }
 
     #[instrument(skip_all)]
-    #[graphql(guard = "AuthGuard")]
+    #[graphql(
+        guard = "AuthGuard",
+        deprecation = "use `add_transaction_v2` to save to the PostgresDB"
+    )]
     /// Add a spending item to a month
     async fn add_spending_item_by_month(
         &self,
@@ -109,7 +122,10 @@ impl MutationRoot {
     }
 
     #[instrument(skip_all)]
-    #[graphql(guard = "AuthGuard")]
+    #[graphql(
+        guard = "AuthGuard",
+        deprecation = "use `delete_transaction_by_id_v2` to delete from the PostgresDB"
+    )]
     /// Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
     async fn delete_spending_item_by_id(
         &self,
@@ -140,8 +156,8 @@ impl MutationRoot {
         return update_spending_item_by_id_handler(ctx, inputs).await;
     }
 
+    /// Add a transaction
     #[instrument(skip_all)]
-    /// Update a spending item by ID
     #[graphql(guard = "AuthGuard")]
     async fn add_transaction_v2(
         &self,
@@ -150,8 +166,21 @@ impl MutationRoot {
         add_transaction_v2(inputs).await
     }
 
+    /// Update a transaction by ID
     #[instrument(skip_all)]
     #[graphql(guard = "AuthGuard")]
+    pub async fn update_transaction_by_id_v2(
+        &self,
+        inputs: UpdateTransactionByIdV2Input,
+    ) -> Result<UpdateTransactionByIdV2Response> {
+        update_transaction_by_id_v2(inputs).await
+    }
+
+    #[instrument(skip_all)]
+    #[graphql(
+        guard = "AuthGuard",
+        deprecation = "Do not use this handler anymore. Prefer the more finegrained updates instead"
+    )]
     /// Update the budget for a specific month
     async fn update_monthly_budget(
         &self,
@@ -161,6 +190,8 @@ impl MutationRoot {
         update_monthly_budget_handler(ctx, inputs).await
     }
 
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
     async fn me(&self, ctx: &Context<'_>, inputs: UpdateMe) -> Result<UpdateMeResponse> {
         update_me_handler(ctx, inputs).await
     }

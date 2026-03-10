@@ -16,6 +16,9 @@ use crate::{
             monthly_budget::monthly_budget_handler,
             monthly_budget_config::monthly_budget_config_handler,
             monthly_settings::{MonthlySettingsResponse, month_settings},
+            search_transaction_v2::{
+                SearchTransactionV2Inputs, SearchTransactionV2Response, search_transaction_v2,
+            },
             spending_item::{SearchSpendingItemInput, search_spending_item_handler},
         },
         utils::AuthGuard,
@@ -32,6 +35,7 @@ mod me;
 mod monthly_budget;
 mod monthly_budget_config;
 mod monthly_settings;
+mod search_transaction_v2;
 pub mod spending_item;
 
 /// Root of the graphql query
@@ -117,5 +121,15 @@ impl QueryRoot {
         inputs: HomePageV2Input,
     ) -> Result<HomePage> {
         home_page_v2(ctx, inputs).await
+    }
+
+    /// Search for a transaction from the PostgresDB
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
+    async fn search_transaction_v2(
+        &self,
+        inputs: SearchTransactionV2Inputs,
+    ) -> Result<SearchTransactionV2Response> {
+        search_transaction_v2(inputs).await
     }
 }

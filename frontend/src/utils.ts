@@ -132,5 +132,6 @@ export function formatRfc3339Date(date: string): string {
 }
 
 export function formatRfc3339DateObj(date: Date): string {
-  return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`;
+  // Cuz JS month is 0 indexed need to +1 to get human readable month
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
 }

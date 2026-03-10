@@ -164,3 +164,16 @@ query SearchSpendingItem($inputs: SearchSpendingItemInput!) {
     notes
   }
 }
+
+# Search for a transaction by ID from the PostgresDB
+query SearchTransactionByID($inputs: SearchTransactionV2Inputs!) {
+  searchTransactionV2(inputs: $inputs) {
+    transaction {
+      id
+      amount
+      date
+      description
+      notes
+    }
+  }
+}

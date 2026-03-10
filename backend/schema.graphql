@@ -353,11 +353,11 @@ type MutationRoot {
 	Save a notification subscription for a user
 	The user is extracted from the JWT
 	"""
-	saveSubscription(subscription: SubscriptionInput!): User!
+	saveSubscription(subscription: SubscriptionInput!): User! @deprecated(reason: "Save to the PostgresDB instead")
 	"""
 	Update the budget configuration for a specific month
 	"""
-	updateMonthlyBudgetConfig(inputs: UpdateBudgetConfigInput!): UpdateBudgetConfigResponse!
+	updateMonthlyBudgetConfig(inputs: UpdateBudgetConfigInput!): UpdateBudgetConfigResponse! @deprecated(reason: "use `update_month_settings_v2` to save to the PostgresDB")
 	"""
 	Update the settings for a specific month, in the Postgres DB
 	"""
@@ -365,11 +365,11 @@ type MutationRoot {
 	"""
 	Add a spending item to a month
 	"""
-	addSpendingItemByMonth(inputs: AddSpendingItemByMonthInput!): AddSpendingItemByMonthResponse!
+	addSpendingItemByMonth(inputs: AddSpendingItemByMonthInput!): AddSpendingItemByMonthResponse! @deprecated(reason: "use `add_transaction_v2` to save to the PostgresDB")
 	"""
 	Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
 	"""
-	deleteSpendingItemById(inputs: DeleteSpendingItemByIdInput!): MonthlyBudgetResponse!
+	deleteSpendingItemById(inputs: DeleteSpendingItemByIdInput!): MonthlyBudgetResponse! @deprecated(reason: "use `delete_transaction_by_id_v2` to delete from the PostgresDB")
 	"""
 	Delete a transaction by ID from the PostgresDB
 	"""
@@ -379,13 +379,17 @@ type MutationRoot {
 	"""
 	updateSpendingItemById(inputs: UpdateSpendingItemByIdInput!): UpdateSpendingItemByIdResponse!
 	"""
-	Update a spending item by ID
+	Add a transaction
 	"""
 	addTransactionV2(inputs: AddTransactionV2Input!): AddTransactionResponseV2!
 	"""
+	Update a transaction by ID
+	"""
+	updateTransactionByIdV2(inputs: UpdateTransactionByIdV2Input!): UpdateTransactionByIdV2Response!
+	"""
 	Update the budget for a specific month
 	"""
-	updateMonthlyBudget(inputs: UpdateMonthlyBudgetInput!): MonthlyBudgetResponse!
+	updateMonthlyBudget(inputs: UpdateMonthlyBudgetInput!): MonthlyBudgetResponse! @deprecated(reason: "Do not use this handler anymore. Prefer the more finegrained updates instead")
 	me(inputs: UpdateMe!): UpdateMeResponse!
 }
 
@@ -450,12 +454,27 @@ type QueryRoot {
 	Get data to display on the home page
 	"""
 	homePageV2(inputs: HomePageV2Input!): HomePage!
+	"""
+	Search for a transaction from the PostgresDB
+	"""
+	searchTransactionV2(inputs: SearchTransactionV2Inputs!): SearchTransactionV2Response!
 }
 
 input SearchSpendingItemInput {
 	year: Int!
 	month: Month!
 	id: String!
+}
+
+input SearchTransactionV2Inputs {
+	"""
+	ID of the transaction to search for
+	"""
+	transactionId: UUID!
+}
+
+type SearchTransactionV2Response {
+	transaction: Transaction
 }
 
 """
@@ -694,6 +713,18 @@ type UpdateSpendingItemByIdResponse {
 	success: Boolean!
 }
 
+input UpdateTransactionByIdV2Input {
+	transactionId: UUID!
+	amount: Decimal!
+	date: DateTime!
+	description: String
+	notes: String
+}
+
+type UpdateTransactionByIdV2Response {
+	success: Boolean!
+}
+
 """
 Represents a user
 """
@@ -726,6 +757,10 @@ input UserInput {
 	firefly: FireflySettingsInput
 }
 
+"""
+Marks an element of a GraphQL schema as no longer supported.
+"""
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
 """
 Directs the executor to include this field or fragment only when the `if` argument is true.
 """

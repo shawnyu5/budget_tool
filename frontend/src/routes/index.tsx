@@ -68,7 +68,15 @@ export default function Home() {
             totalSpending: new Decimal(response.homePageV2.totalSpending),
             transactions: response.homePageV2.transactions.map(
               (transaction) => {
-                console.log(`${transaction.description} - ${transaction.date}`);
+                console.log(
+                  `description: ${transaction.description} - date: ${transaction.date}`,
+                );
+                const d = new Date(transaction.date);
+                // __AUTO_GENERATED_PRINT_VAR_START__
+                console.log(
+                  "custom print var Home#(anon)#(anon) d: %s",
+                  JSON.stringify(d),
+                ); // __AUTO_GENERATED_PRINT_VAR_END__
                 return {
                   id: transaction.id,
                   amount: new Decimal(transaction.amount),
@@ -104,54 +112,6 @@ export default function Home() {
       }
     },
   );
-
-  // createEffect(async () => {
-  //   // Only sync with backend if data changes. This also prevents making a round trip to the server on page load
-  //   const budget = dataResource();
-  //   if (!budget) {
-  //     return;
-  //   }
-  //   log.info(
-  //     `Updating monthly budget in backend: ${JSON.stringify(budget, null, 3)}`,
-  //   );
-  //
-  //   try {
-  //     const response = await graphqlSdk.UpdateMonthlyBudget({
-  //       inputs: {
-  //         year: Number(searchParam.year),
-  //         month: searchParam.month as Month,
-  //         budget: {
-  //           month: searchParam.month as Month,
-  //           overBudgetAmount: budget.overBudgetAmount,
-  //           spending: budget.spending,
-  //           totalSpending: budget.totalSpending,
-  //           carriedOverFrom: budget.carriedOverFrom,
-  //           budget: {
-  //             totalAllocation: budget.budget.totalAllocation,
-  //             shawnContributionAmount: budget.budget.shawnContributionAmount,
-  //             shawnPercentageAllocation:
-  //               budget.budget.shawnPercentageAllocation,
-  //             maggieContributionAmount: budget.budget.maggieContributionAmount,
-  //             maggiePercentageAllocation:
-  //               budget.budget.maggiePercentageAllocation,
-  //           },
-  //         },
-  //       },
-  //     });
-  //
-  //     if (response.updateMonthlyBudget.__typename == "GraphQLErrorObject") {
-  //       const err = handleGraphQLErrorObject(response.updateMonthlyBudget);
-  //       if (err) {
-  //         console.error(err);
-  //         throw new Error(err);
-  //       }
-  //
-  //       return response.updateMonthlyBudget;
-  //     }
-  //   } catch (e) {
-  //     handleGraphQLClientError(e, navigate);
-  //   }
-  // });
 
   return (
     <main>
