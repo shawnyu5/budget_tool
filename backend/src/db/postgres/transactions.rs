@@ -71,7 +71,7 @@ impl PostgresDB {
         Ok(())
     }
 
-    /// Get transactions from in a specific time frame
+    /// Get transactions from in a specific time frame. Sort the transactions by date
     pub async fn get_transactions(&self, year: Year, month: Month) -> Result<Vec<TransactionRow>> {
         let transactions = query_as!(
             TransactionRow,
@@ -79,6 +79,7 @@ impl PostgresDB {
             SELECT t.* FROM transactions t
             INNER JOIN months m ON m.id = t.month_id
             WHERE m.year = $1 AND m.month = $2
+            ORDER BY t.date DESC
             ",
             year,
             month.to_string(),

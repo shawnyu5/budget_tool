@@ -32,7 +32,6 @@ pub struct AddTransactionResponseV2 {
 
 #[instrument(skip_all)]
 pub async fn add_transaction_v2(inputs: AddTransactionV2Input) -> Result<AddTransactionResponseV2> {
-    dbg!(&inputs.transaction);
     let db = PostgresDB::new().await;
     db.insert_new_transaction(
         inputs.month,

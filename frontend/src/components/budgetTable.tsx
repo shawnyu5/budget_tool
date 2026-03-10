@@ -31,8 +31,8 @@ export default function BudgetTable(props: {
   const graphqlSdk = NewGraphQLSDK();
 
   /**
-   * Removes a spending item from the table
-   * @param transaction - the spending entry to remove
+   * Removes a transaction from the table
+   * @param transaction - the transaction to remove
    */
   const deleteTransaction = async (transaction: Transaction) => {
     log.info(
@@ -74,22 +74,6 @@ export default function BudgetTable(props: {
       });
       handleGraphQLClientError(e, navigate);
     }
-
-    // const prev = props.data();
-    // if (!prev) return;
-    //
-    // let updated = {
-    //   ...prev,
-    //   spending: (prev.spending ?? []).filter((item) => item.id !== entry.id),
-    // };
-    //
-    // const updatedSpending = updated.spending.reduce((total, spending) => {
-    //   return total + spending.amount;
-    // }, 0);
-    // updated.totalSpending = updatedSpending;
-    //
-    // props.setMonthlyBudget(updated);
-    // log.info("Spending entry removed");
   };
 
   return (
@@ -169,18 +153,6 @@ export default function BudgetTable(props: {
           <tbody>
             <For each={props.data()?.homePageV2.transactions ?? []}>
               {(entry) => {
-                const [date, setDate] = createSignal<PickerValue>({
-                  value: {
-                    selected: entry.date.toISOString(),
-                  },
-                  label: "",
-                });
-                // const date: PickerValue = {
-                //   value: {
-                //     selected: entry.date.toISOString(),
-                //   },
-                //   label: "",
-                // };
                 return (
                   <tr
                     style="cursor: pointer"
@@ -206,8 +178,6 @@ export default function BudgetTable(props: {
                         <button
                           type="button"
                           class="alert button"
-                          // style={{ width: "10%" }}
-                          // TODO: add delete budget item handler
                           onClick={() => deleteTransaction(entry)}
                         >
                           ❎
