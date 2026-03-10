@@ -32,6 +32,8 @@ use utoipa_axum::routes;
 use crate::cron::init_all_user_crons;
 use crate::custom_middleware::check_auth_header;
 use crate::db::DBError;
+use crate::db::postgres::PostgresDB;
+use crate::db::postgres::models::Year;
 use crate::graphql::SchemaType;
 use crate::graphql::generate_graphql_schema;
 use crate::monthly_budget::MonthlyBudget;
@@ -510,71 +512,48 @@ async fn validate_token_v2(header: HeaderMap) -> StatusCode {
         (status = 500, description = "Failed to get update spending item", body = String),
     ),
 )]
-async fn export_csv_handler(
-    Path((year, month)): Path<(String, Month)>,
-) -> Result<String, AppError> {
-    let monthly_budget = get_month_budget_handler(Path((year, month)))
-        .await?
-        .into_response();
-    let monthly_budget = body::to_bytes(monthly_budget.into_body(), usize::MAX)
+async fn export_csv_handler(Path((year, month)): Path<(Year, Month)>) -> Result<String, AppError> {
+    let db = PostgresDB::new().await;
+    let transactions = db
+        .get_transactions(year, month)
         .await
-        .context("Failed to get budget information")?;
-    let monthly_budget = from_slice::<MonthlyBudget>(&mut monthly_budget.to_vec())
-        .context("Failed to convert body to Json")?;
-    debug!("Monthly budget: {:#?}", monthly_budget);
+        .context("Failed to get transactions")?;
+
+    // let monthly_budget = body::to_bytes(monthly_budget.into_body(), usize::MAX)
+    //     .await
+    //     .context("Failed to get budget information")?;
+    // let monthly_budget = from_slice::<MonthlyBudget>(&mut monthly_budget.to_vec())
+    //     .context("Failed to convert body to Json")?;
+    // debug!("Monthly budget: {:#?}", monthly_budget);
 
     let mut wtr = csv::Writer::from_writer(Vec::new());
     wtr.write_record(["Amount", "Date", "Description", "Notes"])
         .context("Failed to write header")?;
 
-    for spending in monthly_budget.spending {
-        // TODO: if a row fails to write, should we return partial data?
+    for transaction in transactions {
         let record = [
-            spending.amount.to_string(),
-            spending.date,
-            spending.description,
-            spending.notes.unwrap_or_default(),
+            transaction.amount.to_string(),
+            transaction.date.to_string(),
+            transaction.description.unwrap_or_default(),
+            transaction.notes.unwrap_or_default(),
         ];
         debug!("Writing record {:#?}", record);
         wtr.write_record(record).context("Failed to write row")?;
     }
 
-    wtr.write_record([
-        "Total spending",
-        &monthly_budget.total_spending.to_string(),
-        "",
-        "",
-    ])
-    .context("Failed to write total spending to CSV")?;
-    wtr.write_record([
-        "Total budget",
-        &monthly_budget.budget.total_allocation.to_string(),
-        "",
-        "",
-    ])
-    .context("Failed to write total allocated budget to CSV")?;
-    wtr.write_record([
-        "Shawn contribution",
-        &calculate_percentage(
-            monthly_budget.total_spending,
-            monthly_budget.budget.shawn_percentage_allocation,
-        )
-        .to_string(),
-        "",
-        "",
-    ])
-    .context("Failed to write Shawn contribution to CSV")?;
-    wtr.write_record([
-        "Maggie contribution",
-        &calculate_percentage(
-            monthly_budget.total_spending,
-            monthly_budget.budget.maggie_percentage_allocation,
-        )
-        .to_string(),
-        "",
-        "",
-    ])
-    .context("Failed to write Maggie contribution to CSV")?;
+    let total_spending = db
+        .compute_total_spend(year, month)
+        .await
+        .context("Failed to compute total spend")?;
+    let total_budget = db
+        .compute_total_allocation(year, month)
+        .await
+        .context("Failed to compute total budget")?;
+
+    wtr.write_record(["Total spending", &total_spending.to_string(), "", ""])
+        .context("Failed to write total spending to CSV")?;
+    wtr.write_record(["Total budget", &total_budget.to_string(), "", ""])
+        .context("Failed to write total allocated budget to CSV")?;
 
     wtr.flush().context("Failed to write CSV to buffer")?;
     let csv = wtr.into_inner().context("Failed to get CSV data")?;
