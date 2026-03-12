@@ -92,7 +92,10 @@ pub async fn update_month_settings(
         // inputs.settings.firefly.encryption_nounce = Some(b64_nounce);
     }
 
-    let tx = db.begin().await.context("Failed to start transaction")?;
+    let tx = db
+        .transaction()
+        .await
+        .context("Failed to start transaction")?;
 
     db.update_user_firefly_settings(
         current_user.id,

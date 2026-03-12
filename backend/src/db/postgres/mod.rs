@@ -44,7 +44,7 @@ impl PostgresDB {
 
     #[instrument(skip_all)]
     /// Start a transaction
-    pub async fn begin(&self) -> Result<Transaction<'_, Postgres>, Error> {
+    pub async fn transaction(&self) -> Result<Transaction<'_, Postgres>, Error> {
         self.pool.begin().await
     }
 
