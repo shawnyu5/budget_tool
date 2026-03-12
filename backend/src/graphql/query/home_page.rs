@@ -1,5 +1,5 @@
 use anyhow::{Context as _, Result};
-use async_graphql::{Context, InputObject, SimpleObject};
+use async_graphql::{Context, InputObject};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rust_decimal::Decimal;
 use tracing::{error, info};

@@ -1,22 +1,12 @@
-use crate::config::Config;
 use crate::db::postgres::PostgresDB;
 use crate::db::postgres::models::Year;
-use crate::db::users::USER_TABLE_NAME;
-use crate::graphql::error::GraphQlErrorObjectV2;
-use crate::graphql::utils::extract_http_client;
 use crate::models::Transaction;
-use crate::utils::calculate_percentage;
-use crate::{db::MongoDB, month::Month, monthly_budget::SpendingItem};
+use crate::month::Month;
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
-use async_graphql::{Context, Enum, InputObject};
-use async_graphql::{SimpleObject, Union};
-use chrono::Utc;
-use chrono_tz::America::New_York;
-use firefly_client::models::{TransactionSplitStore, TransactionStore, TransactionTypeProperty};
-use serde::Serialize;
-use thiserror::Error;
-use tracing::{error, info, instrument, warn};
+use async_graphql::InputObject;
+use async_graphql::SimpleObject;
+use tracing::{error, instrument};
 
 #[derive(InputObject)]
 pub struct AddTransactionV2Input {

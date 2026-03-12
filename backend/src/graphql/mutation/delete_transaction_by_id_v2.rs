@@ -1,6 +1,5 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{InputObject, SimpleObject};
-use sqlx::{Postgres, query};
 use uuid::Uuid;
 
 use crate::db::postgres::PostgresDB;

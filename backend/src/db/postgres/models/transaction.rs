@@ -1,5 +1,4 @@
 use chrono::DateTime;
-use chrono_tz::Tz;
 use rust_decimal::Decimal;
 use sqlx::prelude::FromRow;
 use uuid::Uuid;

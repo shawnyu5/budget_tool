@@ -10,7 +10,7 @@ use crate::{
 };
 use anyhow::{Context, Result};
 use chrono::{DateTime, NaiveDate, NaiveTime};
-use chrono_tz::America::{New_York, Toronto};
+use chrono_tz::America::New_York;
 use rust_decimal::{Decimal, prelude::FromPrimitive};
 use tracing::{error, info, instrument};
 

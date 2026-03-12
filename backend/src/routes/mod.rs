@@ -4,7 +4,6 @@ use anyhow::Context;
 use anyhow::anyhow;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
-use axum::body;
 use axum::extract::State;
 use axum::http::HeaderMap;
 use axum::http::StatusCode;
@@ -19,7 +18,6 @@ use mongodb::bson::doc;
 use rayon::prelude::*;
 use reqwest::header::ACCEPT;
 use serde::{Deserialize, Serialize};
-use simd_json::from_slice;
 use tokio_cron_scheduler::JobScheduler;
 use tracing::debug;
 use tracing::error;
@@ -47,7 +45,6 @@ use crate::routes::notification::{
     __path_save_notification_subscription_handler, save_notification_subscription_handler,
 };
 use crate::routes::notification::{__path_send_notification_handler, send_notification_handler};
-use crate::utils::calculate_percentage;
 use crate::{db::MongoDB, month::Month};
 pub mod auth;
 pub mod notification;
