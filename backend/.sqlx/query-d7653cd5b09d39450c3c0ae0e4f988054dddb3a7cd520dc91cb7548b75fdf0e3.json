@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT * FROM months\n                WHERE id = $1\n                ",
+  "query": "\n            SELECT * from months m\n            WHERE m.year = $1 AND m.month = $2\n            ",
   "describe": {
     "columns": [
       {
@@ -21,7 +21,8 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Int4",
+        "Text"
       ]
     },
     "nullable": [
@@ -30,5 +31,5 @@
       false
     ]
   },
-  "hash": "2ae88920f3e3809f2247999922e79dbe845f7c373ec15a2527ebccb6e30b38bf"
+  "hash": "d7653cd5b09d39450c3c0ae0e4f988054dddb3a7cd520dc91cb7548b75fdf0e3"
 }

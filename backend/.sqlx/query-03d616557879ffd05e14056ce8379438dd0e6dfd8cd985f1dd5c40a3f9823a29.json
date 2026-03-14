@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * FROM budget_allocations\n            WHERE user_id = $1 AND month_id = $2\n            ",
+  "query": "\n                INSERT INTO budget_allocations (id, month_id, percentage_allocation, contribution_amount, user_id)\n                SELECT\n                    $3,\n                    m.id,\n                    $4,\n                    $5,\n                    $6\n                FROM months m\n                WHERE m.year = $1 AND m.month = $2\n                RETURNING *;\n                ",
   "describe": {
     "columns": [
       {
@@ -31,7 +31,11 @@
     ],
     "parameters": {
       "Left": [
+        "Int4",
+        "Text",
         "Uuid",
+        "Numeric",
+        "Numeric",
         "Uuid"
       ]
     },
@@ -43,5 +47,5 @@
       false
     ]
   },
-  "hash": "1d8f5af8b6b49729ae53bc87c35a54399af1d4d251f6c08f010080174f890cc3"
+  "hash": "03d616557879ffd05e14056ce8379438dd0e6dfd8cd985f1dd5c40a3f9823a29"
 }
