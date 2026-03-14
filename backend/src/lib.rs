@@ -9,4 +9,7 @@ pub mod models;
 pub mod month;
 pub mod monthly_budget;
 pub mod routes;
+#[cfg(test)]
+mod test_utils;
 pub mod utils;
+

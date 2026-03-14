@@ -1,8 +1,10 @@
 use anyhow::Context as _;
 use anyhow::Result;
+use async_graphql::Context;
 use async_graphql::{InputObject, SimpleObject};
 use uuid::Uuid;
 
+use crate::graphql::utils::extract_db_client;
 use crate::{db::postgres::PostgresDB, models::Transaction};
 
 #[derive(InputObject)]
@@ -17,9 +19,10 @@ pub struct SearchTransactionV2Response {
 }
 
 pub async fn search_transaction_v2(
+    ctx: &Context<'_>,
     inputs: SearchTransactionV2Inputs,
 ) -> Result<SearchTransactionV2Response> {
-    let db = PostgresDB::new().await;
+    let db = extract_db_client(ctx);
     let transaction = db
         .get_transaction_by_id(inputs.transaction_id)
         .await

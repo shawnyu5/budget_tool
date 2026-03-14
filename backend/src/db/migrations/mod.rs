@@ -70,6 +70,11 @@ pub async fn do_mongo_migrations() -> Result<()> {
 #[instrument]
 async fn migrate_to_postgres() -> Result<()> {
     let postgres = PostgresDB::new().await;
+    let mut tx = postgres
+        .transaction()
+        .await
+        .context("Failed to create transaction")?;
+
     for year in [2025, 2026] {
         let mongo = MongoDB::new(&year.to_string()).await?;
         #[allow(clippy::never_loop)]
@@ -97,13 +102,15 @@ async fn migrate_to_postgres() -> Result<()> {
             let mongo_month_budget = mongo.get_month_budget(month).await?;
 
             info!("Getting core users from Postgres");
-            let core_users = postgres.get_core_users().await?;
+            let core_users = postgres.get_core_users(&mut *tx).await?;
             for user in core_users {
                 if user.username == "shawn" {
                     info!("Inserting budget_allocation for user shawn for {year} {month}");
                     postgres
                         .insert_new_budget_allocation(
-                            month_row.id,
+                            &mut tx,
+                            year,
+                            month,
                             user.id,
                             Decimal::from_f64(
                                 mongo_month_budget.budget.shawn_percentage_allocation,
@@ -117,7 +124,9 @@ async fn migrate_to_postgres() -> Result<()> {
                     info!("Inserting budget_allocation for user maggie for {year} {month}");
                     postgres
                         .insert_new_budget_allocation(
-                            month_row.id,
+                            &mut tx,
+                            year,
+                            month,
                             user.id,
                             Decimal::from_f64(
                                 mongo_month_budget.budget.maggie_percentage_allocation,
@@ -148,6 +157,7 @@ async fn migrate_to_postgres() -> Result<()> {
         }
     }
 
+    tx.commit().await.context("Failed to commit transaction")?;
     Ok(())
 }
 

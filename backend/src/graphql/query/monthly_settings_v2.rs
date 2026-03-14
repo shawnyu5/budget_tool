@@ -1,10 +1,9 @@
-use anyhow::{Context as _, Result};
+use anyhow::Result;
 use async_graphql::{Context, SimpleObject};
-use tracing::error;
 
 use crate::{
-    db::postgres::{PostgresDB, models::Year},
-    graphql::utils::extract_jwt,
+    db::postgres::models::Year,
+    graphql::utils::{extract_db_client, extract_jwt},
     models::{FireflySettings, Settings},
     month::Month,
 };
@@ -14,42 +13,23 @@ pub struct MonthlySettingsResponse {
     pub settings: Settings,
 }
 
-pub async fn month_settings(
+pub async fn month_settings_v2(
     ctx: &Context<'_>,
     year: Year,
     month: Month,
 ) -> Result<MonthlySettingsResponse> {
     let jwt = extract_jwt(ctx)?;
-    let db = PostgresDB::new().await;
+    let db = extract_db_client(ctx);
+    let mut tx = db.transaction().await?;
     let current_user = db.get_user(&jwt.username).await?;
     let shawn_user = db.get_user("shawn").await?;
     let maggie_user = db.get_user("maggie").await?;
-    let month_row = db
-        .get_month(year, month)
-        .await
-        .map_err(|e| {
-            error!("Failed to get month from DB: {:#?}", e);
-            e
-        })
-        .context("failed to get month from DB")?;
-
-    // // If no current month row, try the previous month
-    // if month_row.is_none() {
-    //     let month = {
-    //         if month.to_number() == 1 {
-    //             year -= 1;
-    //             12
-    //         } else {
-    //             month.to_number() - 1
-    //         }
-    //     };
-    // };
 
     let shawn_allocation = db
-        .get_or_insert_budget_allocation(shawn_user.id, month_row.as_ref().unwrap().id)
+        .get_or_insert_budget_allocation(&mut tx, year, month, shawn_user.id)
         .await?;
     let maggie_allocation = db
-        .get_or_insert_budget_allocation(maggie_user.id, month_row.as_ref().unwrap().id)
+        .get_or_insert_budget_allocation(&mut tx, year, month, maggie_user.id)
         .await?;
     let firefly = db.get_user_firefly_settings(current_user.id).await?;
 

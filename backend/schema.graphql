@@ -439,6 +439,7 @@ type QueryRoot {
 	monthlyBudgetConfig(year: Int!, month: Month!): MonthlyBudgetConfigResponse!
 	"""
 	Get the settings for a particular month. Retrieves the data from PostgresDB
+	If there are no settings for the month, check the previous month. If it exists, insert the previous month settings into the month being queried
 	"""
 	monthSettingsV2(year: Int!, month: Month!): MonthlySettingsResponse!
 	me: User!

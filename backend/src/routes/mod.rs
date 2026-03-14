@@ -147,12 +147,16 @@ async fn graphql_handler(
         ACCEPT,
         reqwest::header::HeaderValue::from_static("application/json"),
     );
-    let client = reqwest::Client::builder()
+    let http_client = reqwest::Client::builder()
         .default_headers(headers)
         .build()
         .expect("Failed to build reqest client");
+    let postgres = PostgresDB::new().await;
 
-    schema.execute(req.data(jwt).data(client)).await.into()
+    schema
+        .execute(req.data(jwt).data(http_client).data(postgres))
+        .await
+        .into()
 }
 
 /// Get the budget information for a specific month

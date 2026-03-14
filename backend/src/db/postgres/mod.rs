@@ -1,15 +1,10 @@
 use anyhow::Result;
 use rust_decimal::Decimal;
-use sqlx::{
-    Error, Pool, Postgres, Transaction, migrate::Migrator, postgres::PgPoolOptions, query,
-};
+use sqlx::{Error, Pool, Postgres, Transaction, migrate::Migrator, postgres::PgPoolOptions, query};
 use tracing::{error, instrument};
 
 use crate::month::Month;
-use crate::{
-    config::Config,
-    db::postgres::models::Year,
-};
+use crate::{config::Config, db::postgres::models::Year};
 
 pub mod budget_allocation;
 pub mod firefly_settings;
@@ -19,10 +14,14 @@ pub mod transactions;
 pub mod user;
 
 static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+/// Executor to run Postgres operations
+pub type PostgresExecutor<'a> = &'a mut sqlx::PgConnection;
 
 /// Interface for database operations with Postgres
+#[derive(Clone)]
 pub struct PostgresDB {
-    pool: Pool<Postgres>,
+    /// Connection pool
+    pub pool: Pool<Postgres>,
 }
 
 impl PostgresDB {

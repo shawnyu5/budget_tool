@@ -50,6 +50,7 @@ rust_decimal = { version = "1.40.0" }
 
 [dev-dependencies]
 axum-test = "18.0.2"
+tracing-test = "0.2.6"
 
 
 [dependencies.axum]

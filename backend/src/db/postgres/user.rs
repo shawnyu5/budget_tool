@@ -44,7 +44,10 @@ impl PostgresDB {
     }
 
     /// Fetch the core users (Shawn + Maggie) of the system from the DB
-    pub async fn get_core_users(&self) -> Result<Vec<UserRow>> {
+    pub async fn get_core_users(
+        &self,
+        executor: impl sqlx::PgExecutor<'_>,
+    ) -> Result<Vec<UserRow>> {
         let users = query_as!(
             UserRow,
             "

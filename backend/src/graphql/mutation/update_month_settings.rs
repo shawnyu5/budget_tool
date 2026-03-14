@@ -4,6 +4,7 @@ use async_graphql::{Context, InputObject, SimpleObject};
 use reqwest::header::ACCEPT;
 use tracing::{error, info};
 
+use crate::db::postgres::models::Year;
 use crate::encryption::encrypt;
 use crate::{
     config::Config, db::postgres::PostgresDB, graphql::utils::extract_jwt, models::Settings,
@@ -13,7 +14,7 @@ use crate::{
 #[derive(InputObject)]
 pub struct UpdateMonthSettingsInput {
     /// The year of the budget to update
-    pub year: i32,
+    pub year: Year,
     /// The month of the budget to update
     pub month: Month,
     /// Updated settings
@@ -31,22 +32,14 @@ pub async fn update_month_settings(
 ) -> Result<UpdateMonthSettingsResponse> {
     let jwt = extract_jwt(ctx)?;
     let db = PostgresDB::new().await;
+    let mut tx = db.transaction().await?;
     let current_user = db
         .get_user(&jwt.username)
         .await
         .context("Failed to fetch user")?;
-    let core_users = db.get_core_users().await?;
-    let mut month_row = db.get_month(inputs.year, inputs.month).await?;
-
-    if month_row.is_none() {
-        month_row = Some(
-            db.insert_new_month(inputs.year, inputs.month)
-                .await
-                .context("Failed to insert new month into months table")?,
-        );
-    }
-
+    let core_users = db.get_core_users(&mut *tx).await?;
     let mut encryption_nounce = "".to_string();
+
     if inputs.settings.firefly.api_key.is_some() {
         // Make a request to firefly to validate the API token the user just gave us
         let mut headers = reqwest::header::HeaderMap::new();
@@ -92,11 +85,6 @@ pub async fn update_month_settings(
         // inputs.settings.firefly.encryption_nounce = Some(b64_nounce);
     }
 
-    let tx = db
-        .transaction()
-        .await
-        .context("Failed to start transaction")?;
-
     db.update_user_firefly_settings(
         current_user.id,
         inputs.settings.firefly.enabled,
@@ -111,8 +99,10 @@ pub async fn update_month_settings(
         if user.username == "shawn" {
             info!("Updating budget allocation for user Shawn");
             db.update_budget_allocation(
+                &mut *tx,
+                inputs.year,
+                inputs.month,
                 user.id,
-                month_row.as_ref().unwrap().id,
                 inputs.settings.shawn_percentage_allocation,
                 inputs.settings.shawn_contribution_amount,
             )
@@ -120,8 +110,10 @@ pub async fn update_month_settings(
         } else if user.username == "maggie" {
             info!("Updating budget allocation for user Maggie");
             db.update_budget_allocation(
+                &mut *tx,
+                inputs.year,
+                inputs.month,
                 user.id,
-                month_row.as_ref().unwrap().id,
                 inputs.settings.maggie_percentage_allocation,
                 inputs.settings.maggie_contribution_amount,
             )

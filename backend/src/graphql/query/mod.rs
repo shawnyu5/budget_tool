@@ -15,7 +15,7 @@ use crate::{
             me::me_handler,
             monthly_budget::monthly_budget_handler,
             monthly_budget_config::monthly_budget_config_handler,
-            monthly_settings::{MonthlySettingsResponse, month_settings},
+            monthly_settings_v2::{MonthlySettingsResponse, month_settings_v2},
             search_transaction_v2::{
                 SearchTransactionV2Inputs, SearchTransactionV2Response, search_transaction_v2,
             },
@@ -34,7 +34,7 @@ mod home_page;
 mod me;
 mod monthly_budget;
 mod monthly_budget_config;
-mod monthly_settings;
+mod monthly_settings_v2;
 mod search_transaction_v2;
 pub mod spending_item;
 
@@ -78,6 +78,7 @@ impl QueryRoot {
     }
 
     /// Get the settings for a particular month. Retrieves the data from PostgresDB
+    /// If there are no settings for the month, check the previous month. If it exists, insert the previous month settings into the month being queried
     #[instrument(skip_all)]
     #[graphql(guard = "AuthGuard")]
     async fn month_settings_v2(
@@ -86,7 +87,7 @@ impl QueryRoot {
         year: Year,
         month: Month,
     ) -> Result<MonthlySettingsResponse> {
-        month_settings(ctx, year, month).await
+        month_settings_v2(ctx, year, month).await
     }
 
     #[instrument(skip_all)]
@@ -103,7 +104,10 @@ impl QueryRoot {
     }
 
     #[instrument(skip_all)]
-    #[graphql(guard = "AuthGuard")]
+    #[graphql(
+        guard = "AuthGuard",
+        deprecation = "Use `search_transaction_v2` to search the PostgresDB instead"
+    )]
     /// Search for a spending item by time and ID
     pub async fn search_spending_item(
         &self,
@@ -128,8 +132,98 @@ impl QueryRoot {
     #[graphql(guard = "AuthGuard")]
     async fn search_transaction_v2(
         &self,
+        ctx: &Context<'_>,
         inputs: SearchTransactionV2Inputs,
     ) -> Result<SearchTransactionV2Response> {
-        search_transaction_v2(inputs).await
+        search_transaction_v2(ctx, inputs).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use anyhow::Context;
+    use async_graphql::{EmptyMutation, EmptySubscription, Request, Schema, Variables, value};
+    use chrono::Utc;
+    use rust_decimal::Decimal;
+    use sqlx::{PgPool, query};
+    use tracing::info;
+
+    use crate::{db::postgres::PostgresDB, test_utils::mock_jwt};
+
+    use super::*;
+
+    #[sqlx::test]
+    #[tracing_test::traced_test]
+    /// Test querying a month's settings where the exists budget for that month
+    /// The endpoint should return the existing settings for the current month
+    async fn test_month_setting_query_with_existing_setting(pool: PgPool) -> Result<()> {
+        let db = PostgresDB { pool };
+        let mut tx = db
+            .transaction()
+            .await
+            .expect("Failed to start DB transaction");
+
+        info!("Inserting 2026, January into months table");
+        db.insert_new_month(2026, Month::January)
+            .await
+            .context("Failed to insert new Month")?;
+
+        let core_users = db
+            .get_core_users(&mut *tx)
+            .await
+            .context("Failed to get core users")?;
+
+        for user in core_users {
+            info!("Inserting budget_allocation for user {}", user.username);
+            info!("contribution_amount: {}", Decimal::new(100, 0));
+
+            db.insert_new_budget_allocation(
+                &mut tx,
+                2026,
+                Month::January,
+                user.id,
+                Decimal::new(50, 0),
+                Decimal::new(100, 0),
+            )
+            .await
+            .context("Failed to insert new budget_allocation")?;
+        }
+        tx.commit().await?;
+
+        let query = r#"
+query($year: Int!, $month: Month!) {
+  monthSettingsV2(year: $year, month: $month) {
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+    }
+  }
+}
+            "#;
+
+        let mock_jwt = mock_jwt();
+        let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription).finish();
+        let request = Request::new(query)
+            .variables(Variables::from_value(value!({
+                "year": 2026,
+                "month": Month::January
+            })))
+            .data(mock_jwt)
+            .data(db.clone());
+        let res = schema.execute(request).await;
+
+        assert!(res.errors.is_empty());
+        let data = res.data.into_json().unwrap();
+        let settings = &data["monthSettingsV2"]["settings"];
+        assert_eq!(settings["shawnPercentageAllocation"], "50.00");
+        assert_eq!(settings["maggiePercentageAllocation"], "50.00");
+        assert_eq!(settings["totalAllocation"], "200.00");
+        assert_eq!(settings["shawnContributionAmount"], "100.00");
+        assert_eq!(settings["maggieContributionAmount"], "100.00");
+
+        return Ok(());
     }
 }

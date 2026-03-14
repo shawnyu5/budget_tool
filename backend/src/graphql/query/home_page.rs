@@ -6,7 +6,7 @@ use tracing::{error, info};
 
 use crate::{
     db::postgres::{PostgresDB, models::Year},
-    graphql::query::monthly_settings::month_settings,
+    graphql::{query::monthly_settings_v2::month_settings_v2, utils::extract_db_client},
     models::{HomePage, Settings, Transaction},
     month::Month,
 };
@@ -18,7 +18,7 @@ pub struct HomePageV2Input {
 }
 
 pub async fn home_page_v2(ctx: &Context<'_>, inputs: HomePageV2Input) -> Result<HomePage> {
-    let db = PostgresDB::new().await;
+    let db = extract_db_client(ctx);
     let total_spending = db.compute_total_spend(inputs.year, inputs.month).await?;
     let total_budget = db
         .compute_total_allocation(inputs.year, inputs.month)
@@ -55,7 +55,7 @@ pub async fn home_page_v2(ctx: &Context<'_>, inputs: HomePageV2Input) -> Result<
         year = inputs.year,
         month = inputs.month
     );
-    let settings = month_settings(ctx, inputs.year, inputs.month)
+    let settings = month_settings_v2(ctx, inputs.year, inputs.month)
         .await
         .context("Failed to get month settings")
         .map_err(|e| {

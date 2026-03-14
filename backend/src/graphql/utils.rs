@@ -4,6 +4,7 @@ use async_graphql::{Context, Guard, Result};
 use tracing::error;
 use tracing::instrument;
 
+use crate::db::postgres::PostgresDB;
 use crate::routes::{JwtClaim, MaybeJwt};
 
 /// Validates the JWT is still valid
@@ -50,4 +51,10 @@ pub fn extract_jwt(ctx: &Context<'_>) -> AnyhowResult<JwtClaim> {
 pub fn extract_http_client<'a>(ctx: &'a Context<'_>) -> &'a reqwest::Client {
     ctx.data::<reqwest::Client>()
         .expect("There should always be a reqwest client here. This is a bug!")
+}
+
+/// Extract the PostgresDB client from the graphql context
+pub fn extract_db_client<'a>(ctx: &'a Context<'_>) -> &'a PostgresDB {
+    ctx.data::<PostgresDB>()
+        .expect("There should always be a PostgresDB instance. This is a bug!")
 }
