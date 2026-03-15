@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context as _, Result};
 use async_graphql::{Context, SimpleObject};
 
 use crate::{
@@ -25,17 +25,23 @@ pub async fn month_settings_v2(
     let shawn_user = db.get_user("shawn").await?;
     let maggie_user = db.get_user("maggie").await?;
 
+    let month_row = db
+        .get_or_insert_month(&mut tx, year, month)
+        .await
+        .context("Failed to get or insert month")?;
+
     let shawn_allocation = db
-        .get_or_insert_budget_allocation(&mut tx, year, month, shawn_user.id)
+        .get_or_insert_budget_allocation(&mut tx, year, month_row.month, shawn_user.id)
         .await?;
     let maggie_allocation = db
-        .get_or_insert_budget_allocation(&mut tx, year, month, maggie_user.id)
+        .get_or_insert_budget_allocation(&mut tx, year, month_row.month, maggie_user.id)
         .await?;
     let firefly = db.get_user_firefly_settings(current_user.id).await?;
 
+    tx.commit().await.context("Failed to commit transaction")?;
     Ok(MonthlySettingsResponse {
         settings: Settings {
-            total_allocation: db.compute_total_allocation(year, month).await?,
+            total_allocation: db.compute_total_allocation(year, month_row.month).await?,
             shawn_percentage_allocation: shawn_allocation.percentage_allocation,
             shawn_contribution_amount: shawn_allocation.contribution_amount,
             maggie_percentage_allocation: maggie_allocation.percentage_allocation,

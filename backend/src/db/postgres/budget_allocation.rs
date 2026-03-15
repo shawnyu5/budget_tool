@@ -25,7 +25,7 @@ impl PostgresDB {
     ///
     /// * `user_id`: The user to get the allocation for
     /// * `month_id`: the month to the allocation is for
-    #[instrument(skip(self, executor))]
+    #[instrument(skip_all)]
     pub async fn get_or_insert_budget_allocation(
         &self,
         executor: &mut PgConnection,
@@ -110,10 +110,7 @@ impl PostgresDB {
                 }
             };
 
-            info!(
-                "Fetching previous month row from DB: year {0}, {prev_month}",
-                current_month_row.year
-            );
+            info!("Fetching previous month row from DB: year {year}, {prev_month}");
             let prev_month_row = query_as!(
                 MonthRow,
                 "
@@ -131,6 +128,7 @@ impl PostgresDB {
             })
             .context("Failed to fetch previous month from DB")?;
 
+            info!("Fetching previous month budget allocation");
             let prev_budget_allocation = query_as!(
                 BudgetAllocationRow,
                 "
@@ -170,9 +168,9 @@ impl PostgresDB {
                 prev_budget_allocation.contribution_amount,
                 user_id
             )
-                .fetch_one(&self.pool)
+                .fetch_one(executor)
                 .await.map_err(|e| {
-                error!("{e:#?}");
+                error!("Failed to insert current budget allocation: {e:#?}");
                 e
             })?;
             Ok(budget_allocation_row)
@@ -190,6 +188,10 @@ impl PostgresDB {
         percentage_allocation: Decimal,
         contribution_amount: Decimal,
     ) -> Result<()> {
+        let month_row = self
+            .get_or_insert_month(executor, year, month)
+            .await
+            .context("Failed to get from months table")?;
         query!(
             "
             INSERT INTO budget_allocations (
@@ -209,7 +211,7 @@ impl PostgresDB {
             WHERE m.year = $1 AND m.month = $2
             ",
             year,
-            month.to_string(),
+            month_row.month.to_string(),
             Uuid::new_v4(),
             user_id,
             percentage_allocation,
