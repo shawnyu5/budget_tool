@@ -143,14 +143,16 @@ async fn migrate_to_postgres() -> Result<()> {
             for transaction in mongo_month_budget.spending {
                 postgres
                     .insert_new_transaction(
-                        month_row.month,
+                        &mut tx,
                         month_row.year,
+                        month_row.month,
                         Decimal::from_f64_retain(transaction.amount).expect(
                             "Failed to convert mongo transaction amount into rust_decimal amount",
                         ),
                         DateTime::parse_from_rfc3339(&transaction.date_rfc3339.unwrap()).unwrap(),
-                        transaction.description,
-                        transaction.notes.unwrap_or_default(),
+                        &transaction.description,
+                        &transaction.notes.unwrap_or_default(),
+                        None,
                     )
                     .await?;
             }

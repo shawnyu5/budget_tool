@@ -2,39 +2,39 @@ use anyhow::Result;
 use chrono::DateTime;
 use chrono::FixedOffset;
 use rust_decimal::Decimal;
+use sqlx::PgConnection;
 use sqlx::query;
 use sqlx::query_as;
 use tracing::error;
 use uuid::Uuid;
 
 use crate::db::postgres::models::Year;
-use crate::db::postgres::models::transaction::TransactionRow;
-use crate::{
-    db::postgres::PostgresDB,
-    month::Month,
-};
+use crate::db::postgres::models::transaction::{SplitMode, TransactionRow};
+use crate::{db::postgres::PostgresDB, month::Month};
 
 impl PostgresDB {
     /// Insert a new transaction for a specific month
     ///
     /// * `month_id`: the month this new transaction is for
+    #[allow(clippy::too_many_arguments)]
     pub async fn insert_new_transaction(
         &self,
-        month: Month,
+        executor: &mut PgConnection,
         year: Year,
-        // month_id: Uuid,
+        month: Month,
         amount: Decimal,
         date: DateTime<FixedOffset>,
-        description: String,
-        notes: String,
+        description: &str,
+        notes: &str,
+        split_mode: Option<SplitMode>,
     ) -> Result<()> {
         query!(
-            "
-            INSERT INTO transactions (id, month_id, amount, date, description, notes)
-            SELECT $1, m.id, $4, $5, $6, $7
+            r#"
+            INSERT INTO transactions (id, month_id, amount, date, description, notes, split_mode)
+            SELECT $1, m.id, $4, $5, $6, $7, $8::split_mode AS "split_mode: SplitMode"
             FROM months m
             WHERE m.month = $2 AND m.year = $3
-            ",
+            "#,
             Uuid::new_v4(),
             month.to_string(),
             year,
@@ -42,8 +42,9 @@ impl PostgresDB {
             date,
             description,
             notes,
+            split_mode as Option<SplitMode>
         )
-        .execute(&self.pool)
+        .execute(executor)
         .await
         .map_err(|e| {
             error!("Failed to insert new transaction: {e:#?}");
@@ -57,12 +58,20 @@ impl PostgresDB {
     pub async fn get_transactions(&self, year: Year, month: Month) -> Result<Vec<TransactionRow>> {
         let transactions = query_as!(
             TransactionRow,
-            "
-            SELECT t.* FROM transactions t
+            r#"
+            SELECT
+                t.id,
+                t.month_id,
+                t.amount,
+                t.date,
+                t.description,
+                t.notes,
+                t.split_mode as "split_mode: SplitMode"
+            FROM transactions t
             INNER JOIN months m ON m.id = t.month_id
             WHERE m.year = $1 AND m.month = $2
             ORDER BY t.date DESC
-            ",
+            "#,
             year,
             month.to_string(),
         )
@@ -80,10 +89,18 @@ impl PostgresDB {
     pub async fn get_transaction_by_id(&self, id: Uuid) -> Result<Option<TransactionRow>> {
         let transaction = query_as!(
             TransactionRow,
-            "
-            SELECT * from transactions t
+            r#"
+            SELECT
+                t.id,
+                t.month_id,
+                t.amount,
+                t.date,
+                t.description,
+                t.notes,
+                t.split_mode as "split_mode: SplitMode"
+            FROM transactions t
             WHERE t.id = $1
-            ",
+            "#,
             id
         )
         .fetch_optional(&self.pool)
@@ -102,8 +119,8 @@ impl PostgresDB {
         id: Uuid,
         amount: Decimal,
         date: DateTime<chrono::FixedOffset>,
-        description: Option<String>,
-        notes: Option<String>,
+        description: Option<&str>,
+        notes: Option<&str>,
     ) -> Result<()> {
         query!(
             "

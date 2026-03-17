@@ -515,6 +515,7 @@ async fn validate_token_v2(header: HeaderMap) -> StatusCode {
 )]
 async fn export_csv_handler(Path((year, month)): Path<(Year, Month)>) -> Result<String, AppError> {
     let db = PostgresDB::new().await;
+    let mut tx = db.transaction().await?;
     let transactions = db
         .get_transactions(year, month)
         .await
@@ -543,11 +544,11 @@ async fn export_csv_handler(Path((year, month)): Path<(Year, Month)>) -> Result<
     }
 
     let total_spending = db
-        .compute_total_spend(year, month)
+        .compute_total_spend(&mut *tx, year, month)
         .await
         .context("Failed to compute total spend")?;
     let total_budget = db
-        .compute_total_allocation(year, month)
+        .compute_total_allocation(&mut *tx, year, month)
         .await
         .context("Failed to compute total budget")?;
 

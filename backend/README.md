@@ -129,4 +129,4 @@ Defines rules for adding transaction:
   - Add a new entry in `transactions` table
   - Set `transaction.split_mode` = `evenly`
 - When a transaction is deleted, the `transaction.split_mode` is not re computed for existing transactions
-    * There just leaves "head room" for other transactions to be split according to the allocated budget
+  - There just leaves "head room" for other transactions to be split according to the allocated budget

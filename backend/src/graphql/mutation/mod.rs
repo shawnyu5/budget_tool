@@ -161,9 +161,10 @@ impl MutationRoot {
     #[graphql(guard = "AuthGuard")]
     async fn add_transaction_v2(
         &self,
+        ctx: &Context<'_>,
         inputs: AddTransactionV2Input,
     ) -> Result<AddTransactionResponseV2> {
-        add_transaction_v2(inputs).await
+        add_transaction_v2(ctx, inputs).await
     }
 
     /// Update a transaction by ID

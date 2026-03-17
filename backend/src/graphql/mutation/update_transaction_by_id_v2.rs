@@ -28,8 +28,8 @@ pub async fn update_transaction_by_id_v2(
         inputs.transaction_id,
         inputs.amount,
         inputs.date,
-        inputs.description,
-        inputs.notes,
+        inputs.description.as_deref(),
+        inputs.notes.as_deref(),
     )
     .await
     .context("Failed to update transaction in DB")?;

@@ -1,5 +1,6 @@
 use anyhow::Result;
 use rust_decimal::Decimal;
+use sqlx::PgConnection;
 use sqlx::{Error, Pool, Postgres, Transaction, migrate::Migrator, postgres::PgPoolOptions, query};
 use tracing::{error, instrument};
 
@@ -52,7 +53,12 @@ impl PostgresDB {
     }
 
     /// Get the total allocation for a specific time frame
-    pub async fn compute_total_allocation(&self, year: Year, month: Month) -> Result<Decimal> {
+    pub async fn compute_total_allocation(
+        &self,
+        executor: &mut PgConnection,
+        year: Year,
+        month: Month,
+    ) -> Result<Decimal> {
         let row = query!(
             "
             SELECT COALESCE(SUM(contribution_amount), 0) AS total_allocation
@@ -63,14 +69,19 @@ impl PostgresDB {
             year,
             month.to_string(),
         )
-        .fetch_one(&self.pool)
+        .fetch_one(executor)
         .await?;
 
         Ok(row.total_allocation.unwrap_or_default())
     }
 
     /// Calculate the total spending for a time period
-    pub async fn compute_total_spend(&self, year: Year, month: Month) -> Result<Decimal> {
+    pub async fn compute_total_spend(
+        &self,
+        executor: &mut PgConnection,
+        year: Year,
+        month: Month,
+    ) -> Result<Decimal> {
         let record = query!(
             "
             SELECT COALESCE(SUM(t.amount), 0) AS total_spent
@@ -81,7 +92,7 @@ impl PostgresDB {
             year,
             month.to_string()
         )
-        .fetch_one(&self.pool)
+        .fetch_one(executor)
         .await
         .map_err(|e| {
             error!("{e:#?}");

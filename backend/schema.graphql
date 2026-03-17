@@ -450,7 +450,7 @@ type QueryRoot {
 	"""
 	Search for a spending item by time and ID
 	"""
-	searchSpendingItem(inputs: SearchSpendingItemInput!): SpendingItem
+	searchSpendingItem(inputs: SearchSpendingItemInput!): SpendingItem @deprecated(reason: "Use `search_transaction_v2` to search the PostgresDB instead")
 	"""
 	Get data to display on the home page
 	"""
