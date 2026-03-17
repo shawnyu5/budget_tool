@@ -13,6 +13,7 @@ use chrono::{DateTime, NaiveDate, NaiveTime};
 use chrono_tz::America::New_York;
 use rust_decimal::{Decimal, prelude::FromPrimitive};
 use tracing::{error, info, instrument};
+use uuid::Uuid;
 
 /// Perform all schema migrations
 #[instrument(skip_all)]
@@ -146,6 +147,7 @@ async fn migrate_to_postgres() -> Result<()> {
                         &mut tx,
                         month_row.year,
                         month_row.month,
+                        Uuid::new_v4(),
                         Decimal::from_f64_retain(transaction.amount).expect(
                             "Failed to convert mongo transaction amount into rust_decimal amount",
                         ),

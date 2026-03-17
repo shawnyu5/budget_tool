@@ -41,7 +41,7 @@ pub async fn home_page_v2(ctx: &Context<'_>, inputs: HomePageV2Input) -> Result<
         month = inputs.month
     );
     let transactions = db
-        .get_transactions(inputs.year, inputs.month)
+        .get_transactions(&mut *tx, inputs.year, inputs.month)
         .await?
         .par_iter()
         .map(|t| Transaction {

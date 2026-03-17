@@ -11,6 +11,7 @@ use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use tracing::info;
 use tracing::{error, instrument};
+use uuid::Uuid;
 
 #[derive(InputObject)]
 pub struct AddTransactionV2Input {
@@ -59,6 +60,7 @@ pub async fn add_transaction_v2(
             &mut tx,
             inputs.year,
             inputs.month,
+            inputs.transaction.id,
             regular_transaction_amount,
             inputs.transaction.date,
             &inputs.transaction.description,
@@ -84,6 +86,7 @@ pub async fn add_transaction_v2(
             &mut tx,
             inputs.year,
             inputs.month,
+            inputs.transaction.id,
             overflow_transaction_amount,
             inputs.transaction.date,
             &format!("{} - OVERFLOW", inputs.transaction.description),
@@ -96,13 +99,14 @@ pub async fn add_transaction_v2(
             e
         })
         .context("Failed to insert overflow transaction")?;
-    } else if total_spend > total_allocation {
+    } else if total_spend >= total_allocation {
         // We are already over budget
         info!("Already over budget. Inserting transaction with SplitMode::Evenly");
         db.insert_new_transaction(
             &mut tx,
             inputs.year,
             inputs.month,
+            inputs.transaction.id,
             inputs.transaction.amount,
             inputs.transaction.date,
             &inputs.transaction.description,
@@ -121,6 +125,7 @@ pub async fn add_transaction_v2(
             &mut tx,
             inputs.year,
             inputs.month,
+            inputs.transaction.id,
             inputs.transaction.amount,
             inputs.transaction.date,
             &inputs.transaction.description,
@@ -250,15 +255,19 @@ pub async fn add_transaction_v2(
 
 #[cfg(test)]
 mod tests {
-    use anyhow::Result;
+    use anyhow::{Context as _, Result};
     use async_graphql::{EmptySubscription, InputType, Request, Schema, Variables, value};
-    use chrono::Utc;
+    use chrono::{SubsecRound, Utc};
     use rust_decimal::Decimal;
     use sqlx::PgPool;
+    use tracing::info;
     use uuid::Uuid;
 
     use crate::{
-        db::postgres::PostgresDB,
+        db::postgres::{
+            PostgresDB,
+            models::transaction::{SplitMode, TransactionRow},
+        },
         graphql::{
             mutation::{MutationRoot, add_transaction_v2::AddTransactionV2Input},
             query::QueryRoot,
@@ -268,11 +277,11 @@ mod tests {
         test_utils::mock_jwt,
     };
 
+    /// Add a transaction under normal circumstances. No overflow or over budget
     #[sqlx::test]
     #[tracing_test::traced_test]
     async fn add_normal_transaction(pool: PgPool) -> Result<()> {
         let db = PostgresDB { pool };
-        // let mut tx = db.transaction().await?;
 
         let query = r#"
 mutation ($inputs: AddTransactionV2Input!) {
@@ -287,15 +296,21 @@ mutation ($inputs: AddTransactionV2Input!) {
 
         let month = Month::January;
         let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish();
+
+        let id = Uuid::new_v4();
+        let amount = Decimal::new(100, 0);
+        let date = Utc::now().fixed_offset().trunc_subsecs(6); // Rust can hold 3 more digits than Postgres, so we truncate
+        let description = "test".to_string();
+        let notes = "test".to_string();
         let input = AddTransactionV2Input {
             year,
             month,
             transaction: Transaction {
-                id: Uuid::new_v4(),
-                amount: Decimal::new(100, 0),
-                date: Utc::now().fixed_offset(),
-                description: "test".to_string(),
-                notes: "test".to_string(),
+                id,
+                amount,
+                date,
+                description: description.clone(),
+                notes: notes.clone(),
             },
         };
 
@@ -309,8 +324,130 @@ mutation ($inputs: AddTransactionV2Input!) {
         let res = schema.execute(request).await;
         assert!(res.errors.is_empty(), "{:#?}", res.errors);
 
+        let mut tx = db.transaction().await?;
+        let transaction = db
+            .get_transactions(&mut tx, year, month)
+            .await
+            .context("Failed to get transaction from DB post test")?;
+
+        assert_eq!(
+            transaction.len(),
+            1,
+            "There should be no more than 1 transaction in DB, since there is no overflow here"
+        );
+
+        let transaction = &transaction[0];
+        assert_eq!(transaction.id, id);
+        assert_eq!(transaction.date, date);
+        assert_eq!(transaction.amount, amount);
+        assert_eq!(transaction.description, Some(description));
+        assert_eq!(transaction.notes, Some(notes));
+
         return Ok(());
     }
 
-    // TODO: add other test cases
+    /// Add a transaction when we are at exact budget for the month
+    /// The transaction we are adding will go over budget
+    #[sqlx::test]
+    #[tracing_test::traced_test]
+    async fn add_overbudget_transaction(pool: PgPool) -> Result<()> {
+        let db = PostgresDB { pool };
+        let mut tx = db.transaction().await?;
+        let year = 2026;
+        let month = Month::January;
+        let core_users = db.get_core_users(&mut tx).await?;
+        info!("Inserting user contribution settings");
+        for user in core_users {
+            // Each person contributes $50
+            // Total: $100
+            db.insert_new_budget_allocation(
+                &mut tx,
+                year,
+                month,
+                user.id,
+                Decimal::new(50, 0),
+                Decimal::new(50, 0),
+            )
+            .await?;
+        }
+
+        assert_eq!(
+            db.compute_total_allocation(&mut tx, year, month).await?,
+            Decimal::new(100, 0)
+        );
+
+        info!("Inserting single transaction to max out budget");
+        // Insert a new transaction to max out budget
+        db.insert_new_transaction(
+            &mut tx,
+            year,
+            month,
+            Uuid::new_v4(),
+            Decimal::new(100, 0),
+            Utc::now().into(),
+            "test",
+            "test",
+            Some(SplitMode::FromSettings),
+        )
+        .await?;
+
+        tx.commit().await?;
+
+        let query = r#"
+mutation ($inputs: AddTransactionV2Input!) {
+  addTransactionV2(inputs: $inputs) {
+    success
+  }
+}
+            "#;
+
+        let mock_jwt = mock_jwt();
+        let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish();
+        let description = "OVERFLOW";
+        let input = AddTransactionV2Input {
+            year,
+            month,
+            transaction: Transaction {
+                id: Uuid::new_v4(),
+                amount: Decimal::new(100, 0),
+                date: Utc::now().into(),
+                description: description.to_string(),
+                notes: "test".to_string(),
+            },
+        };
+
+        let request = Request::new(query)
+            .variables(Variables::from_value(value!({
+                "inputs": input.to_value(),
+            })))
+            .data(mock_jwt)
+            .data(db.clone());
+
+        info!("Making graphql call to insert over budget transaction");
+        let res = schema.execute(request).await;
+        assert!(res.errors.is_empty(), "{:#?}", res.errors);
+
+        let mut tx = db.transaction().await?;
+        let transactions = db.get_transactions(&mut tx, year, month).await?;
+        assert_eq!(transactions.len(), 2, "There should only be 2 transactions");
+
+        let transaction: Vec<&TransactionRow> = transactions
+            .iter()
+            .filter(|t| t.split_mode == Some(SplitMode::Evenly))
+            .collect();
+
+        assert_eq!(
+            transaction.len(),
+            1,
+            "There should only be 1 overflow transaction after filtering"
+        );
+
+        let transaction = transaction[0];
+        assert_eq!(
+            transaction.split_mode,
+            Some(SplitMode::Evenly),
+            "Transaction should be split evenly"
+        );
+        return Ok(());
+    }
 }

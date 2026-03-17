@@ -1,5 +1,6 @@
 use anyhow::Context as _;
 use anyhow::Result;
+use sqlx::PgConnection;
 use sqlx::query;
 use sqlx::query_as;
 use tracing::instrument;
@@ -44,10 +45,7 @@ impl PostgresDB {
     }
 
     /// Fetch the core users (Shawn + Maggie) of the system from the DB
-    pub async fn get_core_users(
-        &self,
-        executor: impl sqlx::PgExecutor<'_>,
-    ) -> Result<Vec<UserRow>> {
+    pub async fn get_core_users(&self, executor: &mut PgConnection) -> Result<Vec<UserRow>> {
         let users = query_as!(
             UserRow,
             "
@@ -57,7 +55,7 @@ impl PostgresDB {
             "shawn",
             "maggie"
         )
-        .fetch_all(&self.pool)
+        .fetch_all(executor)
         .await?;
 
         assert_eq!(

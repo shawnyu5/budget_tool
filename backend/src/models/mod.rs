@@ -5,6 +5,8 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::db::postgres::models::transaction::SplitMode;
+
 /// Data on the settings page
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, InputObject)]
 #[graphql(input_name = "SettingInput")]

@@ -14,14 +14,13 @@ use crate::{db::postgres::PostgresDB, month::Month};
 
 impl PostgresDB {
     /// Insert a new transaction for a specific month
-    ///
-    /// * `month_id`: the month this new transaction is for
     #[allow(clippy::too_many_arguments)]
     pub async fn insert_new_transaction(
         &self,
         executor: &mut PgConnection,
         year: Year,
         month: Month,
+        id: Uuid,
         amount: Decimal,
         date: DateTime<FixedOffset>,
         description: &str,
@@ -35,7 +34,7 @@ impl PostgresDB {
             FROM months m
             WHERE m.month = $2 AND m.year = $3
             "#,
-            Uuid::new_v4(),
+            id,
             month.to_string(),
             year,
             amount,
@@ -55,7 +54,12 @@ impl PostgresDB {
     }
 
     /// Get transactions from in a specific time frame. Sort the transactions by date
-    pub async fn get_transactions(&self, year: Year, month: Month) -> Result<Vec<TransactionRow>> {
+    pub async fn get_transactions(
+        &self,
+        executor: &mut PgConnection,
+        year: Year,
+        month: Month,
+    ) -> Result<Vec<TransactionRow>> {
         let transactions = query_as!(
             TransactionRow,
             r#"
@@ -75,7 +79,7 @@ impl PostgresDB {
             year,
             month.to_string(),
         )
-        .fetch_all(&self.pool)
+        .fetch_all(executor)
         .await
         .map_err(|e| {
             error!("{e:#?}");
