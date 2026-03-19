@@ -51,11 +51,15 @@ pub async fn add_transaction_v2(
     if total_spend < total_allocation
         && (total_spend + inputs.transaction.amount) > total_allocation
     {
-        info!("New transaction will go over budget. Splitting into 2 transactions...");
+        info!(
+            "New transaction will go over budget of {total_allocation}. Splitting into 2 transactions..."
+        );
         // $ amount for the first split
-        let regular_transaction_amount = total_allocation - inputs.transaction.amount;
+        // total_allocation = $100
+        // amount = $20
+        let regular_transaction_amount = total_allocation - total_spend;
         let overflow_transaction_amount = inputs.transaction.amount - regular_transaction_amount;
-        info!("Inserting split 1 transaction");
+        info!("Inserting split 1 transaction. Amount = {regular_transaction_amount}");
         db.insert_new_transaction(
             &mut tx,
             inputs.year,
@@ -73,6 +77,7 @@ pub async fn add_transaction_v2(
             e
         })
         .context("Failed to split 1 transaction")?;
+
         assert_eq!(
             db.compute_total_allocation(&mut tx, inputs.year, inputs.month)
                 .await?,
@@ -86,7 +91,8 @@ pub async fn add_transaction_v2(
             &mut tx,
             inputs.year,
             inputs.month,
-            inputs.transaction.id,
+            // Can't use `inputs.transaction.id`, since ID we used in split 1
+            Uuid::new_v4(),
             overflow_transaction_amount,
             inputs.transaction.date,
             &format!("{} - OVERFLOW", inputs.transaction.description),
@@ -449,5 +455,82 @@ mutation ($inputs: AddTransactionV2Input!) {
             "Transaction should be split evenly"
         );
         return Ok(());
+    }
+
+    /// Add a transaction when budget for that month is not reached yet. Only adding new transaction will cause over budget
+    /// Transaction should be split into 2 transactions
+    #[sqlx::test]
+    #[tracing_test::traced_test]
+    async fn add_overflow_transaction(pool: PgPool) -> Result<()> {
+        let db = PostgresDB { pool };
+        let mut tx = db.transaction().await?;
+        let year = 2026;
+        let month = Month::January;
+        let core_users = db.get_core_users(&mut tx).await?;
+        info!("Inserting user contribution settings");
+        for user in core_users {
+            // Each person contributes $50
+            // Total: $100
+            db.insert_new_budget_allocation(
+                &mut tx,
+                year,
+                month,
+                user.id,
+                Decimal::new(50, 0),
+                Decimal::new(50, 0),
+            )
+            .await?;
+        }
+
+        info!("Inserting transaction with $90");
+        db.insert_new_transaction(
+            &mut tx,
+            year,
+            month,
+            Uuid::new_v4(),
+            Decimal::new(90, 0),
+            Utc::now().into(),
+            "test",
+            "test",
+            Some(SplitMode::FromSettings),
+        )
+        .await?;
+        tx.commit().await?;
+
+        let query = r#"
+        mutation ($inputs: AddTransactionV2Input!) {
+          addTransactionV2(inputs: $inputs) {
+            success
+          }
+        }
+                    "#;
+
+        let mock_jwt = mock_jwt();
+        let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish();
+        let description = "new";
+        let input = AddTransactionV2Input {
+            year,
+            month,
+            transaction: Transaction {
+                id: Uuid::new_v4(),
+                amount: Decimal::new(20, 0),
+                date: Utc::now().into(),
+                description: description.to_string(),
+                notes: "test".to_string(),
+            },
+        };
+
+        let request = Request::new(query)
+            .variables(Variables::from_value(value!({
+                "inputs": input.to_value(),
+            })))
+            .data(mock_jwt)
+            .data(db.clone());
+
+        info!("Making graphql request to insert overflow transaction. Amount: 20");
+        let res = schema.execute(request).await;
+
+        assert!(res.errors.is_empty());
+        Ok(())
     }
 }
