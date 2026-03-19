@@ -40,7 +40,7 @@ sqlx = { version = "0.8.6", features = [
    "postgres",
    "runtime-tokio",
    "rust_decimal",
-   "tls-native-tls",
+   "tls-rustls",
    "uuid",
    "migrate",
 ] }
