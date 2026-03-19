@@ -5,7 +5,7 @@ use async_graphql::{InputObject, SimpleObject};
 use uuid::Uuid;
 
 use crate::graphql::utils::extract_db_client;
-use crate::{db::postgres::PostgresDB, models::Transaction};
+use crate::models::Transaction;
 
 #[derive(InputObject)]
 pub struct SearchTransactionV2Inputs {

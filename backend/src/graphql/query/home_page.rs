@@ -21,10 +21,10 @@ pub async fn home_page_v2(ctx: &Context<'_>, inputs: HomePageV2Input) -> Result<
     let db = extract_db_client(ctx);
     let mut tx = db.transaction().await?;
     let total_spending = db
-        .compute_total_spend(&mut *tx, inputs.year, inputs.month)
+        .compute_total_spend(&mut tx, inputs.year, inputs.month)
         .await?;
     let total_budget = db
-        .compute_total_allocation(&mut *tx, inputs.year, inputs.month)
+        .compute_total_allocation(&mut tx, inputs.year, inputs.month)
         .await?;
 
     // Calculate over spending amount
@@ -41,7 +41,7 @@ pub async fn home_page_v2(ctx: &Context<'_>, inputs: HomePageV2Input) -> Result<
         month = inputs.month
     );
     let transactions = db
-        .get_transactions(&mut *tx, inputs.year, inputs.month)
+        .get_transactions(&mut tx, inputs.year, inputs.month)
         .await?
         .par_iter()
         .map(|t| Transaction {

@@ -3,7 +3,6 @@ use anyhow::Context as _;
 use anyhow::Result;
 use rust_decimal::Decimal;
 use sqlx::PgConnection;
-use sqlx::error::DatabaseError;
 use sqlx::query;
 use sqlx::query_as;
 use tracing::instrument;

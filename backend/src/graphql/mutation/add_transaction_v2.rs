@@ -1,4 +1,3 @@
-use crate::db::postgres::PostgresDB;
 use crate::db::postgres::models::Year;
 use crate::db::postgres::models::transaction::SplitMode;
 use crate::graphql::utils::extract_db_client;
