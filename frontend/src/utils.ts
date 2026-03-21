@@ -66,7 +66,6 @@ export function calculatePercentage(
   total: Decimal,
   percentage: Decimal,
 ): Decimal {
-  // const result = total * (percentage / 100);
   const result = total.mul(percentage).div(100);
   return result;
 }

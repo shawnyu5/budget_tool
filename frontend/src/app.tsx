@@ -52,7 +52,11 @@ export default function App() {
     }
   });
 
-  Decimal.set({ precision: 20 });
+  Decimal.set({
+    precision: 20,
+    rounding: Decimal.ROUND_HALF_UP,
+    toExpPos: 21,
+  });
   return (
     <Router
       root={(props) => (

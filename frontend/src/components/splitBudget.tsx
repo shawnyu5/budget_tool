@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { Resource, Show } from "solid-js";
+import { createEffect, Resource, Show } from "solid-js";
 import { GetHomePageDataV2Query } from "~/generated/graphql";
 import { calculatePercentage, round } from "~/utils";
 
@@ -22,23 +22,16 @@ export default function SplitBudget(props: {
           (props.data()?.homePageV2.totalSpending ?? new Decimal(0)).minus(
             props.data()?.homePageV2.overSpending ?? new Decimal(0),
           ),
-          (
-            props.data()?.homePageV2.settings.shawnPercentageAllocation ??
-            new Decimal(0)
+          props.data()?.homePageV2.settings.shawnPercentageAllocation ??
+            new Decimal(0),
+        )
+          .plus(
+            (props.data()?.homePageV2.overSpending ?? new Decimal(0)).dividedBy(
+              2,
+            ),
           )
-            .plus(props.data()?.homePageV2.overSpending ?? new Decimal(0))
-            .dividedBy(2),
-        ).toNumber()}
-        {
-          // {round(
-          //   calculatePercentage(
-          //     (props.data()?.totalSpending ?? 0) -
-          //       (props.data()?.overBudgetAmount ?? 0),
-          //     props.data()?.budget?.shawnPercentageAllocation ?? 0,
-          //   ) +
-          //     (props.data()?.overBudgetAmount ?? 0) / 2,
-          // )}
-        }
+          .toNumber()
+          .toFixed(2)}
       </p>
 
       <p>
@@ -52,13 +45,16 @@ export default function SplitBudget(props: {
           (props.data()?.homePageV2.totalSpending ?? new Decimal(0)).minus(
             props.data()?.homePageV2.overSpending ?? new Decimal(0),
           ),
-          (
-            props.data()?.homePageV2.settings.maggiePercentageAllocation ??
-            new Decimal(0)
+          props.data()?.homePageV2.settings.maggiePercentageAllocation ??
+            new Decimal(0),
+        )
+          .plus(
+            (props.data()?.homePageV2.overSpending ?? new Decimal(0)).dividedBy(
+              2,
+            ),
           )
-            .plus(props.data()?.homePageV2.overSpending ?? new Decimal(0))
-            .dividedBy(2),
-        ).toNumber()}
+          .toNumber()
+          .toFixed(2)}
         {
           // {round(
           //   calculatePercentage(
