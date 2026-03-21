@@ -78,7 +78,6 @@ async fn migrate_to_postgres() -> Result<()> {
 
     for year in [2025, 2026] {
         let mongo = MongoDB::new(&year.to_string()).await?;
-        #[allow(clippy::never_loop)]
         for month in [
             Month::January,
             Month::February,
@@ -95,7 +94,7 @@ async fn migrate_to_postgres() -> Result<()> {
         ] {
             info!("Inserting new Month row in Postgres for year {year} month {month}");
             let month_row = postgres
-                .insert_new_month(year, month)
+                .get_or_insert_month(&mut tx, year, month)
                 .await
                 .with_context(|| format!("Failed to insert month row for month {month}"))?;
 
@@ -103,7 +102,7 @@ async fn migrate_to_postgres() -> Result<()> {
             let mongo_month_budget = mongo.get_month_budget(month).await?;
 
             info!("Getting core users from Postgres");
-            let core_users = postgres.get_core_users(&mut *tx).await?;
+            let core_users = postgres.get_core_users(&mut tx).await?;
             for user in core_users {
                 if user.username == "shawn" {
                     info!("Inserting budget_allocation for user shawn for {year} {month}");
@@ -151,7 +150,10 @@ async fn migrate_to_postgres() -> Result<()> {
                         Decimal::from_f64_retain(transaction.amount).expect(
                             "Failed to convert mongo transaction amount into rust_decimal amount",
                         ),
-                        DateTime::parse_from_rfc3339(&transaction.date_rfc3339.unwrap()).unwrap(),
+                        DateTime::parse_from_rfc3339(
+                            &transaction.date_rfc3339.unwrap_or(transaction.date),
+                        )
+                        .unwrap(),
                         &transaction.description,
                         &transaction.notes.unwrap_or_default(),
                         None,
@@ -168,7 +170,7 @@ async fn migrate_to_postgres() -> Result<()> {
 /// Adds date_rfc3339 field to all transaction dates
 #[instrument]
 async fn add_date_rfc3339_field() -> Result<()> {
-    for year in [2024, 2025, 2026] {
+    for year in [2025, 2026] {
         let db = MongoDB::new(&year.to_string()).await?;
         for month in [
             Month::January,
