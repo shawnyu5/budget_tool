@@ -4,6 +4,7 @@ use sqlx::PgConnection;
 use sqlx::query;
 use sqlx::query_as;
 use tracing::instrument;
+use uuid::Uuid;
 
 use crate::db::postgres::PostgresDB;
 use crate::db::postgres::models::user::UserRow;
@@ -27,7 +28,7 @@ impl PostgresDB {
     }
     /// Update an existing user
     #[instrument(skip_all)]
-    pub async fn update_user(&self, username: &str, user: &UserRow) -> Result<()> {
+    pub async fn update_user(&self, user_id: Uuid, username: &str) -> Result<()> {
         query!(
             "
         UPDATE users
@@ -35,7 +36,7 @@ impl PostgresDB {
         WHERE id = $2
         ",
             username,
-            user.id
+            user_id
         )
         .execute(&self.pool)
         .await

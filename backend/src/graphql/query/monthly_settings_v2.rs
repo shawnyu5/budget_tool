@@ -36,7 +36,9 @@ pub async fn month_settings_v2(
     let maggie_allocation = db
         .get_or_insert_budget_allocation(&mut tx, year, month_row.month, maggie_user.id)
         .await?;
-    let firefly = db.get_user_firefly_settings(current_user.id).await?;
+    let firefly = db
+        .get_user_firefly_settings(&mut tx, current_user.id)
+        .await?;
     let total_allocation = db.compute_total_allocation(&mut *tx, year, month).await?;
 
     tx.commit().await.context("Failed to commit transaction")?;

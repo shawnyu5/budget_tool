@@ -86,6 +86,7 @@ pub async fn update_month_settings(
     }
 
     db.update_user_firefly_settings(
+        &mut tx,
         current_user.id,
         inputs.settings.firefly.enabled,
         inputs.settings.firefly.api_key,

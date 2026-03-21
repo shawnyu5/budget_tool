@@ -5,6 +5,7 @@ use crate::{
         MongoDB,
         migration_table::{MIGRATIONS_TABLE_NAME, SchemaMigration},
         postgres::PostgresDB,
+        users::USER_TABLE_NAME,
     },
     month::Month,
 };
@@ -141,6 +142,7 @@ async fn migrate_to_postgres() -> Result<()> {
 
             info!("Inserting new transaction into Postgres");
             for transaction in mongo_month_budget.spending {
+                info!("{:?}", transaction);
                 postgres
                     .insert_new_transaction(
                         &mut tx,
@@ -161,6 +163,31 @@ async fn migrate_to_postgres() -> Result<()> {
                     .await?;
             }
         }
+    }
+
+    info!("Getting user table from MongoDB");
+    let mongo_settings = MongoDB::new(USER_TABLE_NAME).await?;
+    let mongo_users = mongo_settings
+        .get_all_users()
+        .await
+        .context("Failed to get users")?;
+
+    for user in mongo_users {
+        if let Some(firefly) = user.firefly {
+            info!("Previous user has Firefly settings in MongoDB. Inserting into PostgresDB");
+            let postgres_user = postgres.get_user(&user.username).await?;
+            postgres
+                .update_user_firefly_settings(
+                    &mut tx,
+                    postgres_user.id,
+                    firefly.enabled,
+                    firefly.api_key,
+                    firefly.encryption_nounce,
+                    firefly.source_account,
+                )
+                .await
+                .context("Failed to insert user firefly settings")?;
+        };
     }
 
     tx.commit().await.context("Failed to commit transaction")?;
