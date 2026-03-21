@@ -2,7 +2,7 @@ services:
   budget_tool_backend:
     container_name: budget_tool_backend
     build: ./backend
-    image: ghcr.io/shawnyu5/budget_tool_backend:latest
+    image: ghcr.io/shawnyu5/budget_tool_backend:develop
     ports:
       - "3000:80"
     env_file:
