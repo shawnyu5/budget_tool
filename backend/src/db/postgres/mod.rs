@@ -11,6 +11,7 @@ pub mod budget_allocation;
 pub mod firefly_settings;
 pub mod models;
 pub mod months;
+pub mod notification_subscription;
 pub mod transactions;
 pub mod user;
 

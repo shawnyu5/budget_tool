@@ -5,6 +5,7 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::routes::notification::NotificationSubscription;
 
 /// Data on the settings page
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, InputObject)]
@@ -61,4 +62,11 @@ pub struct HomePage {
     pub transactions: Vec<Transaction>,
     /// Settings for the particular month
     pub settings: Settings,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, Default, InputObject)]
+pub struct User {
+    pub username: String,
+    /// Notification subscription
+    pub notification_subscription: NotificationSubscription,
 }

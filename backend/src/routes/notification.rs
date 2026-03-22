@@ -30,12 +30,12 @@ pub struct NotificationBody {
 #[serde(rename_all = "camelCase")]
 pub struct NotificationSubscription {
     pub endpoint: String,
-    pub expiration_time: Option<usize>,
+    pub expiration_time: Option<i64>,
     pub keys: NotificationKeys,
 }
 
 #[derive(
-    Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, Default, InputObject,
+    Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, InputObject, Default,
 )]
 #[graphql(input_name = "NotificationKeysInput")]
 pub struct NotificationKeys {

@@ -32,6 +32,7 @@ mod config;
 pub mod firefly;
 mod home_page;
 mod me;
+mod me_v2;
 mod monthly_budget;
 mod monthly_budget_config;
 mod monthly_settings_v2;
@@ -51,32 +52,6 @@ impl QueryRoot {
         config_handler().await
     }
 
-    /// Get the budget for a specific month in a year
-    ///
-    /// * `year`: the year
-    /// * `month`: the month
-    #[instrument(skip_all)]
-    #[graphql(guard = "AuthGuard")]
-    async fn monthly_budget(
-        &self,
-        ctx: &Context<'_>,
-        year: u16,
-        month: Month,
-    ) -> MonthlyBudgetResponse {
-        monthly_budget_handler(ctx, year, month).await
-    }
-
-    #[instrument(skip_all)]
-    #[graphql(guard = "AuthGuard")]
-    async fn monthly_budget_config(
-        &self,
-        ctx: &Context<'_>,
-        year: u16,
-        month: Month,
-    ) -> MonthlyBudgetConfigResponse {
-        monthly_budget_config_handler(ctx, year, month).await
-    }
-
     /// Get the settings for a particular month. Retrieves the data from PostgresDB
     /// If there are no settings for the month, check the previous month. If it exists, insert the previous month settings into the month being queried
     #[instrument(skip_all)]
@@ -91,7 +66,10 @@ impl QueryRoot {
     }
 
     #[instrument(skip_all)]
-    #[graphql(guard = "AuthGuard")]
+    #[graphql(
+        guard = "AuthGuard",
+        deprecation = "use `me_v2` to get user data from the PostgresDB instead"
+    )]
     async fn me(&self, ctx: &Context<'_>) -> Result<User> {
         me_handler(ctx).await
     }
