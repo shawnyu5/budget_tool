@@ -7,3 +7,14 @@ services:
       - "3000:80"
     env_file:
       - ./backend/.env
+
+  postgres:
+    container_name: postgres
+    image: docker.io/library/postgres:18
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
