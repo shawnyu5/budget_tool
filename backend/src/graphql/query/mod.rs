@@ -1,3 +1,4 @@
+use crate::models::User as UserModel;
 use anyhow::Result;
 use async_graphql::{Context, Object};
 use tracing::instrument;
@@ -10,6 +11,7 @@ use crate::{
             firefly::{FireflySuccessResponse, firefly_handler},
             home_page::{HomePageV2Input, home_page_v2},
             me::me_handler,
+            me_v2::me_v2_handler,
             monthly_settings_v2::{MonthlySettingsResponse, month_settings_v2},
             search_transaction_v2::{
                 SearchTransactionV2Inputs, SearchTransactionV2Response, search_transaction_v2,
@@ -61,12 +63,17 @@ impl QueryRoot {
     }
 
     #[instrument(skip_all)]
+    #[deprecated = "prefer me_v2"]
     #[graphql(
         guard = "AuthGuard",
         deprecation = "use `me_v2` to get user data from the PostgresDB instead"
     )]
     async fn me(&self, ctx: &Context<'_>) -> Result<User> {
         me_handler(ctx).await
+    }
+
+    async fn me_v2(&self, ctx: &Context<'_>) -> Result<UserModel> {
+        me_v2_handler(ctx).await
     }
 
     #[instrument(skip_all)]
