@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO notification_subscription (endpoint, expiration_time, p256dh, auth)\n            SELECT\n                $2,\n                $3,\n                $4,\n                $5\n            FROM users u\n            WHERE u.username = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "866a937e898cb7781da0117da117161b63c9653ed038851d95fcd85990b3b585"
+}

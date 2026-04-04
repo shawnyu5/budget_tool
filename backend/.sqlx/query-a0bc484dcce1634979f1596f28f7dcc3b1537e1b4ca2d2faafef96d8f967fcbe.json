@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT * from transactions t\n            WHERE t.id = $1\n            ",
+  "query": "\n            SELECT\n                t.id,\n                t.month_id,\n                t.amount,\n                t.date,\n                t.description,\n                t.notes,\n                t.split_mode as \"split_mode: SplitMode\"\n            FROM transactions t\n            WHERE t.id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -32,6 +32,21 @@
         "ordinal": 5,
         "name": "notes",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "split_mode: SplitMode",
+        "type_info": {
+          "Custom": {
+            "name": "split_mode",
+            "kind": {
+              "Enum": [
+                "from_settings",
+                "evenly"
+              ]
+            }
+          }
+        }
       }
     ],
     "parameters": {
@@ -45,8 +60,9 @@
       false,
       false,
       true,
+      true,
       true
     ]
   },
-  "hash": "862159d6372267e606fc0e2c56884a5721435c80fde4067d624fa1fbd5c3139a"
+  "hash": "a0bc484dcce1634979f1596f28f7dcc3b1537e1b4ca2d2faafef96d8f967fcbe"
 }
