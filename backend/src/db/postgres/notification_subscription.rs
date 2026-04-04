@@ -8,7 +8,8 @@ use crate::{
 };
 
 impl PostgresDB {
-    async fn get_user_notification_subscription(
+    /// Get a user's notification subscription
+    pub async fn get_user_notification_subscription(
         &self,
         executor: &mut PgConnection,
         username: &str,
@@ -48,7 +49,7 @@ impl PostgresDB {
     }
 
     /// Updates a user's notification subscription
-    async fn update_user_notification_subscription(
+    pub async fn update_user_notification_subscription(
         &self,
         executor: &mut PgConnection,
         username: &str,

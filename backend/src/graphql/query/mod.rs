@@ -5,16 +5,11 @@ use tracing::instrument;
 use crate::{
     db::{postgres::models::Year, users::User},
     graphql::{
-        mutation::{
-            MonthlyBudgetResponse, update_monthly_budget_config::MonthlyBudgetConfigResponse,
-        },
         query::{
             config::{FrontendConfig, config_handler},
             firefly::{FireflySuccessResponse, firefly_handler},
             home_page::{HomePageV2Input, home_page_v2},
             me::me_handler,
-            monthly_budget::monthly_budget_handler,
-            monthly_budget_config::monthly_budget_config_handler,
             monthly_settings_v2::{MonthlySettingsResponse, month_settings_v2},
             search_transaction_v2::{
                 SearchTransactionV2Inputs, SearchTransactionV2Response, search_transaction_v2,

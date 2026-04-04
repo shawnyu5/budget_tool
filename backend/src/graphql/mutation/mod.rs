@@ -1,5 +1,5 @@
 use anyhow::Result;
-use async_graphql::{Context, Object, Union};
+use async_graphql::{Context, Object, Result as GraphqlResult, Union};
 use tracing::instrument;
 
 use crate::{
@@ -22,6 +22,9 @@ use crate::{
                 delete_transaction_by_id_v2,
             },
             save_subscription::{SubscriptionInput, save_subscription_handler},
+            save_subscription_v2::{
+                SaveSubscriptionV2Response, SaveSubscriptionV2input, save_subscription_v2,
+            },
             update_me::{UpdateMe, UpdateMeResponse, update_me_handler},
             update_month_settings::{
                 UpdateMonthSettingsInput, UpdateMonthSettingsResponse, update_month_settings,
@@ -49,6 +52,7 @@ mod add_transaction_v2;
 pub mod delete_spending_item_by_id;
 mod delete_transaction_by_id_v2;
 pub mod save_subscription;
+mod save_subscription_v2;
 pub mod update_me;
 pub mod update_month_settings;
 pub mod update_monthly_budget;
@@ -79,6 +83,15 @@ impl MutationRoot {
         subscription: SubscriptionInput,
     ) -> Result<User> {
         return save_subscription_handler(ctx, subscription).await;
+    }
+
+    /// Save the user subscription to Postgres DB
+    async fn save_subscription_v2(
+        &self,
+        ctx: &Context<'_>,
+        input: SaveSubscriptionV2input,
+    ) -> GraphqlResult<SaveSubscriptionV2Response> {
+        save_subscription_v2(ctx, input).await
     }
 
     /// Update the budget configuration for a specific month
