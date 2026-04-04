@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::routes::notification::NotificationKeys;
 
-#[derive(Debug, FromRow)]
+#[derive(Debug, FromRow, Clone)]
 pub struct NotificationSubscriptionRow {
     pub id: Uuid,
     pub user_id: Uuid,

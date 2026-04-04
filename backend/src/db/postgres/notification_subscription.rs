@@ -1,5 +1,6 @@
 use anyhow::Result;
-use sqlx::{PgConnection, query_as};
+use simd_json::serde::to_owned_value;
+use sqlx::{PgConnection, query, query_as, types::Json};
 use tracing::error;
 
 use crate::{
@@ -37,20 +38,74 @@ impl PostgresDB {
         })?;
 
         return Ok(NotificationSubscription {
-            endpoint: notification_subscription.endpoint.unwrap_or_default(),
+            endpoint: notification_subscription
+                .clone()
+                .endpoint
+                .unwrap_or_default(),
             expiration_time: notification_subscription.expiration_time,
             keys: NotificationKeys {
                 p256dh: notification_subscription
+                    .clone()
                     .keys
-                    .as_ref()
-                    .unwrap_or_default()
-                    .p256dh,
+                    .unwrap_or(Json(NotificationKeys {
+                        p256dh: "".to_string(),
+                        auth: "".to_string(),
+                    }))
+                    .p256dh
+                    .clone(),
                 auth: notification_subscription
+                    .clone()
                     .keys
-                    .as_ref()
-                    .unwrap_or_default()
-                    .auth,
+                    .unwrap_or(Json(NotificationKeys {
+                        p256dh: "".to_string(),
+                        auth: "".to_string(),
+                    }))
+                    .auth
+                    .clone(),
             },
         });
+    }
+
+    /// Updates a user's notification subscription
+    ///
+    /// * `executor`:
+    /// * `username`:
+    /// * `endpoint`:
+    /// * `expiration_time`:
+    /// * `keys`:
+    async fn update_user_notification_subscription(
+        &self,
+        executor: &mut PgConnection,
+        username: &str,
+        endpoint: Option<String>,
+        expiration_time: Option<i64>,
+        keys: Option<Json<NotificationKeys>>,
+    ) -> Result<()> {
+        let keys_value = keys.unwrap_or_default().encode_to_string();
+        // let keys_value =
+        //     keys.map(|j| sqlx::Json to_owned_value(j.0).expect("Failed to serialize notification keys"));
+        query!(
+            r#"
+            INSERT INTO notification_subscription (endpoint, expiration_time, keys)
+            SELECT
+                $2,
+                $3,
+                $4
+            FROM users u
+            WHERE u.username = $1
+            "#,
+            username,
+            endpoint,
+            expiration_time,
+            keys
+        )
+        .execute(executor)
+        .await
+        .map_err(|e| {
+            error!("{e:#?}");
+            e
+        });
+
+        Ok(())
     }
 }
