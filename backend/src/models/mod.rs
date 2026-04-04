@@ -67,6 +67,6 @@ pub struct HomePage {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, Default, InputObject)]
 pub struct User {
     pub username: String,
-    /// Notification subscription
-    pub notification_subscription: NotificationSubscription,
+    // /// Notification subscription
+    // pub notification_subscription: NotificationSubscription,
 }

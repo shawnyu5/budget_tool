@@ -12,8 +12,8 @@ pub async fn me_v2_handler(ctx: &Context<'_>) -> Result<User> {
         .await
         .context("Failed to get user")?;
 
-    return User {
+    return Ok(User {
         username: user.username,
         // notification_subscription: user.
-    };
+    });
 }

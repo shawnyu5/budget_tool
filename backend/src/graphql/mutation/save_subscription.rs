@@ -14,7 +14,7 @@ pub struct SubscriptionInput {
     pub endpoint: String,
     pub p256dh: String,
     pub auth: String,
-    pub expiration_time: Option<usize>,
+    pub expiration_time: Option<String>,
 }
 
 #[instrument(skip_all)]

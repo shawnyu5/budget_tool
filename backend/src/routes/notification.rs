@@ -30,7 +30,7 @@ pub struct NotificationBody {
 #[serde(rename_all = "camelCase")]
 pub struct NotificationSubscription {
     pub endpoint: String,
-    pub expiration_time: Option<i64>,
+    pub expiration_time: Option<String>,
     pub keys: NotificationKeys,
 }
 

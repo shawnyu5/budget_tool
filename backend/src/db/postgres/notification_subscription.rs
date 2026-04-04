@@ -1,6 +1,5 @@
 use anyhow::Result;
-use simd_json::serde::to_owned_value;
-use sqlx::{PgConnection, query, query_as, types::Json};
+use sqlx::{PgConnection, query, query_as};
 use tracing::error;
 
 use crate::{
@@ -22,7 +21,8 @@ impl PostgresDB {
                 n.user_id,
                 n.endpoint,
                 n.expiration_time,
-                n.keys AS "keys: sqlx::types::Json<NotificationKeys>"
+                n.p256dh,
+                n.auth
             FROM notification_subscription n
             INNER JOIN users u ON u.id = n.user_id
             WHERE
@@ -38,73 +38,48 @@ impl PostgresDB {
         })?;
 
         return Ok(NotificationSubscription {
-            endpoint: notification_subscription
-                .clone()
-                .endpoint
-                .unwrap_or_default(),
-            expiration_time: notification_subscription.expiration_time,
+            endpoint: notification_subscription.clone().endpoint,
+            expiration_time: notification_subscription.clone().expiration_time,
             keys: NotificationKeys {
-                p256dh: notification_subscription
-                    .clone()
-                    .keys
-                    .unwrap_or(Json(NotificationKeys {
-                        p256dh: "".to_string(),
-                        auth: "".to_string(),
-                    }))
-                    .p256dh
-                    .clone(),
-                auth: notification_subscription
-                    .clone()
-                    .keys
-                    .unwrap_or(Json(NotificationKeys {
-                        p256dh: "".to_string(),
-                        auth: "".to_string(),
-                    }))
-                    .auth
-                    .clone(),
+                p256dh: notification_subscription.clone().p256dh,
+                auth: notification_subscription.auth,
             },
         });
     }
 
     /// Updates a user's notification subscription
-    ///
-    /// * `executor`:
-    /// * `username`:
-    /// * `endpoint`:
-    /// * `expiration_time`:
-    /// * `keys`:
     async fn update_user_notification_subscription(
         &self,
         executor: &mut PgConnection,
         username: &str,
-        endpoint: Option<String>,
-        expiration_time: Option<i64>,
-        keys: Option<Json<NotificationKeys>>,
+        endpoint: &str,
+        expiration_time: Option<String>,
+        p256dh: &str,
+        auth: &str,
     ) -> Result<()> {
-        let keys_value = keys.unwrap_or_default().encode_to_string();
-        // let keys_value =
-        //     keys.map(|j| sqlx::Json to_owned_value(j.0).expect("Failed to serialize notification keys"));
         query!(
             r#"
-            INSERT INTO notification_subscription (endpoint, expiration_time, keys)
+            INSERT INTO notification_subscription (endpoint, expiration_time, p256dh, auth)
             SELECT
                 $2,
                 $3,
-                $4
+                $4,
+                $5
             FROM users u
             WHERE u.username = $1
             "#,
             username,
             endpoint,
             expiration_time,
-            keys
+            p256dh,
+            auth
         )
         .execute(executor)
         .await
         .map_err(|e| {
             error!("{e:#?}");
             e
-        });
+        })?;
 
         Ok(())
     }
