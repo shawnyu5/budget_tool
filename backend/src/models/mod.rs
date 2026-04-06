@@ -5,7 +5,6 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-
 /// Data on the settings page
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, InputObject)]
 #[graphql(input_name = "SettingInput")]
@@ -64,6 +63,8 @@ pub struct HomePage {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, Default, InputObject)]
+#[graphql(input_name = "UserV2Input")]
+#[graphql(name = "UserV2")]
 pub struct User {
     pub username: String,
     // /// Notification subscription

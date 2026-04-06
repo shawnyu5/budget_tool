@@ -309,8 +309,6 @@ type MonthlyBudget {
 	carriedOverFrom: Month
 }
 
-union MonthlyBudgetConfigResponse = BudgetConfig | GraphQLErrorObject
-
 """
 Budget details for single month
 """
@@ -354,6 +352,10 @@ type MutationRoot {
 	The user is extracted from the JWT
 	"""
 	saveSubscription(subscription: SubscriptionInput!): User! @deprecated(reason: "Save to the PostgresDB instead")
+	"""
+	Save the user subscription to Postgres DB
+	"""
+	saveSubscriptionV2(input: SaveSubscriptionV2Input!): SaveSubscriptionV2Response!
 	"""
 	Update the budget configuration for a specific month
 	"""
@@ -408,7 +410,7 @@ Stuff the browser sends to do the notification handshake
 """
 type NotificationSubscription {
 	endpoint: String!
-	expirationTime: Int
+	expirationTime: String
 	keys: NotificationKeys!
 }
 
@@ -417,7 +419,7 @@ Stuff the browser sends to do the notification handshake
 """
 input NotificationSubscriptionInput {
 	endpoint: String!
-	expirationTime: Int
+	expirationTime: String
 	keys: NotificationKeysInput!
 }
 
@@ -430,19 +432,12 @@ type QueryRoot {
 	"""
 	config: FrontendConfig!
 	"""
-	Get the budget for a specific month in a year
-	
-	* `year`: the year
-	* `month`: the month
-	"""
-	monthlyBudget(year: Int!, month: Month!): MonthlyBudgetResponse!
-	monthlyBudgetConfig(year: Int!, month: Month!): MonthlyBudgetConfigResponse!
-	"""
 	Get the settings for a particular month. Retrieves the data from PostgresDB
 	If there are no settings for the month, check the previous month. If it exists, insert the previous month settings into the month being queried
 	"""
 	monthSettingsV2(year: Int!, month: Month!): MonthlySettingsResponse!
-	me: User!
+	me: User! @deprecated(reason: "use `me_v2` to get user data from the PostgresDB instead")
+	meV2: UserV2!
 	"""
 	Retrieve information from Firefly it self
 	"""
@@ -459,6 +454,17 @@ type QueryRoot {
 	Search for a transaction from the PostgresDB
 	"""
 	searchTransactionV2(inputs: SearchTransactionV2Inputs!): SearchTransactionV2Response!
+}
+
+input SaveSubscriptionV2Input {
+	endpoint: String!
+	expirationTime: String
+	p256Dh: String!
+	auth: String!
+}
+
+type SaveSubscriptionV2Response {
+	success: Boolean!
 }
 
 input SearchSpendingItemInput {
@@ -602,7 +608,7 @@ input SubscriptionInput {
 	endpoint: String!
 	p256Dh: String!
 	auth: String!
-	expirationTime: Int
+	expirationTime: String
 }
 
 type SuccessResponse {
@@ -756,6 +762,10 @@ input UserInput {
 	notificationSubscription: NotificationSubscriptionInput!
 	lastUpdated: String
 	firefly: FireflySettingsInput
+}
+
+type UserV2 {
+	username: String!
 }
 
 """

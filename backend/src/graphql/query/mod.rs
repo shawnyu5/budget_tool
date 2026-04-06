@@ -63,7 +63,7 @@ impl QueryRoot {
     }
 
     #[instrument(skip_all)]
-    #[deprecated = "prefer me_v2"]
+    #[deprecated = "replaced by me_v2"]
     #[graphql(
         guard = "AuthGuard",
         deprecation = "use `me_v2` to get user data from the PostgresDB instead"

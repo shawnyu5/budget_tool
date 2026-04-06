@@ -16,6 +16,7 @@ use crate::db::MongoDB;
 pub const USER_TABLE_NAME: &str = "Users";
 
 /// Represents a user
+#[deprecated = "Replaced by db::models::UserRow"]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, SimpleObject, InputObject)]
 #[graphql(input_name = "UserInput")]
 #[serde(rename_all = "camelCase")]
