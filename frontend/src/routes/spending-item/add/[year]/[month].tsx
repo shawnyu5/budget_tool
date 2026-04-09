@@ -1,10 +1,12 @@
 import { useNavigate, useParams } from "@solidjs/router";
+import Decimal from "decimal.js";
 import { createSignal, Signal } from "solid-js";
-import { SpendingItemForm } from "~/components/spendingItemForm";
+import { TransactionForm } from "~/components/TransactionForm";
 import {
   AddSpendingItemByMonthError,
   Month,
   SpendingItem,
+  Transaction,
 } from "~/generated/graphql";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
@@ -15,17 +17,16 @@ export default function () {
   const month = params.month as Month;
   const navigate = useNavigate();
   const jsDate = new Date();
-  const [spendingItem] = createSignal<SpendingItem>({
-    id: crypto.randomUUID(),
-    amount: 0,
-    date: `${jsDate.getFullYear()}/${jsDate.getMonth() + 1}/${jsDate.getDate()}`,
-    dateRfc3339: jsDate.toISOString(),
-    description: "",
-    notes: "",
-  });
+  // const [transaction] = createSignal<Transaction>({
+  //   id: crypto.randomUUID(),
+  //   amount: new Decimal(0),
+  //   date: new Date(),
+  //   description: "",
+  //   notes: "",
+  // });
 
   const onSubmit = async (
-    newSpendingItem: SpendingItem,
+    transaction: Transaction,
     errorMessageSignal: Signal<string | null>,
   ) => {
     const [errorMessage, setErrorMessage] = errorMessageSignal;
@@ -38,33 +39,19 @@ export default function () {
     log.info("Submitting form");
     const sdk = NewGraphQLSDK();
     try {
-      let res = await sdk.AddSpendingItemByMonth({
+      await sdk.AddTransactionV2({
         inputs: {
-          year: year,
           month: month,
-          spendingItem: {
-            id: newSpendingItem.id,
-            amount: newSpendingItem.amount,
-            date: newSpendingItem.date,
-            dateRfc3339: new Date(newSpendingItem.dateRfc3339 ?? "").toISOString(),
-            description: newSpendingItem.description,
+          year: parseInt(year),
+          transaction: {
+            id: crypto.randomUUID(),
+            amount: new Decimal(transaction.amount),
+            date: transaction.date,
+            description: transaction.description,
+            notes: transaction.notes,
           },
         },
       });
-
-      if (
-        res.addSpendingItemByMonth.__typename ==
-        "AddSpendingItemByMonthErrorObject"
-      ) {
-        if (
-          res.addSpendingItemByMonth.code ==
-          AddSpendingItemByMonthError.FireflyUpdateFailed
-        ) {
-          setErrorMessage(
-            `Your transaction was created in this app. However the firefly transaction failed to create: ${res.addSpendingItemByMonth.message}. Please create the Firefly transaction manually...`,
-          );
-        }
-      }
     } catch (e) {
       handleGraphQLClientError(e, navigate);
     }
@@ -77,5 +64,5 @@ export default function () {
     navigate(`/?year=${year}&month=${month}`, { replace: true });
   };
 
-  return <SpendingItemForm spendingItem={spendingItem} onSubmit={onSubmit} />;
+  return <TransactionForm onSubmit={onSubmit} />;
 }

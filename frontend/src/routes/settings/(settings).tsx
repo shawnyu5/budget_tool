@@ -7,15 +7,15 @@ import {
   Show,
   Suspense,
 } from "solid-js";
-import { getSettingsPageData, updateMonthlyBudgetConfig } from "~/server";
 import log from "~/logger";
 import NavBar from "~/components/navBar";
 import ErrorComponent from "~/components/errorComponent";
 import SuccessComponent from "~/components/successComponent";
-import { calculatePercentage, calculatePercentageOf, round } from "~/utils";
-import { Month } from "~/generated/graphql";
+import { calculateOtherContribution, calculatePercentage } from "~/utils";
+import { Month, SettingsPageDataV2Query } from "~/generated/graphql";
 import { FireflySettingsForm } from "./firefly_settings";
-import { handleGraphQLErrorObject } from "~/graphql";
+import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
+import Decimal from "decimal.js";
 
 export default function Settings() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -24,9 +24,8 @@ export default function Settings() {
   const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
   // // Whether to show the firefly settings form
   // const [fireflySettingsToggle, setfireFlySettingsToggle] = createSignal(false);
+  const graphqlsdk = NewGraphQLSDK();
   const navigate = useNavigate();
-  let hasUserModified = false;
-
   const rawResource = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {
@@ -34,15 +33,45 @@ export default function Settings() {
         return;
       }
       log.info(`Fetching settings for month ${searchParamSignal().month}`);
-      let settingsPageData = await getSettingsPageData(
-        searchParamSignal().year as string,
-        searchParamSignal().month as Month,
-        navigate,
-      );
-      // If fetching is successful, make sure the error message is gone
-      setErrorMessage(null);
-      log.info(JSON.stringify(settingsPageData, null, 3));
-      return settingsPageData;
+      try {
+        const settingsPageData = await graphqlsdk.SettingsPageDataV2({
+          year: parseInt(searchParamSignal().year as string),
+          month: searchParamSignal().month as Month,
+        });
+
+        // If fetching is successful, make sure the error message is gone
+        setErrorMessage(null);
+        log.info(JSON.stringify(settingsPageData, null, 3));
+        return {
+          ...settingsPageData,
+          monthSettingsV2: {
+            settings: {
+              ...settingsPageData.monthSettingsV2.settings,
+              maggieContributionAmount: new Decimal(
+                settingsPageData.monthSettingsV2.settings
+                  .maggieContributionAmount,
+              ),
+              maggiePercentageAllocation: new Decimal(
+                settingsPageData.monthSettingsV2.settings
+                  .maggiePercentageAllocation,
+              ),
+              shawnPercentageAllocation: new Decimal(
+                settingsPageData.monthSettingsV2.settings
+                  .shawnPercentageAllocation,
+              ),
+              shawnContributionAmount: new Decimal(
+                settingsPageData.monthSettingsV2.settings
+                  .shawnContributionAmount,
+              ),
+              totalAllocation: new Decimal(
+                settingsPageData.monthSettingsV2.settings.totalAllocation,
+              ),
+            },
+          },
+        } satisfies SettingsPageDataV2Query;
+      } catch (e) {
+        handleGraphQLClientError(e, navigate);
+      }
     },
   );
   const [settingsPageDataResource, { mutate }] = rawResource;
@@ -50,33 +79,59 @@ export default function Settings() {
   const onSubmit = action(async () => {
     setErrorMessage(null);
     log.info(`Form submitted`);
-    if (
-      (settingsPageDataResource()?.monthlyBudgetConfig
-        .maggiePercentageAllocation ?? 0) +
-        (settingsPageDataResource()?.monthlyBudgetConfig
-          .shawnPercentageAllocation ?? 0) !=
-      100
-    ) {
+
+    // Maggie % contribution
+    const maggie =
+      settingsPageDataResource()?.monthSettingsV2.settings
+        .maggiePercentageAllocation ?? new Decimal(0);
+    // Shawn % contribution
+    const shawn =
+      settingsPageDataResource()?.monthSettingsV2.settings
+        .shawnPercentageAllocation ?? new Decimal(0);
+
+    if (!maggie.plus(shawn).eq(100)) {
       setErrorMessage(
         "Ah oh, the contribution amounts does not add up to 100%...",
       );
       return;
     }
-    try {
-      const res = await updateMonthlyBudgetConfig(
-        Number(searchParam.year),
-        searchParam.month as Month,
-        settingsPageDataResource()?.monthlyBudgetConfig!,
-        settingsPageDataResource()?.me.firefly!,
-        navigate,
-      );
 
-      if (res.updateMonthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-        const err = handleGraphQLErrorObject(res.updateMonthlyBudgetConfig);
-        if (err) {
-          throw err;
-        }
-      }
+    try {
+      await graphqlsdk.UpdateSettings({
+        inputs: {
+          year: Number(searchParam.year),
+          month: searchParam.month as Month,
+          settings: {
+            totalAllocation:
+              settingsPageDataResource()?.monthSettingsV2.settings
+                .totalAllocation ?? new Decimal(0),
+            shawnPercentageAllocation:
+              settingsPageDataResource()?.monthSettingsV2.settings
+                .shawnPercentageAllocation ?? new Decimal(0),
+            shawnContributionAmount:
+              settingsPageDataResource()?.monthSettingsV2.settings
+                .shawnContributionAmount ?? new Decimal(0),
+            maggiePercentageAllocation:
+              settingsPageDataResource()?.monthSettingsV2.settings
+                .maggiePercentageAllocation ?? new Decimal(0),
+            maggieContributionAmount:
+              settingsPageDataResource()?.monthSettingsV2.settings
+                .maggieContributionAmount ?? new Decimal(0),
+            firefly: {
+              ...settingsPageDataResource()?.monthSettingsV2.settings.firefly,
+              enabled:
+                settingsPageDataResource()?.monthSettingsV2.settings.firefly
+                  ?.enabled ?? false,
+              apiKey:
+                settingsPageDataResource()?.monthSettingsV2.settings.firefly
+                  ?.apiKey,
+              sourceAccount:
+                settingsPageDataResource()?.monthSettingsV2.settings.firefly
+                  ?.sourceAccount,
+            },
+          },
+        },
+      });
     } catch (e) {
       // @ts-ignore
       log.error("Failed to update settings: ", e);
@@ -85,7 +140,6 @@ export default function Settings() {
     }
 
     setSuccessMessage("Settings updated successfully!");
-    hasUserModified = false;
     // Make the success message disappear after a few seconds
     setTimeout(() => {
       setSuccessMessage(null);
@@ -113,19 +167,18 @@ export default function Settings() {
                 id="month-budget"
                 name="month-budget"
                 disabled
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .totalAllocation
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
+                value={(
+                  settingsPageDataResource()?.monthSettingsV2.settings
+                    .totalAllocation ?? new Decimal(0)
+                ).toFixed(2)}
+                onChange={(e: InputEvent) => {
                   const input = (e.target as HTMLInputElement).value;
                   mutate((prev) => {
                     if (!prev) return prev;
                     return {
                       ...prev,
                       monthlyBudgetConfig: {
-                        ...prev.monthlyBudgetConfig,
+                        ...prev?.monthSettingsV2.settings,
                         totalAllocation: parseFloat(input),
                       },
                     };
@@ -143,49 +196,39 @@ export default function Settings() {
                 name="shawn-contribution-percentage"
                 step="0.01"
                 placeholder="50"
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .shawnPercentageAllocation
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
+                value={(
+                  settingsPageDataResource()?.monthSettingsV2.settings
+                    .shawnPercentageAllocation ?? new Decimal(0)
+                ).toNumber()}
+                onChange={(e) => {
                   const input = e.target as HTMLInputElement;
-                  const shawnPercentageContribution = parseFloat(input.value);
-                  const maggiePercentageAllocation =
-                    100 - shawnPercentageContribution;
-                  // const updated: BudgetConfig = {
-                  //   ...settingsPageDataResource()!,
-                  //   ...settingsPageDataResource()!,
-                  //   shawnPercentageAllocation: shawnPercentageContribution,
-                  //   shawnContributionAmount: calculatePercentage(
-                  //     settingsPageDataResource()?.totalAllocation ?? 0,
-                  //     shawnPercentageContribution,
-                  //   ),
-                  //   maggiePercentageAllocation: maggiePercentageAllocation,
-                  //   maggieContributionAmount: calculatePercentage(
-                  //     settingsPageDataResource()?.totalAllocation ?? 0,
-                  //     maggiePercentageAllocation,
-                  //   ),
-                  // };
-                  // mutate(updated);
+                  if (!input.value.trim()) return;
+                  const shawnPercentageContribution = new Decimal(input.value);
+                  const maggiePercentageAllocation = new Decimal(100).minus(
+                    shawnPercentageContribution,
+                  );
                   mutate((prev) => {
                     if (!prev) return prev;
                     return {
                       ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev.monthlyBudgetConfig,
-                        shawnPercentageAllocation: shawnPercentageContribution,
-                        shawnContributionAmount: calculatePercentage(
-                          settingsPageDataResource()?.monthlyBudgetConfig
-                            .totalAllocation ?? 0,
-                          shawnPercentageContribution,
-                        ),
-                        maggiePercentageAllocation: maggiePercentageAllocation,
-                        maggieContributionAmount: calculatePercentage(
-                          settingsPageDataResource()?.monthlyBudgetConfig
-                            .totalAllocation ?? 0,
-                          maggiePercentageAllocation,
-                        ),
+                      monthSettingsV2: {
+                        settings: {
+                          ...prev.monthSettingsV2.settings,
+                          shawnPercentageAllocation:
+                            shawnPercentageContribution,
+                          shawnContributionAmount: calculatePercentage(
+                            settingsPageDataResource()?.monthSettingsV2.settings
+                              .totalAllocation ?? new Decimal(0),
+                            shawnPercentageContribution,
+                          ),
+                          maggiePercentageAllocation:
+                            maggiePercentageAllocation,
+                          maggieContributionAmount: calculatePercentage(
+                            settingsPageDataResource()?.monthSettingsV2.settings
+                              .totalAllocation ?? new Decimal(0),
+                            maggiePercentageAllocation,
+                          ),
+                        },
                       },
                     };
                   });
@@ -201,42 +244,37 @@ export default function Settings() {
                 id="shawn-contribution-amount"
                 name="shawn-contribution-amount"
                 step="0.01"
-                placeholder="50"
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .shawnContributionAmount ?? 0
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
+                placeholder="50.00"
+                value={(
+                  settingsPageDataResource()?.monthSettingsV2.settings
+                    .shawnContributionAmount ?? new Decimal(0)
+                ).toFixed(2)}
+                onChange={(e) => {
                   const input = e.target as HTMLInputElement;
-                  const shawnContribution = parseFloat(input.value);
+                  if (!input.value.trim()) return;
 
-                  const totalBudget = calculatePercentageOf(
-                    shawnContribution,
-                    settingsPageDataResource()?.monthlyBudgetConfig
-                      .shawnPercentageAllocation ?? 0,
+                  const shawnContributionAmount = new Decimal(input.value);
+                  const maggieContributionAmount = calculateOtherContribution(
+                    shawnContributionAmount,
+                    settingsPageDataResource()?.monthSettingsV2.settings
+                      .shawnPercentageAllocation ?? new Decimal(0),
+                    settingsPageDataResource()?.monthSettingsV2.settings
+                      .maggiePercentageAllocation ?? new Decimal(0),
                   );
 
-                  // const updated: BudgetConfig = {
-                  //   ...settingsPageDataResource()!,
-                  //   totalAllocation: round(totalBudget),
-                  //   maggieContributionAmount: round(
-                  //     totalBudget - shawnContribution,
-                  //   ),
-                  //   shawnContributionAmount: shawnContribution,
-                  // };
-                  // mutate(updated);
                   mutate((prev) => {
                     if (!prev) return prev;
                     return {
                       ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev?.monthlyBudgetConfig,
-                        totalAllocation: round(totalBudget),
-                        maggieContributionAmount: round(
-                          totalBudget - shawnContribution,
-                        ),
-                        shawnContributionAmount: shawnContribution,
+                      monthSettingsV2: {
+                        settings: {
+                          ...prev.monthSettingsV2.settings,
+                          totalAllocation: maggieContributionAmount.plus(
+                            shawnContributionAmount,
+                          ),
+                          maggieContributionAmount,
+                          shawnContributionAmount,
+                        },
                       },
                     };
                   });
@@ -254,48 +292,38 @@ export default function Settings() {
                 id="maggie-contribution-percentage"
                 placeholder="50"
                 name="maggie-contribution-percentage"
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .maggiePercentageAllocation
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
+                value={(
+                  settingsPageDataResource()?.monthSettingsV2.settings
+                    .maggiePercentageAllocation ?? new Decimal(0)
+                ).toNumber()}
+                onChange={(e) => {
                   const input = e.target as HTMLInputElement;
-                  const contribution = parseFloat(input.value);
-                  const shawnPercentageAllocation = 100 - contribution;
-                  // const updated: BudgetConfig = {
-                  //   ...settingsPageDataResource()!,
-                  //   maggiePercentageAllocation: contribution,
-                  //   maggieContributionAmount: calculatePercentage(
-                  //     settingsPageDataResource()?.totalAllocation ?? 0,
-                  //     contribution,
-                  //   ),
-                  //   shawnPercentageAllocation: shawnPercentageAllocation,
-                  //   shawnContributionAmount: calculatePercentage(
-                  //     settingsPageDataResource()?.totalAllocation ?? 0,
-                  //     shawnPercentageAllocation,
-                  //   ),
-                  // };
-                  // mutate(updated);
+                  if (!input.value.trim()) return;
+                  const contribution = new Decimal(input.value);
+                  const shawnPercentageAllocation = new Decimal(100).minus(
+                    contribution,
+                  );
                   mutate((prev) => {
                     if (!prev) return prev;
 
                     return {
                       ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev.monthlyBudgetConfig,
-                        maggiePercentageAllocation: contribution,
-                        maggieContributionAmount: calculatePercentage(
-                          settingsPageDataResource()?.monthlyBudgetConfig
-                            .totalAllocation ?? 0,
-                          contribution,
-                        ),
-                        shawnPercentageAllocation: shawnPercentageAllocation,
-                        shawnContributionAmount: calculatePercentage(
-                          settingsPageDataResource()?.monthlyBudgetConfig
-                            .totalAllocation ?? 0,
-                          shawnPercentageAllocation,
-                        ),
+                      monthSettingsV2: {
+                        settings: {
+                          ...prev.monthSettingsV2.settings,
+                          maggiePercentageAllocation: contribution,
+                          maggieContributionAmount: calculatePercentage(
+                            settingsPageDataResource()?.monthSettingsV2.settings
+                              .totalAllocation ?? new Decimal(0),
+                            contribution,
+                          ),
+                          shawnPercentageAllocation: shawnPercentageAllocation,
+                          shawnContributionAmount: calculatePercentage(
+                            settingsPageDataResource()?.monthSettingsV2.settings
+                              .totalAllocation ?? new Decimal(0),
+                            shawnPercentageAllocation,
+                          ),
+                        },
                       },
                     };
                   });
@@ -312,41 +340,46 @@ export default function Settings() {
                 name="maggie-contribution-amount"
                 step="0.01"
                 placeholder="50"
-                value={
-                  settingsPageDataResource()?.monthlyBudgetConfig
-                    .maggieContributionAmount ?? 0
-                }
-                onInput={(e: InputEvent) => {
-                  hasUserModified = true;
-
+                value={(
+                  settingsPageDataResource()?.monthSettingsV2.settings
+                    .maggieContributionAmount ?? new Decimal(0)
+                ).toFixed(2)}
+                onChange={(e) => {
                   const input = e.target as HTMLInputElement;
-                  const maggiecontribution = parseFloat(input.value);
-                  const totalBudget = calculatePercentageOf(
-                    maggiecontribution,
-                    settingsPageDataResource()?.monthlyBudgetConfig
-                      .maggiePercentageAllocation ?? 0,
+                  if (!input.value.trim()) return;
+
+                  const maggieContributionAmount = new Decimal(input.value);
+                  const mPct =
+                    settingsPageDataResource()?.monthSettingsV2.settings
+                      .maggiePercentageAllocation ?? new Decimal(0);
+                  const sPct =
+                    settingsPageDataResource()?.monthSettingsV2.settings
+                      .shawnPercentageAllocation ?? new Decimal(0);
+
+                  const shawnContributionAmount = calculateOtherContribution(
+                    maggieContributionAmount,
+                    mPct,
+                    sPct,
                   );
 
-                  // const updated: BudgetConfig = {
-                  //   ...settingsPageDataResource()!,
-                  //   totalAllocation: round(totalBudget),
-                  //   maggieContributionAmount: maggiecontribution,
-                  //   shawnContributionAmount: totalBudget - maggiecontribution,
-                  // };
-                  // mutate(updated);
                   mutate((prev) => {
                     if (!prev) return prev;
+                    console.log("Mutating");
 
-                    return {
+                    let a = {
                       ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev.monthlyBudgetConfig,
-                        totalAllocation: round(totalBudget),
-                        maggieContributionAmount: maggiecontribution,
-                        shawnContributionAmount:
-                          totalBudget - maggiecontribution,
+                      monthSettingsV2: {
+                        settings: {
+                          ...prev.monthSettingsV2.settings,
+                          totalAllocation: maggieContributionAmount.plus(
+                            shawnContributionAmount,
+                          ),
+                          maggieContributionAmount,
+                          shawnContributionAmount,
+                        },
                       },
                     };
+                    return a;
                   });
                 }}
                 required

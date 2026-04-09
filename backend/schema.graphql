@@ -21,6 +21,16 @@ input AddSpendingItemByMonthInput {
 
 union AddSpendingItemByMonthResponse = SuccessResponse | AddSpendingItemByMonthErrorObject
 
+type AddTransactionResponseV2 {
+	success: Boolean!
+}
+
+input AddTransactionV2Input {
+	year: Int!
+	month: Month!
+	transaction: TransactionInput!
+}
+
 type BudgetConfig {
 	"""
 	Total allocated budget
@@ -67,6 +77,15 @@ input BudgetConfigInput {
 	maggieContributionAmount: Float!
 }
 
+"""
+Implement the DateTime<FixedOffset> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
+
+scalar Decimal
+
 input DeleteSpendingItemByIdInput {
 	year: Int!
 	month: Month!
@@ -76,16 +95,13 @@ input DeleteSpendingItemByIdInput {
 	id: String!
 }
 
-enum FireflyError {
-	FIREFLY_ERROR
+input DeleteTransactionByIdV2Input {
+	transactionId: UUID!
 }
 
-type FireflyErrorObject {
-	code: FireflyError!
-	message: String!
+type DeleteTransactionByIdV2Response {
+	success: Boolean!
 }
-
-union FireflyResponse = FireflySuccessResponse | FireflyErrorObject
 
 """
 Firefly related settings
@@ -127,6 +143,44 @@ input FireflySettingsInput {
 	Base64 encoded nounce used to encrypt / decrypt the API key
 	"""
 	encryptionNounce: String
+	"""
+	The source account to create the transaction in
+	"""
+	sourceAccount: String
+}
+
+"""
+Firefly related settings
+"""
+type FireflySettingsV2 {
+	"""
+	If the user has enabled Firefly integration
+	"""
+	enabled: Boolean!
+	"""
+	Encrypted firefly API key, required if `enabled` = true
+	Must call `User.decrypt_firefly_api_key()` to get the decrypted version
+	"""
+	apiKey: String
+	"""
+	The source account to create the transaction in
+	"""
+	sourceAccount: String
+}
+
+"""
+Firefly related settings
+"""
+input FireflySettingsV2Input {
+	"""
+	If the user has enabled Firefly integration
+	"""
+	enabled: Boolean!
+	"""
+	Encrypted firefly API key, required if `enabled` = true
+	Must call `User.decrypt_firefly_api_key()` to get the decrypted version
+	"""
+	apiKey: String
 	"""
 	The source account to create the transaction in
 	"""
@@ -178,6 +232,37 @@ type GraphQLErrorObject {
 	message: String!
 }
 
+"""
+Data on the home screen
+"""
+type HomePage {
+	"""
+	Total $ spend in this month
+	"""
+	totalSpending: Decimal!
+	"""
+	Total allocated budget
+	"""
+	totalBudget: Decimal!
+	"""
+	Amount that was over spent
+	"""
+	overSpending: Decimal!
+	"""
+	All transactions for this month
+	"""
+	transactions: [Transaction!]!
+	"""
+	Settings for the particular month
+	"""
+	settings: Settings!
+}
+
+input HomePageV2Input {
+	year: Int!
+	month: Month!
+}
+
 enum Month {
 	January
 	February
@@ -224,8 +309,6 @@ type MonthlyBudget {
 	carriedOverFrom: Month
 }
 
-union MonthlyBudgetConfigResponse = BudgetConfig | GraphQLErrorObject
-
 """
 Budget details for single month
 """
@@ -259,32 +342,56 @@ input MonthlyBudgetInput {
 
 union MonthlyBudgetResponse = MonthlyBudget | GraphQLErrorObject
 
+type MonthlySettingsResponse {
+	settings: Settings!
+}
+
 type MutationRoot {
 	"""
 	Save a notification subscription for a user
 	The user is extracted from the JWT
 	"""
-	saveSubscription(subscription: SubscriptionInput!): User!
+	saveSubscription(subscription: SubscriptionInput!): User! @deprecated(reason: "Save to the PostgresDB instead")
+	"""
+	Save the user subscription to Postgres DB
+	"""
+	saveSubscriptionV2(input: SaveSubscriptionV2Input!): SaveSubscriptionV2Response!
 	"""
 	Update the budget configuration for a specific month
 	"""
-	updateMonthlyBudgetConfig(inputs: UpdateBudgetConfigInput!): UpdateBudgetConfigResponse!
+	updateMonthlyBudgetConfig(inputs: UpdateBudgetConfigInput!): UpdateBudgetConfigResponse! @deprecated(reason: "use `update_month_settings_v2` to save to the PostgresDB")
+	"""
+	Update the settings for a specific month, in the Postgres DB
+	"""
+	updateMonthSettingsV2(inputs: UpdateMonthSettingsInput!): UpdateMonthSettingsResponse!
 	"""
 	Add a spending item to a month
 	"""
-	addSpendingItemByMonth(inputs: AddSpendingItemByMonthInput!): AddSpendingItemByMonthResponse!
+	addSpendingItemByMonth(inputs: AddSpendingItemByMonthInput!): AddSpendingItemByMonthResponse! @deprecated(reason: "use `add_transaction_v2` to save to the PostgresDB")
 	"""
 	Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
 	"""
-	deleteSpendingItemById(inputs: DeleteSpendingItemByIdInput!): MonthlyBudgetResponse!
+	deleteSpendingItemById(inputs: DeleteSpendingItemByIdInput!): MonthlyBudgetResponse! @deprecated(reason: "use `delete_transaction_by_id_v2` to delete from the PostgresDB")
+	"""
+	Delete a transaction by ID from the PostgresDB
+	"""
+	deleteTransactionByIdV2(inputs: DeleteTransactionByIdV2Input!): DeleteTransactionByIdV2Response!
 	"""
 	Update a spending item by ID
 	"""
 	updateSpendingItemById(inputs: UpdateSpendingItemByIdInput!): UpdateSpendingItemByIdResponse!
 	"""
+	Add a transaction
+	"""
+	addTransactionV2(inputs: AddTransactionV2Input!): AddTransactionResponseV2!
+	"""
+	Update a transaction by ID
+	"""
+	updateTransactionByIdV2(inputs: UpdateTransactionByIdV2Input!): UpdateTransactionByIdV2Response!
+	"""
 	Update the budget for a specific month
 	"""
-	updateMonthlyBudget(inputs: UpdateMonthlyBudgetInput!): MonthlyBudgetResponse!
+	updateMonthlyBudget(inputs: UpdateMonthlyBudgetInput!): MonthlyBudgetResponse! @deprecated(reason: "Do not use this handler anymore. Prefer the more finegrained updates instead")
 	me(inputs: UpdateMe!): UpdateMeResponse!
 }
 
@@ -303,7 +410,7 @@ Stuff the browser sends to do the notification handshake
 """
 type NotificationSubscription {
 	endpoint: String!
-	expirationTime: Int
+	expirationTime: String
 	keys: NotificationKeys!
 }
 
@@ -312,7 +419,7 @@ Stuff the browser sends to do the notification handshake
 """
 input NotificationSubscriptionInput {
 	endpoint: String!
-	expirationTime: Int
+	expirationTime: String
 	keys: NotificationKeysInput!
 }
 
@@ -325,28 +432,119 @@ type QueryRoot {
 	"""
 	config: FrontendConfig!
 	"""
-	Get the budget for a specific month in a year
-	
-	* `year`: the year
-	* `month`: the month
+	Get the settings for a particular month. Retrieves the data from PostgresDB
+	If there are no settings for the month, check the previous month. If it exists, insert the previous month settings into the month being queried
 	"""
-	monthlyBudget(year: Int!, month: Month!): MonthlyBudgetResponse!
-	monthlyBudgetConfig(year: Int!, month: Month!): MonthlyBudgetConfigResponse!
-	me: User!
+	monthSettingsV2(year: Int!, month: Month!): MonthlySettingsResponse!
+	me: User! @deprecated(reason: "use `me_v2` to get user data from the PostgresDB instead")
+	"""
+	Returns the content of the JWT
+	"""
+	meV2: UserV2!
 	"""
 	Retrieve information from Firefly it self
 	"""
-	firefly: FireflyResponse!
+	firefly: FireflySuccessResponse!
 	"""
 	Search for a spending item by time and ID
 	"""
-	searchSpendingItem(inputs: SearchSpendingItemInput!): SpendingItem
+	searchSpendingItem(inputs: SearchSpendingItemInput!): SpendingItem @deprecated(reason: "Use `search_transaction_v2` to search the PostgresDB instead")
+	"""
+	Get data to display on the home page
+	"""
+	homePageV2(inputs: HomePageV2Input!): HomePage!
+	"""
+	Search for a transaction from the PostgresDB
+	"""
+	searchTransactionV2(inputs: SearchTransactionV2Inputs!): SearchTransactionV2Response!
+}
+
+input SaveSubscriptionV2Input {
+	endpoint: String!
+	expirationTime: String
+	p256Dh: String!
+	auth: String!
+}
+
+type SaveSubscriptionV2Response {
+	success: Boolean!
 }
 
 input SearchSpendingItemInput {
 	year: Int!
 	month: Month!
 	id: String!
+}
+
+input SearchTransactionV2Inputs {
+	"""
+	ID of the transaction to search for
+	"""
+	transactionId: UUID!
+}
+
+type SearchTransactionV2Response {
+	transaction: Transaction
+}
+
+"""
+Data on the settings page
+"""
+input SettingInput {
+	"""
+	Total allocated budget
+	"""
+	totalAllocation: Decimal!
+	"""
+	Shawn percentage allocation
+	"""
+	shawnPercentageAllocation: Decimal!
+	"""
+	Shawn contribution amount. The frontend is responsible for computing this value
+	"""
+	shawnContributionAmount: Decimal!
+	"""
+	Maggie percentage allocation
+	"""
+	maggiePercentageAllocation: Decimal!
+	"""
+	Maggie contribution amount. The frontend is responsible for computing this value
+	"""
+	maggieContributionAmount: Decimal!
+	"""
+	Firefly related settings
+	"""
+	firefly: FireflySettingsV2Input!
+}
+
+"""
+Data on the settings page
+"""
+type Settings {
+	"""
+	Total allocated budget
+	"""
+	totalAllocation: Decimal!
+	"""
+	Shawn percentage allocation
+	"""
+	shawnPercentageAllocation: Decimal!
+	"""
+	Shawn contribution amount. The frontend is responsible for computing this value
+	"""
+	shawnContributionAmount: Decimal!
+	"""
+	Maggie percentage allocation
+	"""
+	maggiePercentageAllocation: Decimal!
+	"""
+	Maggie contribution amount. The frontend is responsible for computing this value
+	"""
+	maggieContributionAmount: Decimal!
+	"""
+	Firefly related settings
+	"""
+	firefly: FireflySettingsV2!
 }
 
 """
@@ -413,12 +611,46 @@ input SubscriptionInput {
 	endpoint: String!
 	p256Dh: String!
 	auth: String!
-	expirationTime: Int
+	expirationTime: String
 }
 
 type SuccessResponse {
 	success: Boolean!
 }
+
+"""
+Represent a single transaction
+"""
+type Transaction {
+	id: UUID!
+	amount: Decimal!
+	date: DateTime!
+	description: String!
+	notes: String!
+}
+
+"""
+Represent a single transaction
+"""
+input TransactionInput {
+	id: UUID!
+	amount: Decimal!
+	date: DateTime!
+	description: String!
+	notes: String!
+}
+
+"""
+A UUID is a unique 128-bit number, stored as 16 octets. UUIDs are parsed as
+Strings within GraphQL. UUIDs are used to assign unique identifiers to
+entities without requiring a central allocating authority.
+
+# References
+
+* [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
+* [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+"""
+scalar UUID
 
 input UpdateBudgetConfigInput {
 	"""
@@ -453,6 +685,25 @@ type UpdateMeResponse {
 	success: Boolean!
 }
 
+input UpdateMonthSettingsInput {
+	"""
+	The year of the budget to update
+	"""
+	year: Int!
+	"""
+	The month of the budget to update
+	"""
+	month: Month!
+	"""
+	Updated settings
+	"""
+	settings: SettingInput!
+}
+
+type UpdateMonthSettingsResponse {
+	success: Boolean!
+}
+
 input UpdateMonthlyBudgetInput {
 	year: Int!
 	month: Month!
@@ -469,6 +720,18 @@ input UpdateSpendingItemByIdInput {
 }
 
 type UpdateSpendingItemByIdResponse {
+	success: Boolean!
+}
+
+input UpdateTransactionByIdV2Input {
+	transactionId: UUID!
+	amount: Decimal!
+	date: DateTime!
+	description: String
+	notes: String
+}
+
+type UpdateTransactionByIdV2Response {
 	success: Boolean!
 }
 
@@ -504,6 +767,14 @@ input UserInput {
 	firefly: FireflySettingsInput
 }
 
+type UserV2 {
+	username: String!
+}
+
+"""
+Marks an element of a GraphQL schema as no longer supported.
+"""
+directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ARGUMENT_DEFINITION | INPUT_FIELD_DEFINITION | ENUM_VALUE
 """
 Directs the executor to include this field or fragment only when the `if` argument is true.
 """
@@ -512,6 +783,10 @@ directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 Directs the executor to skip this field or fragment when the `if` argument is true.
 """
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""
+Provides a scalar specification URL for specifying the behavior of custom scalar types.
+"""
+directive @specifiedBy(url: String!) on SCALAR
 schema {
 	query: QueryRoot
 	mutation: MutationRoot

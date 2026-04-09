@@ -10,67 +10,60 @@ fragment GraphQLErrorFieldsV2 on GraphQLErrorObject {
   message
 }
 
-# Get monthly budget configuration
-query SettingsPageData($year: Int!, $month: Month!) {
-  monthlyBudgetConfig(year: $year, month: $month) {
-    ... on BudgetConfig {
-      __typename
+# Get settings page data from the PostgresDB
+query SettingsPageDataV2($year: Int!, $month: Month!) {
+  monthSettingsV2(year: $year, month: $month) {
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
+      firefly {
+        enabled
+        apiKey
+        sourceAccount
+      }
+    }
+  }
+  firefly {
+    accounts
+  }
+}
+
+# Query data for the home page, from the Postgres DB
+query GetHomePageDataV2($inputs: HomePageV2Input!) {
+  homePageV2(inputs: $inputs) {
+    totalSpending
+    totalBudget
+    overSpending
+    transactions {
+      id
+      amount
+      date
+      description
+      notes
+    }
+    settings {
       totalAllocation
       shawnPercentageAllocation
       shawnContributionAmount
       maggiePercentageAllocation
       maggieContributionAmount
     }
-    ...GraphQLErrorFields
-  }
-
-  me {
-    username
-    firefly {
-      enabled
-      apiKey
-      sourceAccount
-    }
-  }
-
-  firefly {
-    ... on FireflySuccessResponse {
-      __typename
-      accounts
-    }
-    ... on FireflyErrorObject {
-      code
-      message
-    }
   }
 }
 
-# Get the budget for a specific month
-query GetMonthBudget($year: Int!, $month: Month!) {
-  monthlyBudget(year: $year, month: $month) {
-    __typename
-    ... on MonthlyBudget {
-      __typename
-      month
-      totalSpending
-      overBudgetAmount
-      spending {
-        id
-        amount
-        date
-        description
-        notes
-      }
-      carriedOverFrom
-      budget {
-        totalAllocation
-        maggiePercentageAllocation
-        maggieContributionAmount
-        shawnPercentageAllocation
-        shawnContributionAmount
-      }
+# Data for the SplitBudget component
+query SplitBudgetData($year: Int!, $month: Month!) {
+  monthSettingsV2(year: $year, month: $month) {
+    settings {
+      totalAllocation
+      shawnPercentageAllocation
+      shawnContributionAmount
+      maggiePercentageAllocation
+      maggieContributionAmount
     }
-    ...GraphQLErrorFields
   }
 }
 
@@ -84,33 +77,30 @@ query getConfig {
 
 # Get information about the currently authenticated user
 query Me {
-  me {
+  meV2 {
     username
   }
 }
 
-# Data required in the spending form
-query SpendingItemForm($year: Int!, $month: Month!) {
-  monthlyBudgetConfig(year: $year, month: $month) {
-    ... on BudgetConfig {
-      totalAllocation
-      shawnPercentageAllocation
-      shawnContributionAmount
-      maggiePercentageAllocation
-      maggieContributionAmount
+# Search for a transaction by ID from the PostgresDB
+query SearchTransactionByID($inputs: SearchTransactionV2Inputs!) {
+  searchTransactionV2(inputs: $inputs) {
+    transaction {
+      id
+      amount
+      date
+      description
+      notes
     }
-    ...GraphQLErrorFields
   }
 }
 
-# Search for a spending item by time and ID
-query SearchSpendingItem($inputs: SearchSpendingItemInput!) {
-  searchSpendingItem(inputs: $inputs) {
-    id
-    amount
-    date
-    dateRfc3339
-    description
-    notes
-  }
-}
+# # Data for the transaction form
+# query TransactionFOrm($year: Int!, $month: Month!) {
+#   monthSettingsV2(year: $year, month: $month) {
+#     settings {
+#       shawnPercentageAllocation
+#       maggiePercentageAllocation
+#     }
+#   }
+# }

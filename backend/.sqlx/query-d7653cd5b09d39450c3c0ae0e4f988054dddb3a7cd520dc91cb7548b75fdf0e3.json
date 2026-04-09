@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT * from months m\n            WHERE m.year = $1 AND m.month = $2\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "year",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "month",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "d7653cd5b09d39450c3c0ae0e4f988054dddb3a7cd520dc91cb7548b75fdf0e3"
+}

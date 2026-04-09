@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE budget_allocations ba\n            SET\n                percentage_allocation = $1,\n                contribution_amount = $2\n            FROM months m\n            WHERE ba.month_id = m.id\n                AND ba.user_id = $3\n                AND m.year = $4\n                and m.month = $5\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Numeric",
+        "Numeric",
+        "Uuid",
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7675d3a60bbcc134ad37c031f74053686cc5015a1ea1e4dc7f3258cee4aabd9a"
+}

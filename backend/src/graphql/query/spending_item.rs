@@ -8,7 +8,7 @@ use thiserror::Error;
 use tracing::{info, warn};
 
 use crate::{
-    db::DB,
+    db::MongoDB,
     graphql::error::GraphQlErrorObjectV2,
     month::Month,
     monthly_budget::{MonthlyBudget, SpendingItem},
@@ -37,7 +37,7 @@ pub enum SearchSpendingItemResponse {
 pub async fn search_spending_item_handler(
     inputs: SearchSpendingItemInput,
 ) -> Result<Option<SpendingItem>> {
-    let db = DB::<MonthlyBudget>::new(&inputs.year.to_string())
+    let db = MongoDB::<MonthlyBudget>::new(&inputs.year.to_string())
         .await
         .context("Failed to connect to database")?;
 

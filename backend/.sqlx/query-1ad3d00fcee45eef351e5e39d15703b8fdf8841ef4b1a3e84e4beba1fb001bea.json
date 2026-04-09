@@ -1,0 +1,69 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                t.id,\n                t.month_id,\n                t.amount,\n                t.date,\n                t.description,\n                t.notes,\n                t.split_mode as \"split_mode: SplitMode\"\n            FROM transactions t\n            INNER JOIN months m ON m.id = t.month_id\n            WHERE m.year = $1 AND m.month = $2\n            ORDER BY t.date DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "month_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "amount",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "date",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "notes",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "split_mode: SplitMode",
+        "type_info": {
+          "Custom": {
+            "name": "split_mode",
+            "kind": {
+              "Enum": [
+                "from_settings",
+                "evenly"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "1ad3d00fcee45eef351e5e39d15703b8fdf8841ef4b1a3e84e4beba1fb001bea"
+}

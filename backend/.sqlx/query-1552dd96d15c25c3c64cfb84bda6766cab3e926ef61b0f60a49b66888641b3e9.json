@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE firefly\n            SET\n                enabled = $1,\n                api_key = $2,\n                encryption_nounce = $3,\n                source_account = $4\n            WHERE user_id = $5\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Text",
+        "Text",
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1552dd96d15c25c3c64cfb84bda6766cab3e926ef61b0f60a49b66888641b3e9"
+}

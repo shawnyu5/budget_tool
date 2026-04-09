@@ -4,7 +4,7 @@ use tracing::debug;
 
 use crate::{
     db::{
-        DB,
+        MongoDB,
         users::{USER_TABLE_NAME, User},
     },
     graphql::utils::extract_jwt,
@@ -13,7 +13,7 @@ use crate::{
 pub async fn me_handler(ctx: &Context<'_>) -> Result<User> {
     let jwt = extract_jwt(ctx)?;
 
-    let db = DB::new(USER_TABLE_NAME)
+    let db = MongoDB::new(USER_TABLE_NAME)
         .await
         .context("Failed to connect to user table in DB")?;
 

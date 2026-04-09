@@ -1,3 +1,5 @@
+import Decimal from "decimal.js";
+
 /**
  * Converts a month in numbers to their word representation
  * @param monthNumber - a numerical month representation
@@ -60,9 +62,12 @@ export function generateSpendingItemID(): string {
  * @param percentage - percentage of the total
  * @returns the `percentage` of the `total`
  */
-export function calculatePercentage(total: number, percentage: number) {
-  const result = total * (percentage / 100);
-  return round(result);
+export function calculatePercentage(
+  total: Decimal,
+  percentage: Decimal,
+): Decimal {
+  const result = total.mul(percentage).div(100);
+  return result;
 }
 
 /**
@@ -70,11 +75,28 @@ export function calculatePercentage(total: number, percentage: number) {
  * @returns the total value `number` is a `percentage` of
  */
 export function calculatePercentageOf(
-  number: number,
-  percentage: number,
-): number {
-  let result = number / (percentage / 100.0);
-  return round(result);
+  number: Decimal,
+  percentage: Decimal,
+): Decimal {
+  // let result = number / (percentage / 100.0);
+  const result = number.times(100).dividedBy(percentage);
+  return result;
+}
+
+/**
+ * Calculate the other person's contribution $
+ * @param myContribution - amount $ I am contributing
+ * @param myPercentage - % I am contributing
+ * @param theirPercentage - % they are contributing
+ * @returns contribution $ amount of the other person
+ */
+export function calculateOtherContribution(
+  myContribution: Decimal,
+  myPercentage: Decimal,
+  theirPercentage: Decimal,
+): Decimal {
+  // Logic: (450 * 60) / 40 = 675
+  return myContribution.times(theirPercentage).dividedBy(myPercentage);
 }
 
 /**
@@ -106,4 +128,9 @@ export function arrayBufferToBase64(buffer: ArrayBuffer): string {
 export function formatRfc3339Date(date: string): string {
   const d = new Date(date);
   return `${d.getFullYear()}/${d.getMonth()}/${d.getDay()}`;
+}
+
+export function formatRfc3339DateObj(date: Date): string {
+  // Cuz JS month is 0 indexed need to +1 to get human readable month
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
 }

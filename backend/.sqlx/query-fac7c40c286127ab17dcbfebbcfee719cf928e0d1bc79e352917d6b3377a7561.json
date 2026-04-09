@@ -1,0 +1,48 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT ba.* FROM budget_allocations ba\n            INNER JOIN months m ON m.id = ba.month_id\n            WHERE\n                m.year = $1\n                AND m.month = $2\n                AND ba.user_id = $3\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "month_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "percentage_allocation",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "contribution_amount",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "user_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "fac7c40c286127ab17dcbfebbcfee719cf928e0d1bc79e352917d6b3377a7561"
+}

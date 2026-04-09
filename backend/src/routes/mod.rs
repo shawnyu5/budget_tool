@@ -4,7 +4,6 @@ use anyhow::Context;
 use anyhow::anyhow;
 use async_graphql_axum::GraphQLRequest;
 use async_graphql_axum::GraphQLResponse;
-use axum::body;
 use axum::extract::State;
 use axum::http::HeaderMap;
 use axum::http::StatusCode;
@@ -19,7 +18,6 @@ use mongodb::bson::doc;
 use rayon::prelude::*;
 use reqwest::header::ACCEPT;
 use serde::{Deserialize, Serialize};
-use simd_json::from_slice;
 use tokio_cron_scheduler::JobScheduler;
 use tracing::debug;
 use tracing::error;
@@ -32,6 +30,8 @@ use utoipa_axum::routes;
 use crate::cron::init_all_user_crons;
 use crate::custom_middleware::check_auth_header;
 use crate::db::DBError;
+use crate::db::postgres::PostgresDB;
+use crate::db::postgres::models::Year;
 use crate::graphql::SchemaType;
 use crate::graphql::generate_graphql_schema;
 use crate::monthly_budget::MonthlyBudget;
@@ -45,8 +45,7 @@ use crate::routes::notification::{
     __path_save_notification_subscription_handler, save_notification_subscription_handler,
 };
 use crate::routes::notification::{__path_send_notification_handler, send_notification_handler};
-use crate::utils::calculate_percentage;
-use crate::{db::DB, month::Month};
+use crate::{db::MongoDB, month::Month};
 pub mod auth;
 pub mod notification;
 
@@ -148,12 +147,16 @@ async fn graphql_handler(
         ACCEPT,
         reqwest::header::HeaderValue::from_static("application/json"),
     );
-    let client = reqwest::Client::builder()
+    let http_client = reqwest::Client::builder()
         .default_headers(headers)
         .build()
         .expect("Failed to build reqest client");
+    let postgres = PostgresDB::new().await;
 
-    schema.execute(req.data(jwt).data(client)).await.into()
+    schema
+        .execute(req.data(jwt).data(http_client).data(postgres))
+        .await
+        .into()
 }
 
 /// Get the budget information for a specific month
@@ -178,7 +181,7 @@ async fn get_month_budget_handler(
     Path((year, month)): Path<(String, Month)>,
 ) -> Result<impl IntoResponse, AppError> {
     info!("Connecting to DB");
-    let db = match DB::new(&year).await {
+    let db = match MongoDB::new(&year).await {
         Ok(db) => db,
         Err(e) => {
             error!("Error: {}", e);
@@ -225,7 +228,7 @@ async fn update_budget_handler(
     Path((year, month)): Path<(String, Month)>,
     Json(mut body): Json<MonthlyBudget>,
 ) -> Result<impl IntoResponse, AppError> {
-    let db = DB::new(&year)
+    let db = MongoDB::new(&year)
         .await
         .context("Failed to connect to database")?;
     body.update_calculations();
@@ -292,7 +295,7 @@ impl Deref for MaybeJwt {
 async fn get_spending_item(
     Path((year, month, id)): Path<(String, Month, String)>,
 ) -> Result<Json<Option<SpendingItem>>, AppError> {
-    let db = DB::<MonthlyBudget>::new(&year)
+    let db = MongoDB::<MonthlyBudget>::new(&year)
         .await
         .context("Failed to connect to database")?;
 
@@ -361,7 +364,7 @@ async fn update_spending_item(
     Path((year, month, id)): Path<(String, Month, String)>,
     Json(spending_item): Json<SpendingItem>,
 ) -> Result<(), AppError> {
-    let db = DB::new(&year)
+    let db = MongoDB::new(&year)
         .await
         .context("Failed to connect to database")?;
 
@@ -510,71 +513,49 @@ async fn validate_token_v2(header: HeaderMap) -> StatusCode {
         (status = 500, description = "Failed to get update spending item", body = String),
     ),
 )]
-async fn export_csv_handler(
-    Path((year, month)): Path<(String, Month)>,
-) -> Result<String, AppError> {
-    let monthly_budget = get_month_budget_handler(Path((year, month)))
-        .await?
-        .into_response();
-    let monthly_budget = body::to_bytes(monthly_budget.into_body(), usize::MAX)
+async fn export_csv_handler(Path((year, month)): Path<(Year, Month)>) -> Result<String, AppError> {
+    let db = PostgresDB::new().await;
+    let mut tx = db.transaction().await?;
+    let transactions = db
+        .get_transactions(&mut *tx, year, month)
         .await
-        .context("Failed to get budget information")?;
-    let monthly_budget = from_slice::<MonthlyBudget>(&mut monthly_budget.to_vec())
-        .context("Failed to convert body to Json")?;
-    debug!("Monthly budget: {:#?}", monthly_budget);
+        .context("Failed to get transactions")?;
+
+    // let monthly_budget = body::to_bytes(monthly_budget.into_body(), usize::MAX)
+    //     .await
+    //     .context("Failed to get budget information")?;
+    // let monthly_budget = from_slice::<MonthlyBudget>(&mut monthly_budget.to_vec())
+    //     .context("Failed to convert body to Json")?;
+    // debug!("Monthly budget: {:#?}", monthly_budget);
 
     let mut wtr = csv::Writer::from_writer(Vec::new());
     wtr.write_record(["Amount", "Date", "Description", "Notes"])
         .context("Failed to write header")?;
 
-    for spending in monthly_budget.spending {
-        // TODO: if a row fails to write, should we return partial data?
+    for transaction in transactions {
         let record = [
-            spending.amount.to_string(),
-            spending.date,
-            spending.description,
-            spending.notes.unwrap_or_default(),
+            transaction.amount.to_string(),
+            transaction.date.to_string(),
+            transaction.description.unwrap_or_default(),
+            transaction.notes.unwrap_or_default(),
         ];
         debug!("Writing record {:#?}", record);
         wtr.write_record(record).context("Failed to write row")?;
     }
 
-    wtr.write_record([
-        "Total spending",
-        &monthly_budget.total_spending.to_string(),
-        "",
-        "",
-    ])
-    .context("Failed to write total spending to CSV")?;
-    wtr.write_record([
-        "Total budget",
-        &monthly_budget.budget.total_allocation.to_string(),
-        "",
-        "",
-    ])
-    .context("Failed to write total allocated budget to CSV")?;
-    wtr.write_record([
-        "Shawn contribution",
-        &calculate_percentage(
-            monthly_budget.total_spending,
-            monthly_budget.budget.shawn_percentage_allocation,
-        )
-        .to_string(),
-        "",
-        "",
-    ])
-    .context("Failed to write Shawn contribution to CSV")?;
-    wtr.write_record([
-        "Maggie contribution",
-        &calculate_percentage(
-            monthly_budget.total_spending,
-            monthly_budget.budget.maggie_percentage_allocation,
-        )
-        .to_string(),
-        "",
-        "",
-    ])
-    .context("Failed to write Maggie contribution to CSV")?;
+    let total_spending = db
+        .compute_total_spend(&mut *tx, year, month)
+        .await
+        .context("Failed to compute total spend")?;
+    let total_budget = db
+        .compute_total_allocation(&mut *tx, year, month)
+        .await
+        .context("Failed to compute total budget")?;
+
+    wtr.write_record(["Total spending", &total_spending.to_string(), "", ""])
+        .context("Failed to write total spending to CSV")?;
+    wtr.write_record(["Total budget", &total_budget.to_string(), "", ""])
+        .context("Failed to write total allocated budget to CSV")?;
 
     wtr.flush().context("Failed to write CSV to buffer")?;
     let csv = wtr.into_inner().context("Failed to get CSV data")?;

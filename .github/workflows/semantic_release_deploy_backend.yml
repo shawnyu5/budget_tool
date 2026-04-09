@@ -68,20 +68,20 @@ jobs:
         if: steps.dry_run.outputs.new-release-published == 'true'
         uses: superfly/flyctl-actions/setup-flyctl@master
 
+      - name: Push new image to ghcr
+        if: steps.dry_run.outputs.new-release-published == 'true'
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/shawnyu5/budget_tool_backend:${{ steps.semantic_release.outputs.release-version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Deploy backend
         if: steps.dry_run.outputs.new-release-published == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           cd backend
-          flyctl deploy --remote-only --config fly.prod.toml
-
-      # - name: Push new image
-      #   if: steps.dry_run.outputs.new-release-published == 'true'
-      #   uses: docker/build-push-action@v6.18.0
-      #   with:
-      #     context: .
-      #     push: true
-      #     tags: ghcr.io/shawnyu5/budget_tool:${{ steps.semantic_release.outputs.release-version }}
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
+          flyctl deploy --local-only --config fly.prod.toml

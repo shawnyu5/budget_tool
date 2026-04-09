@@ -1,6 +1,7 @@
 import { MetaProvider, Title } from "@solidjs/meta";
 import { Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
+import Decimal from "decimal.js";
 import { onMount, Suspense } from "solid-js";
 
 export default function App() {
@@ -49,6 +50,12 @@ export default function App() {
         Notification.permission,
       );
     }
+  });
+
+  Decimal.set({
+    precision: 20,
+    rounding: Decimal.ROUND_HALF_UP,
+    toExpPos: 21,
   });
   return (
     <Router

@@ -9,6 +9,8 @@ use dotenvy::dotenv;
 #[derive(Debug, SimpleObject)]
 pub struct Config {
     pub db_connection_string: String,
+    /// URL of the postgres DB
+    pub postgres_url: String,
     /// Name of the database
     pub database_name: String,
     /// Private key used for decryption
@@ -62,6 +64,8 @@ impl Config {
             })
             .collect();
         return Config {
+            postgres_url: env::var("DATABASE_URL")
+                .expect("Missing postgres DB URL in `DATABASE_URL` environment variable"),
             firefly_url: "https://firefly.shawnyu.ca/api".to_string(),
             db_connection_string: env::var("db_connection_string")
                 .expect("MIssing `db_connection_string` env var"),

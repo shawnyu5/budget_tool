@@ -26,7 +26,6 @@ import {
   FireflySettings,
   Month,
   MonthlyBudget,
-  SettingsPageDataQuery,
   UpdateMonthlyBudgetConfigMutation,
 } from "./generated/graphql";
 
@@ -73,48 +72,6 @@ export enum MonthlyBudgetErrors {
   RE_AUTH_NEEDED,
 }
 
-export type SettingsPageDataSuccess = Omit<
-  SettingsPageDataQuery,
-  "monthlyBudgetConfig"
-> & {
-  monthlyBudgetConfig: Extract<
-    SettingsPageDataQuery["monthlyBudgetConfig"],
-    { __typename: "BudgetConfig" }
-  >;
-  firefly: Extract<
-    SettingsPageDataQuery["firefly"],
-    { __typename: "FireflySuccessResponse" }
-  >;
-};
-
-export async function getSettingsPageData(
-  year: string,
-  month: Month,
-  navigate: Navigator,
-): Promise<SettingsPageDataSuccess> {
-  const sdk = NewGraphQLSDK();
-  try {
-    let response = await sdk.SettingsPageData({
-      year: parseInt(year),
-      month,
-    });
-    if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLErrorObject(response.monthlyBudgetConfig);
-      if (err) {
-        throw new Error(err);
-      }
-    }
-
-    if (response.firefly.__typename == "FireflyErrorObject") {
-      throw new Error(response.firefly.message);
-    }
-
-    return response as SettingsPageDataSuccess;
-  } catch (e) {
-    handleGraphQLClientError(e, navigate);
-  }
-}
-
 /**
  * Updates the budget config for a specific month
  */
@@ -125,8 +82,6 @@ export async function updateMonthlyBudgetConfig(
   fireflySettings: FireflySettings,
   navigate: Navigator,
 ): Promise<UpdateMonthlyBudgetConfigMutation> {
-  // __AUTO_GENERATED_PRINT_VAR_START__
-  console.log("updateMonthlyBudgetConfig fireflySettings:", fireflySettings); // __AUTO_GENERATED_PRINT_VAR_END__
   const sdk = NewGraphQLSDK();
   try {
     const budgetConfigInput: BudgetConfigInput = {
@@ -211,21 +166,6 @@ export async function basicAuthLogin(userName: string, password: string) {
   setLocalAuthToken(response.data ?? "");
 }
 
-export async function saveNotificationSubscription(
-  subscription: PushSubscription,
-) {
-  const response = await saveNotificationSubscriptionHandler({
-    body: {
-      endpoint: subscription.endpoint,
-      keys: {
-        auth: String(subscription.getKey("auth")),
-        p256dh: String(subscription.getKey("p256dh")),
-      },
-      expirationTime: subscription.expirationTime,
-    },
-  });
-  return response;
-}
 /**
  * Calculates the total spending for a month
  * @param monthlyBudget - the month's budget to calculate the total of

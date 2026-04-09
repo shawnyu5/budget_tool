@@ -1,42 +1,77 @@
 import { action, useNavigate, useSearchParams } from "@solidjs/router";
-import { createEffect, createSignal, For, Resource, Show } from "solid-js";
-import { MonthlyBudget } from "~/generated/graphql";
+import {
+  createEffect,
+  createSignal,
+  For,
+  Resource,
+  Setter,
+  Show,
+} from "solid-js";
+import { GetHomePageDataV2Query, Transaction } from "~/generated/graphql";
 import log from "~/logger";
-import { MonthlySpending, SpendingItem } from "~/server";
-import { formatRfc3339Date } from "~/utils";
+import { formatRfc3339DateObj } from "~/utils";
+import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
+import Decimal from "decimal.js";
 
-export default function (props: {
-  monthlyBudget: Resource<MonthlyBudget | null>;
-  setMonthlyBudget: (monthlyBudget: MonthlyBudget) => void;
+export default function BudgetTable(props: {
+  data: Resource<GetHomePageDataV2Query | undefined>;
+  mutate: Setter<GetHomePageDataV2Query | undefined>;
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   // If the table is being edited
   const [isEditing, setIsEditing] = createSignal(false);
+  const graphqlSdk = NewGraphQLSDK();
 
   /**
-   * Removes a spending item from the table
-   * @param entry - the spending entry to remove
+   * Removes a transaction from the table
+   * @param transaction - the transaction to remove
    */
-  const removeSpendingItem = (entry: SpendingItem) => {
+  const deleteTransaction = async (transaction: Transaction) => {
     log.info(
-      `Removing spending entry ID ${entry.id}, description: ${entry.description}`,
+      `Removing transaction with ID ${transaction.id}, description: ${transaction.description}`,
     );
-    const prev = props.monthlyBudget();
-    if (!prev) return;
 
-    let updated = {
-      ...prev,
-      spending: (prev.spending ?? []).filter((item) => item.id !== entry.id),
-    };
+    const previous = props.data()?.homePageV2.transactions;
+    props.mutate((prev) => {
+      if (!prev) return;
+      const transactions = prev?.homePageV2.transactions.filter(
+        (t) => t.id != transaction.id,
+      );
 
-    const updatedSpending = updated.spending.reduce((total, spending) => {
-      return total + spending.amount;
-    }, 0);
-    updated.totalSpending = updatedSpending;
+      return {
+        ...prev,
+        homePageV2: {
+          ...prev.homePageV2,
+          totalSpending: new Decimal(
+            transactions.reduce((acc, t) => acc + Number(t.amount), 0),
+          ),
+          transactions,
+        },
+      };
+    });
 
-    props.setMonthlyBudget(updated);
-    log.info("Spending entry removed");
+    try {
+      // Call graphql to delete transaction from DB
+      await graphqlSdk.DeleteTransactionByID({
+        inputs: {
+          transactionId: transaction.id,
+        },
+      });
+    } catch (e) {
+      // If graphql call fails. Revert the mutation on screen
+      props.mutate((prev) => {
+        if (!prev) return;
+        return {
+          ...prev,
+          homePageV2: {
+            ...prev?.homePageV2,
+            transactions: previous ?? [],
+          },
+        };
+      });
+      handleGraphQLClientError(e, navigate);
+    }
   };
 
   return (
@@ -70,18 +105,10 @@ export default function (props: {
         </div>
       </Show>
       <form
-        action={action(async () => {
-          if (!props.monthlyBudget()) return;
-
-          log.info("Spending table modified. Updating month's budget");
+        onSubmit={(e) => {
+          e.preventDefault();
           setIsEditing(false);
-
-          const updated: MonthlyBudget = {
-            ...(props.monthlyBudget() as MonthlyBudget),
-            spending: props.monthlyBudget()?.spending ?? [],
-          };
-          props.setMonthlyBudget(updated);
-        })}
+        }}
         method="post"
       >
         <Show when={isEditing()}>
@@ -122,7 +149,7 @@ export default function (props: {
             </tr>
           </thead>
           <tbody>
-            <For each={props.monthlyBudget()?.spending ?? []}>
+            <For each={props.data()?.homePageV2.transactions ?? []}>
               {(entry) => {
                 return (
                   <tr
@@ -149,8 +176,7 @@ export default function (props: {
                         <button
                           type="button"
                           class="alert button"
-                          // style={{ width: "10%" }}
-                          onClick={() => removeSpendingItem(entry)}
+                          onClick={() => deleteTransaction(entry)}
                         >
                           ❎
                         </button>
@@ -158,13 +184,9 @@ export default function (props: {
                     </Show>
                     <td>
                       <span>$</span>
-                      {entry.amount}
+                      {entry.amount.toNumber()}
                     </td>
-                    <td>
-                      {entry.dateRfc3339
-                        ? formatRfc3339Date(entry.dateRfc3339)
-                        : entry.date}
-                    </td>
+                    <td>{formatRfc3339DateObj(entry.date)}</td>
                     <td>{entry.description}</td>
                     <td>{entry.notes}</td>
                   </tr>

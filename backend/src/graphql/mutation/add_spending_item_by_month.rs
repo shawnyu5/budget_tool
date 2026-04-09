@@ -1,14 +1,14 @@
 use crate::config::Config;
 use crate::db::users::USER_TABLE_NAME;
 use crate::graphql::error::GraphQlErrorObjectV2;
-use crate::graphql::utils::{extract_http_client, extract_jwt};
+use crate::graphql::utils::extract_http_client;
 use crate::utils::calculate_percentage;
-use crate::{db::DB, month::Month, monthly_budget::SpendingItem};
+use crate::{db::MongoDB, month::Month, monthly_budget::SpendingItem};
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
 use async_graphql::{Context, Enum, InputObject};
 use async_graphql::{SimpleObject, Union};
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 use chrono_tz::America::New_York;
 use firefly_client::models::{TransactionSplitStore, TransactionStore, TransactionTypeProperty};
 use serde::Serialize;
@@ -46,7 +46,7 @@ pub async fn add_spending_item_by_month_handler(
     ctx: &Context<'_>,
     inputs: AddSpendingItemByMonthInput,
 ) -> Result<AddSpendingItemByMonthResponse> {
-    let budget_db = DB::new(inputs.year.as_str())
+    let budget_db = MongoDB::new(inputs.year.as_str())
         .await
         .context("Failed to connect to DB")?;
 
@@ -65,7 +65,7 @@ pub async fn add_spending_item_by_month_handler(
         .await
         .context("Failed to save updated budget to DB")?;
 
-    let user_db = DB::new(USER_TABLE_NAME).await?;
+    let user_db = MongoDB::new(USER_TABLE_NAME).await?;
     let http_client = extract_http_client(ctx);
     let dt_est = Utc::now().with_timezone(&New_York);
     let rn = dt_est.to_rfc3339();
@@ -125,7 +125,7 @@ pub async fn add_spending_item_by_month_handler(
                     date: rn.clone(),
                     amount: amount.to_string(),
                     description: inputs.spending_item.clone().description,
-                    notes: Some(inputs.spending_item.clone().notes),
+                    notes: Some(Some(inputs.spending_item.clone().notes.unwrap_or_default())),
                     source_name: Some(Some(
                         user.firefly.unwrap().source_account.unwrap_or_default(),
                     )),

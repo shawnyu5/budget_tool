@@ -1,8 +1,9 @@
 import { createSignal, For, ResourceReturn, Show } from "solid-js";
+import { Settings, SettingsPageDataV2Query } from "~/generated/graphql";
 import { SettingsPageDataSuccess } from "~/server";
 
 export function FireflySettingsForm(props: {
-  data: ResourceReturn<SettingsPageDataSuccess | undefined, unknown>;
+  data: ResourceReturn<SettingsPageDataV2Query | undefined, unknown>;
 }) {
   // If the API key should be shown to the user
   const [showAPIKey, setShowAPIKey] = createSignal(false);
@@ -16,7 +17,7 @@ export function FireflySettingsForm(props: {
           id="firefly-settings-toggle"
           type="checkbox"
           name="firefly-settings-toggle"
-          checked={data()?.me.firefly?.enabled ?? false}
+          checked={data()?.monthSettingsV2.settings.firefly?.enabled ?? false}
           onChange={(e) => {
             const toggled = e.currentTarget.checked;
             mutate((prev) => {
@@ -24,9 +25,9 @@ export function FireflySettingsForm(props: {
               return {
                 ...prev,
                 me: {
-                  ...prev.me,
+                  ...prev.monthSettingsV2.settings,
                   firefly: {
-                    ...prev.me.firefly,
+                    ...prev.monthSettingsV2.settings.firefly,
                     enabled: toggled,
                   },
                 },
@@ -42,17 +43,17 @@ export function FireflySettingsForm(props: {
       {
         // Firefly specific settings
       }
-      <Show when={data()?.me.firefly?.enabled}>
+      <Show when={data()?.monthSettingsV2.settings.firefly?.enabled}>
         <label for="api-key">Firefly API key:</label>
         <div id="api-key-form">
           <input
-            required={data()?.me.firefly?.enabled}
+            required={data()?.monthSettingsV2.settings.firefly?.enabled}
             type={showAPIKey() ? "text" : "password"}
             id="api-key"
             name="api-key"
-            value={data()?.me.firefly?.apiKey ?? ""}
+            value={data()?.monthSettingsV2.settings.firefly?.apiKey ?? ""}
             onBlur={() => {
-              if (data()?.me.firefly?.apiKey == null) {
+              if (data()?.monthSettingsV2.settings.firefly?.apiKey == null) {
                 return;
               }
             }}
@@ -65,9 +66,10 @@ export function FireflySettingsForm(props: {
                 return {
                   ...prev,
                   me: {
-                    ...prev.me,
+                    ...prev.monthSettingsV2.settings,
                     firefly: {
-                      enabled: prev.me.firefly?.enabled ?? false,
+                      enabled:
+                        prev.monthSettingsV2.settings.firefly?.enabled ?? false,
                       apiKey: apiKey,
                     },
                   },
@@ -94,17 +96,20 @@ export function FireflySettingsForm(props: {
             Default account
             <select
               // required={data()?.me.firefly?.enabled}
-              value={data()?.me.firefly?.sourceAccount ?? ""}
+              value={
+                data()?.monthSettingsV2.settings.firefly?.sourceAccount ?? ""
+              }
               onInput={(e) =>
                 mutate((prev) => {
                   if (!prev) return prev;
                   return {
                     ...prev,
                     me: {
-                      ...prev.me,
+                      ...prev.monthSettingsV2.settings,
                       firefly: {
-                        ...prev.me.firefly,
-                        enabled: prev.me.firefly?.enabled!,
+                        ...prev.monthSettingsV2.settings.firefly,
+                        enabled:
+                          prev.monthSettingsV2.settings.firefly?.enabled!,
                         sourceAccount: e.target.value,
                       },
                     },

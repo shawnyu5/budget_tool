@@ -773,10 +773,9 @@
           },
           "expirationTime": {
             "type": [
-              "integer",
+              "string",
               "null"
-            ],
-            "minimum": 0
+            ]
           },
           "keys": {
             "$ref": "#/components/schemas/NotificationKeys"

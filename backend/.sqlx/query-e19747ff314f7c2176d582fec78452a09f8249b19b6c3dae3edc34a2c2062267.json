@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO budget_allocations (\n                id,\n                month_id,\n                user_id,\n                percentage_allocation,\n                contribution_amount\n            )\n            SELECT\n                $3,\n                m.id,\n                $4,\n                $5,\n                $6\n            FROM months m\n            WHERE m.year = $1 AND m.month = $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text",
+        "Uuid",
+        "Uuid",
+        "Numeric",
+        "Numeric"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e19747ff314f7c2176d582fec78452a09f8249b19b6c3dae3edc34a2c2062267"
+}

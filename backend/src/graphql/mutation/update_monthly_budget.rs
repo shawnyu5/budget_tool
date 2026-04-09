@@ -3,7 +3,8 @@ use async_graphql::{Context, InputObject};
 use tracing::info;
 
 use crate::{
-    db::DB, graphql::mutation::MonthlyBudgetResponse, month::Month, monthly_budget::MonthlyBudget,
+    db::MongoDB, graphql::mutation::MonthlyBudgetResponse, month::Month,
+    monthly_budget::MonthlyBudget,
 };
 
 #[derive(InputObject)]
@@ -17,7 +18,7 @@ pub async fn update_monthly_budget_handler(
     _ctx: &Context<'_>,
     mut inputs: UpdateMonthlyBudgetInput,
 ) -> Result<MonthlyBudgetResponse> {
-    let db = DB::new(&inputs.year.to_string())
+    let db = MongoDB::new(&inputs.year.to_string())
         .await
         .context("Failed to connect to database")?;
     inputs.budget.update_calculations();
