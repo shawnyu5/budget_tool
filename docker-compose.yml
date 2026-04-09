@@ -12,9 +12,13 @@ services:
     container_name: postgres
     image: docker.io/library/postgres:18
     restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/18
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
 
+volumes:
+  postgres_data:
