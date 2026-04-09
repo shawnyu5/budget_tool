@@ -1,17 +1,8 @@
 import { action, useParams } from "@solidjs/router";
-import {
-  Accessor,
-  createEffect,
-  createResource,
-  createSignal,
-  Resource,
-  Show,
-  Signal,
-} from "solid-js";
+import { createEffect, createSignal, Resource, Show, Signal } from "solid-js";
 import ErrorComponent from "./errorComponent";
 import { calculatePercentage, formatRfc3339DateObj } from "~/utils";
-import { handleGraphQLErrorObject, NewGraphQLSDK } from "~/graphql";
-import { BudgetConfig, Month, Transaction } from "~/generated/graphql";
+import { Transaction } from "~/generated/graphql";
 import { clientOnly } from "@solidjs/start";
 const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
 import "@rnwonder/solid-date-picker/dist/style.css";
@@ -19,19 +10,15 @@ import { PickerValue } from "@rnwonder/solid-date-picker";
 import Decimal from "decimal.js";
 
 /**
- * A form that displays a spending item
+ * A form that displays a transaction
  */
-export function SpendingItemForm(props: {
+export function TransactionForm(props: {
   transaction?: Resource<Transaction | undefined>;
   onSubmit: (
     transaction: Transaction,
     errorMessageSignal: Signal<string | null>,
   ) => Promise<void>;
 }) {
-  const param = useParams();
-  const year = param.year;
-  const month = param.month;
-
   const [amount, setAmount] = createSignal<string>();
   const [description, setDescription] = createSignal("");
   const [notes, setNotes] = createSignal("");
@@ -44,42 +31,6 @@ export function SpendingItemForm(props: {
   // Tracks if the form has been submitted or not
   const [formSubmitted, setFormSubmitted] = createSignal(false);
   const [errorMessage, _setErrorMessage] = errorMessageSignal;
-  const [budgetConfig] = createResource(async () => {
-    const graphql = NewGraphQLSDK();
-    let response = await graphql.SpendingItemForm({
-      year: parseInt(year),
-      month: month as Month,
-    });
-
-    if (response.monthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLErrorObject(response.monthlyBudgetConfig);
-      if (err) {
-        throw new Error(err);
-      }
-    }
-    return response.monthlyBudgetConfig as BudgetConfig;
-  });
-  const shawnSplit = () => {
-    if (Number.isNaN(amount())) {
-      return 0;
-    }
-
-    return calculatePercentage(
-      new Decimal(amount() || "0"),
-      new Decimal(budgetConfig()?.shawnPercentageAllocation ?? 0),
-    );
-  };
-
-  const maggieSplit = () => {
-    if (Number.isNaN(amount())) {
-      return 0;
-    }
-
-    return calculatePercentage(
-      new Decimal(amount() || "0"),
-      new Decimal(budgetConfig()?.maggiePercentageAllocation ?? 0),
-    );
-  };
 
   createEffect(() => {
     const tx = props.transaction?.();
@@ -184,8 +135,10 @@ export function SpendingItemForm(props: {
           Save
         </button>
 
-        <p>Shawn - ${shawnSplit().toString()}</p>
-        <p>Maggie - ${maggieSplit().toString()}</p>
+        {
+          // <p>Shawn - ${shawnSplit().toString()}</p>
+          // <p>Maggie - ${maggieSplit().toString()}</p>
+        }
       </Show>
     </form>
   );

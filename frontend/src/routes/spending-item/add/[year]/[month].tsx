@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import Decimal from "decimal.js";
 import { createSignal, Signal } from "solid-js";
-import { SpendingItemForm } from "~/components/spendingItemForm";
+import { TransactionForm } from "~/components/TransactionForm";
 import {
   AddSpendingItemByMonthError,
   Month,
@@ -64,5 +64,5 @@ export default function () {
     navigate(`/?year=${year}&month=${month}`, { replace: true });
   };
 
-  return <SpendingItemForm onSubmit={onSubmit} />;
+  return <TransactionForm onSubmit={onSubmit} />;
 }

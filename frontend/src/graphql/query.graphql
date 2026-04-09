@@ -10,34 +10,6 @@ fragment GraphQLErrorFieldsV2 on GraphQLErrorObject {
   message
 }
 
-# Get monthly budget configuration
-query SettingsPageData($year: Int!, $month: Month!) {
-  monthlyBudgetConfig(year: $year, month: $month) {
-    ... on BudgetConfig {
-      __typename
-      totalAllocation
-      shawnPercentageAllocation
-      shawnContributionAmount
-      maggiePercentageAllocation
-      maggieContributionAmount
-    }
-    ...GraphQLErrorFields
-  }
-
-  me {
-    username
-    firefly {
-      enabled
-      apiKey
-      sourceAccount
-    }
-  }
-
-  firefly {
-    accounts
-  }
-}
-
 # Get settings page data from the PostgresDB
 query SettingsPageDataV2($year: Int!, $month: Month!) {
   monthSettingsV2(year: $year, month: $month) {
@@ -56,35 +28,6 @@ query SettingsPageDataV2($year: Int!, $month: Month!) {
   }
   firefly {
     accounts
-  }
-}
-
-# Get the budget for a specific month
-query GetMonthBudget($year: Int!, $month: Month!) {
-  monthlyBudget(year: $year, month: $month) {
-    __typename
-    ... on MonthlyBudget {
-      __typename
-      month
-      totalSpending
-      overBudgetAmount
-      spending {
-        id
-        amount
-        date
-        description
-        notes
-      }
-      carriedOverFrom
-      budget {
-        totalAllocation
-        maggiePercentageAllocation
-        maggieContributionAmount
-        shawnPercentageAllocation
-        shawnContributionAmount
-      }
-    }
-    ...GraphQLErrorFields
   }
 }
 
@@ -134,34 +77,8 @@ query getConfig {
 
 # Get information about the currently authenticated user
 query Me {
-  me {
+  meV2 {
     username
-  }
-}
-
-# Data required in the spending form
-query SpendingItemForm($year: Int!, $month: Month!) {
-  monthlyBudgetConfig(year: $year, month: $month) {
-    ... on BudgetConfig {
-      totalAllocation
-      shawnPercentageAllocation
-      shawnContributionAmount
-      maggiePercentageAllocation
-      maggieContributionAmount
-    }
-    ...GraphQLErrorFields
-  }
-}
-
-# Search for a spending item by time and ID
-query SearchSpendingItem($inputs: SearchSpendingItemInput!) {
-  searchSpendingItem(inputs: $inputs) {
-    id
-    amount
-    date
-    dateRfc3339
-    description
-    notes
   }
 }
 
@@ -177,3 +94,13 @@ query SearchTransactionByID($inputs: SearchTransactionV2Inputs!) {
     }
   }
 }
+
+# # Data for the transaction form
+# query TransactionFOrm($year: Int!, $month: Month!) {
+#   monthSettingsV2(year: $year, month: $month) {
+#     settings {
+#       shawnPercentageAllocation
+#       maggiePercentageAllocation
+#     }
+#   }
+# }

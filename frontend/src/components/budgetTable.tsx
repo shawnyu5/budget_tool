@@ -7,15 +7,11 @@ import {
   Setter,
   Show,
 } from "solid-js";
-import {
-  GetHomePageDataV2Query,
-  Transaction,
-} from "~/generated/graphql";
+import { GetHomePageDataV2Query, Transaction } from "~/generated/graphql";
 import log from "~/logger";
 import { formatRfc3339DateObj } from "~/utils";
-import { clientOnly } from "@solidjs/start";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
-const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
+import Decimal from "decimal.js";
 
 export default function BudgetTable(props: {
   data: Resource<GetHomePageDataV2Query | undefined>;
@@ -39,20 +35,25 @@ export default function BudgetTable(props: {
     const previous = props.data()?.homePageV2.transactions;
     props.mutate((prev) => {
       if (!prev) return;
+      const transactions = prev?.homePageV2.transactions.filter(
+        (t) => t.id != transaction.id,
+      );
+
       return {
         ...prev,
         homePageV2: {
           ...prev.homePageV2,
-          transactions: prev?.homePageV2.transactions.filter(
-            (t) => t.id != transaction.id,
+          totalSpending: new Decimal(
+            transactions.reduce((acc, t) => acc + Number(t.amount), 0),
           ),
+          transactions,
         },
       };
     });
 
     try {
       // Call graphql to delete transaction from DB
-      graphqlSdk.DeleteTransactionByID({
+      await graphqlSdk.DeleteTransactionByID({
         inputs: {
           transactionId: transaction.id,
         },

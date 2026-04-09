@@ -86,7 +86,7 @@ export type NotificationSendBody = {
  */
 export type NotificationSubscription = {
     endpoint: string;
-    expirationTime?: number | null;
+    expirationTime?: string | null;
     keys: NotificationKeys;
 };
 

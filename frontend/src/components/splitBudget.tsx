@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
-import { createEffect, Resource, Show } from "solid-js";
+import { Resource, Show } from "solid-js";
 import { GetHomePageDataV2Query } from "~/generated/graphql";
-import { calculatePercentage, round } from "~/utils";
+import { calculatePercentage } from "~/utils";
 
 /**
  * The amount each person is responsible to pay, based on the month's budget. Including displaying any amount that is over budget

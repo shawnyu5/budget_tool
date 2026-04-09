@@ -10,7 +10,7 @@ import {
   Signal,
 } from "solid-js";
 import ErrorComponent from "~/components/errorComponent";
-import { SpendingItemForm } from "~/components/spendingItemForm";
+import { TransactionForm } from "~/components/TransactionForm";
 import { loadLocalConfig } from "~/config";
 import { Month, SpendingItem, Transaction } from "~/generated/graphql";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
@@ -82,7 +82,7 @@ export default function () {
       <Show when={errorMessage()}>
         <ErrorComponent errorMessage={errorMessage()} />
       </Show>
-      <SpendingItemForm transaction={transaction} onSubmit={onSubmit} />
+      <TransactionForm transaction={transaction} onSubmit={onSubmit} />
     </div>
   );
 }
