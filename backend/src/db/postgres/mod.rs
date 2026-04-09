@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use anyhow::Result;
 use rust_decimal::Decimal;
 use sqlx::PgConnection;
@@ -33,6 +35,7 @@ impl PostgresDB {
         let config = Config::load();
         let pool = PgPoolOptions::new()
             .max_connections(5)
+            .acquire_timeout(Duration::from_secs(15))
             .connect(&config.postgres_url)
             .await
             .expect("Failed to connect to Postgres DB");

@@ -29,6 +29,11 @@ pub async fn month_settings_v2(
         .await
         .context("Failed to get current user")?;
 
+    // let core_users = db
+    //     .get_core_users(&mut tx)
+    //     .await
+    //     .context("Failed to get core users");
+
     // TODO: use get_core_users here
     let shawn_user = db.get_user("shawn").await?;
     let maggie_user = db.get_user("maggie").await?;
@@ -50,7 +55,6 @@ pub async fn month_settings_v2(
         .get_or_insert_budget_allocation(&mut tx, year, month_row.month, maggie_user.id)
         .await
         .context("Failed to insert budget allocation for shawn")?;
-    dbg!(&maggie_allocation);
 
     let firefly = db
         .get_user_firefly_settings(&mut tx, current_user.id)

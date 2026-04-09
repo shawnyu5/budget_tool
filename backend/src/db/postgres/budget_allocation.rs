@@ -154,17 +154,6 @@ impl PostgresDB {
                 error!("Failed to insert current budget allocation: {e:#?}");
                 e
             })?;
-            let count = sqlx::query_scalar!(
-                "SELECT COUNT(*) FROM budget_allocations WHERE month_id = $1",
-                current_month_row.id
-            )
-            .fetch_one(&mut *executor)
-            .await?;
-
-            info!(
-                "TRANSACTION VERIFICATION: Month ID {} has {:?} allocations",
-                current_month_row.id, count
-            );
             Ok(budget_allocation_row)
         }
     }
