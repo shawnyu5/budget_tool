@@ -1,5 +1,6 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{Context, SimpleObject};
+use tracing::{info, instrument};
 
 use crate::{
     db::postgres::models::Year,
@@ -13,6 +14,7 @@ pub struct MonthlySettingsResponse {
     pub settings: Settings,
 }
 
+#[instrument(skip_all)]
 pub async fn month_settings_v2(
     ctx: &Context<'_>,
     year: Year,
@@ -21,25 +23,42 @@ pub async fn month_settings_v2(
     let jwt = extract_jwt(ctx)?;
     let db = extract_db_client(ctx);
     let mut tx = db.transaction().await?;
-    let current_user = db.get_user(&jwt.username).await?;
+    info!("Getting current user");
+    let current_user = db
+        .get_user(&jwt.username)
+        .await
+        .context("Failed to get current user")?;
+
+    // TODO: use get_core_users here
     let shawn_user = db.get_user("shawn").await?;
     let maggie_user = db.get_user("maggie").await?;
 
+    info!("Getting month row");
     let month_row = db
         .get_or_insert_month(&mut tx, year, month)
         .await
         .context("Failed to get or insert month")?;
 
+    info!("Getting Shawn budget allocation");
     let shawn_allocation = db
         .get_or_insert_budget_allocation(&mut tx, year, month_row.month, shawn_user.id)
-        .await?;
+        .await
+        .context("Failed to insert budget allocation for shawn")?;
+
+    info!("Getting Maggie budget allocation");
     let maggie_allocation = db
         .get_or_insert_budget_allocation(&mut tx, year, month_row.month, maggie_user.id)
-        .await?;
+        .await
+        .context("Failed to insert budget allocation for shawn")?;
+    dbg!(&maggie_allocation);
+
     let firefly = db
         .get_user_firefly_settings(&mut tx, current_user.id)
         .await?;
-    let total_allocation = db.compute_total_allocation(&mut *tx, year, month).await?;
+    let total_allocation = db
+        .compute_total_allocation(&mut tx, year, month)
+        .await
+        .context("Failed to compute total allocation")?;
 
     tx.commit().await.context("Failed to commit transaction")?;
     Ok(MonthlySettingsResponse {
@@ -82,13 +101,8 @@ mod tests {
             .await
             .expect("Failed to start DB transaction");
 
-        // info!("Inserting 2026, January into months table");
-        // db.insert_new_month(2026, Month::January)
-        //     .await
-        //     .context("Failed to insert new Month")?;
-
         let core_users = db
-            .get_core_users(&mut *tx)
+            .get_core_users(&mut tx)
             .await
             .context("Failed to get core users")?;
 
@@ -163,7 +177,7 @@ query($year: Int!, $month: Month!) {
         //     .context("Failed to insert new Month")?;
 
         let core_users = db
-            .get_core_users(&mut *tx)
+            .get_core_users(&mut tx)
             .await
             .context("Failed to get core users")?;
 

@@ -1,6 +1,5 @@
 import "./index.css";
 import {
-  createEffect,
   createResource,
   createSignal,
   ErrorBoundary,
@@ -14,16 +13,8 @@ import log from "~/logger";
 import SplitBudget from "~/components/splitBudget";
 import ErrorComponent from "~/components/errorComponent";
 import NavBar from "~/components/navBar";
-import {
-  GetHomePageDataV2Query,
-  Month,
-  MonthlyBudget,
-} from "~/generated/graphql";
-import {
-  handleGraphQLClientError,
-  handleGraphQLErrorObject,
-  NewGraphQLSDK,
-} from "~/graphql";
+import { GetHomePageDataV2Query, Month } from "~/generated/graphql";
+import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import Decimal from "decimal.js";
 
 export default function Home() {

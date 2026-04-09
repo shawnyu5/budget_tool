@@ -91,7 +91,12 @@ impl PostgresDB {
     }
 
     /// Insert a new month into the months table
-    pub async fn insert_new_month(&self, year: Year, month: Month) -> Result<MonthRow> {
+    pub async fn insert_new_month(
+        &self,
+        executor: &mut PgConnection,
+        year: Year,
+        month: Month,
+    ) -> Result<MonthRow> {
         let month = query_as!(
             MonthRow,
             "
@@ -103,7 +108,7 @@ impl PostgresDB {
             year,
             month.to_string(),
         )
-        .fetch_one(&self.pool)
+        .fetch_one(executor)
         .await
         .map_err(|e| {
             error!("{e:#?}");

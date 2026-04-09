@@ -2,6 +2,7 @@
 use anyhow::Context as _;
 use anyhow::Result;
 use rust_decimal::Decimal;
+use rust_decimal::dec;
 use sqlx::PgConnection;
 use sqlx::query;
 use sqlx::query_as;
@@ -47,10 +48,12 @@ impl PostgresDB {
         {
             // if the month record does not exist, insert it into the table first
             info!("Month {month} does not exist in months table. Inserting...");
-            self.insert_new_month(year, month).await.map_err(|e| {
-                error!("{e:#?}");
-                e
-            })?;
+            self.insert_new_month(executor, year, month)
+                .await
+                .map_err(|e| {
+                    error!("{e:#?}");
+                    e
+                })?;
         };
 
         let budget_allocation_row = query_as!(
@@ -82,22 +85,10 @@ impl PostgresDB {
                 "No budget allocation record for current month {month}. Creating from previous month record"
             );
             info!("Fetching current month row {month} from months table");
-            let current_month_row = query_as!(
-                MonthRow,
-                "
-                SELECT * FROM months
-                WHERE year = $1 AND month = $2
-                ",
-                year,
-                month.to_string(),
-            )
-            .fetch_one(&mut *executor)
-            .await
-            .map_err(|e| {
-                error!("{e:#?}");
-                e
-            })
-            .context("Failed to fetch month row")?;
+            let current_month_row = self
+                .get_or_insert_month(executor, year, month)
+                .await
+                .context("Failed to get current month")?;
 
             let prev_month = {
                 // If we are at the beginning of the year, then wrap to December
@@ -110,25 +101,13 @@ impl PostgresDB {
             };
 
             info!("Fetching previous month row from DB: year {year}, {prev_month}");
-            let prev_month_row = query_as!(
-                MonthRow,
-                "
-                SELECT * FROM months
-                WHERE year = $1 AND month = $2
-                ",
-                current_month_row.year,
-                prev_month.to_string(),
-            )
-            .fetch_one(&mut *executor)
-            .await
-            .map_err(|e| {
-                error!("{e:#?}");
-                e
-            })
-            .context("Failed to fetch previous month from DB")?;
+            let prev_month_row = self
+                .get_or_insert_month(executor, year, prev_month)
+                .await
+                .context("Failed to get previous month")?;
 
             info!("Fetching previous month budget allocation");
-            let prev_budget_allocation = query_as!(
+            let prev_budget_allocation = match query_as!(
                 BudgetAllocationRow,
                 "
                 SELECT * FROM budget_allocations
@@ -137,41 +116,55 @@ impl PostgresDB {
                 prev_month_row.id,
                 user_id
             )
-            .fetch_one(&mut *executor)
+            .fetch_optional(&mut *executor)
             .await
             .map_err(|e| {
                 error!("{e:#?}");
                 e
             })
-            .context("Failed to fetch previous month budget allocation")?;
+            .context("Failed to fetch previous month budget allocation")?
+            {
+                Some(row) => row,
+                None => BudgetAllocationRow {
+                    id: Uuid::new_v4(),
+                    month_id: Uuid::new_v4(),
+                    user_id,
+                    // Only these 2 values are used for next month. Above values doesnt matter
+                    percentage_allocation: dec!(50),
+                    contribution_amount: dec!(500),
+                },
+            };
 
             info!("Inserting current month budget allocation row");
             let budget_allocation_row  = query_as!(
                 BudgetAllocationRow,
                 "
                 INSERT INTO budget_allocations (id, month_id, percentage_allocation, contribution_amount, user_id)
-                SELECT
-                    $3,
-                    m.id,
-                    $4,
-                    $5,
-                    $6
-                FROM months m
-                WHERE m.year = $1 AND m.month = $2
+                VALUES ($1, $2, $3, $4, $5)
                 RETURNING *;
                 ",
-                year,
-                month.to_string(),
                 Uuid::new_v4(),
+                current_month_row.id,
                 prev_budget_allocation.percentage_allocation,
                 prev_budget_allocation.contribution_amount,
                 user_id
             )
-                .fetch_one(executor)
+                .fetch_one(&mut *executor)
                 .await.map_err(|e| {
                 error!("Failed to insert current budget allocation: {e:#?}");
                 e
             })?;
+            let count = sqlx::query_scalar!(
+                "SELECT COUNT(*) FROM budget_allocations WHERE month_id = $1",
+                current_month_row.id
+            )
+            .fetch_one(&mut *executor)
+            .await?;
+
+            info!(
+                "TRANSACTION VERIFICATION: Month ID {} has {:?} allocations",
+                current_month_row.id, count
+            );
             Ok(budget_allocation_row)
         }
     }

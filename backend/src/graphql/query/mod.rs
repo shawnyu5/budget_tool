@@ -72,6 +72,8 @@ impl QueryRoot {
         me_handler(ctx).await
     }
 
+    /// Returns the content of the JWT
+    #[graphql(guard = "AuthGuard")]
     async fn me_v2(&self, ctx: &Context<'_>) -> Result<UserModel> {
         me_v2_handler(ctx).await
     }

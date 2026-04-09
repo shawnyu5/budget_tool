@@ -437,6 +437,9 @@ type QueryRoot {
 	"""
 	monthSettingsV2(year: Int!, month: Month!): MonthlySettingsResponse!
 	me: User! @deprecated(reason: "use `me_v2` to get user data from the PostgresDB instead")
+	"""
+	Returns the content of the JWT
+	"""
 	meV2: UserV2!
 	"""
 	Retrieve information from Firefly it self

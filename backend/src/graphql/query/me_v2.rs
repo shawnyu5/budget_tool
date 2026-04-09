@@ -14,6 +14,5 @@ pub async fn me_v2_handler(ctx: &Context<'_>) -> Result<User> {
 
     return Ok(User {
         username: user.username,
-        // notification_subscription: user.
     });
 }

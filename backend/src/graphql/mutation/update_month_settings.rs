@@ -37,7 +37,7 @@ pub async fn update_month_settings(
         .get_user(&jwt.username)
         .await
         .context("Failed to fetch user")?;
-    let core_users = db.get_core_users(&mut *tx).await?;
+    let core_users = db.get_core_users(&mut tx).await?;
     let mut encryption_nounce = "".to_string();
 
     if inputs.settings.firefly.api_key.is_some() {

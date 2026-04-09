@@ -67,6 +67,4 @@ pub struct HomePage {
 #[graphql(name = "UserV2")]
 pub struct User {
     pub username: String,
-    // /// Notification subscription
-    // pub notification_subscription: NotificationSubscription,
 }
