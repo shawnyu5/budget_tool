@@ -1,13 +1,13 @@
 {
   "db": {
     // Database host address (default: "127.0.0.1")
-    "host": "192.168.2.232",
+    // "host": "192.168.2.232",
     // Database port (default: 5432)
     "port": 5432,
     // Database username (default: "postgres")
     "username": "postgres",
     // Database password (default: "postgres")
-    "password": "YxxW8rKoTcu5X9OYjytQA0RLlB9UzQri",
+    "password": "postgres",
     // Database name to connect to (default: "postgres")
     "database": "budget_tool_dev",
     // Connection timeout in seconds (default: 10)
