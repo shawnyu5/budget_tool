@@ -101,9 +101,12 @@ pub async fn app() -> Router {
     // Reassign here to make sure the router the right type
     let router = router.with_state(graphql_schema);
 
-    info!("Generated Open API spec");
-    generate_open_api_spec_from_open_api(api_spec, "open_api_spec.json")
-        .expect("Failed to generate open API spec");
+    #[cfg(debug_assertions)]
+    {
+        info!("Generated Open API spec");
+        generate_open_api_spec_from_open_api(api_spec, "open_api_spec.json")
+            .expect("Failed to generate open API spec");
+    }
 
     return attach_tracing_cors_middleware(router);
 }
