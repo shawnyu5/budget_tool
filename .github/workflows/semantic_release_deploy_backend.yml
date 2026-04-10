@@ -5,6 +5,10 @@ on:
       - "master"
       # - "develop"
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   release_deploy:
     name: Semantic release and deploy backend
