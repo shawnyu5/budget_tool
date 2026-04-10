@@ -81,6 +81,8 @@ jobs:
           tags: ghcr.io/shawnyu5/budget_tool_backend:${{ steps.semantic_release.outputs.release-version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: false
+          attestations: false
 
       - name: Deploy backend
         if: steps.dry_run.outputs.new-release-published == 'true'
