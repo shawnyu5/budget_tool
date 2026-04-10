@@ -97,7 +97,7 @@ export function handleGraphQLClientError(
   navigate: Navigator,
 ): never {
   if (e instanceof ClientError) {
-    console.log("Caught grapqhql error");
+    console.error(`Caught grapqhql error: ${e}`);
     if (e.response.errors?.some((e) => e.message == "UNAUTHENTICATED")) {
       navigate("/login", { replace: true });
     }
