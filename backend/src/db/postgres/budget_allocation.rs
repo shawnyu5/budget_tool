@@ -190,6 +190,10 @@ impl PostgresDB {
                 $6
             FROM months m
             WHERE m.year = $1 AND m.month = $2
+            ON CONFLICT (month_id, user_id)
+            DO UPDATE SET
+                percentage_allocation = EXCLUDED.percentage_allocation,
+                contribution_amount = EXCLUDED.contribution_amount
             ",
             year,
             month_row.month.to_string(),

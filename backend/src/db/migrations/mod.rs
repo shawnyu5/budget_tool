@@ -31,6 +31,7 @@ pub async fn do_mongo_migrations() -> Result<()> {
         ),
         Box::new(|| Box::pin(add_date_rfc3339_field())),
     );
+
     migrations.insert(
         SchemaMigration::new("migrate_to_postgres", 1, "Migrate all data to postgres"),
         Box::new(|| Box::pin(migrate_to_postgres())),
@@ -62,7 +63,7 @@ pub async fn do_mongo_migrations() -> Result<()> {
                     .await
                     .context("Failed to add migration record to DB")?;
             }
-            Err(e) => error!("Migration failed: {e}"),
+            Err(e) => error!("Migration failed: {e:#?}"),
         };
     }
     Ok(())
@@ -120,7 +121,8 @@ async fn migrate_to_postgres() -> Result<()> {
                             Decimal::from_f64(mongo_month_budget.budget.shawn_contribution_amount)
                                 .unwrap(),
                         )
-                        .await?;
+                        .await
+                        .context("Failed to get user budget allocation")?;
                 } else if user.username == "maggie" {
                     info!("Inserting budget_allocation for user maggie for {year} {month}");
                     postgres
@@ -136,7 +138,9 @@ async fn migrate_to_postgres() -> Result<()> {
                             Decimal::from_f64(mongo_month_budget.budget.maggie_contribution_amount)
                                 .unwrap(),
                         )
-                        .await?;
+                        .await
+                        .context("Failed to get user budget allocation")?;
+                    info!("Inserted new budget_allocation for user maggie for {year} {month}");
                 }
             }
 
