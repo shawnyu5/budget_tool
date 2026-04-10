@@ -22,4 +22,5 @@ FROM docker.io/alpine:3.22.0 AS runtime
 WORKDIR /app
 COPY --from=builder /app/target/release/backend /usr/local/bin
 COPY ./Cargo.toml .
+LABEL org.opencontainers.image.source="https://github.com/shawnyu5/budget_tool"
 ENTRYPOINT ["/usr/local/bin/backend"]
