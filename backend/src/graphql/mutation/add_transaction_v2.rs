@@ -1,13 +1,23 @@
+use std::ops::Div;
+
+use crate::config::Config;
+use crate::db::postgres::PostgresDB;
 use crate::db::postgres::models::Year;
 use crate::db::postgres::models::transaction::SplitMode;
+use crate::firefly::FireflyClient;
 use crate::graphql::utils::extract_db_client;
+use crate::graphql::utils::extract_jwt;
 use crate::models::Transaction;
 use crate::month::Month;
+use crate::routes::JwtClaim;
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
 use async_graphql::Context;
 use async_graphql::InputObject;
 use async_graphql::SimpleObject;
+use chrono_tz::America::Toronto;
+use rust_decimal::dec;
+use tracing::debug;
 use tracing::info;
 use tracing::{error, instrument};
 use uuid::Uuid;
@@ -45,6 +55,11 @@ pub async fn add_transaction_v2(
     let total_allocation = db
         .compute_total_allocation(&mut tx, inputs.year, inputs.month)
         .await?;
+
+    let core_users = db
+        .get_core_users(&mut tx)
+        .await
+        .context("Faile to get core users")?;
 
     // If we are not over budget yet, and adding this new transaction will put us over budget, split it into 2 transactions
     if total_spend < total_allocation
@@ -104,6 +119,42 @@ pub async fn add_transaction_v2(
             e
         })
         .context("Failed to insert overflow transaction")?;
+
+        // Since transaction is being split evenly, create transaction with same amount for both users
+        let amount = inputs.transaction.amount.div(dec!(2));
+        for user in core_users {
+            info!(
+                "Creating transaction in firefly for user {} with amount {amount}",
+                user.username
+            );
+            let firefly_settings = db
+                .get_user_firefly_settings(&mut tx, user.id)
+                .await
+                .context("Failed to get user firefly settings")?;
+
+            if !firefly_settings.enabled {
+                info!("firefly integration disabled. Skipping creating firefly transaction");
+            } else {
+                let config = Config::load();
+                let api_key = firefly_settings
+                    .decrypt_firefly_api_key()
+                    .context("Failed to decrypt Firefly API key")?
+                    .expect("Missing firefly API key");
+
+                let firefly_client = FireflyClient::new(&api_key, &config.firefly_url);
+                let transaction = inputs.transaction.clone();
+                firefly_client
+                    .create_new_transaction(
+                        transaction.date.with_timezone(&Toronto),
+                        transaction.amount,
+                        &transaction.description,
+                        &transaction.notes,
+                        &firefly_settings.source_account.unwrap_or_default(),
+                    )
+                    .await
+                    .context("Failed to create firefly transaction")?;
+            }
+        }
     } else if total_spend >= total_allocation {
         // We are already over budget
         info!("Already over budget. Inserting transaction with SplitMode::Evenly");
@@ -147,115 +198,7 @@ pub async fn add_transaction_v2(
 
     tx.commit().await.context("Failed to convert transaction")?;
 
-    // TODO: add transaction in firefly
     Ok(AddTransactionResponseV2 { success: true })
-
-    // let mut month_budget = budget_db
-    //     .get_month_budget(inputs.month)
-    //     .await
-    //     .context("Failed to get monthly budget")?;
-
-    // month_budget.spending.push(inputs.spending_item.clone());
-    // month_budget.update_calculations();
-    // month_budget.sort_by_date();
-    //
-    // info!("Updated budget: {:#?}", month_budget);
-    // budget_db
-    //     .update_monthly_budget(inputs.month, &month_budget)
-    //     .await
-    //     .context("Failed to save updated budget to DB")?;
-    //
-    // let user_db = MongoDB::new(USER_TABLE_NAME).await?;
-    // let http_client = extract_http_client(ctx);
-    // let dt_est = Utc::now().with_timezone(&New_York);
-    // let rn = dt_est.to_rfc3339();
-    //
-    // let users = user_db
-    //     .get_all_users()
-    //     .await
-    //     .context("Failed to get all users from DB")?;
-    //
-    // let config = Config::load();
-    // let monthly_budget_config = month_budget.budget;
-    //
-    // for mut user in users {
-    //     let mut amount = 0.0;
-    //     if user.username == "shawn" {
-    //         amount = calculate_percentage(
-    //             inputs.spending_item.amount,
-    //             monthly_budget_config.shawn_percentage_allocation,
-    //         );
-    //     } else if user.username == "maggie" {
-    //         amount = calculate_percentage(
-    //             inputs.spending_item.amount,
-    //             monthly_budget_config.maggie_percentage_allocation,
-    //         );
-    //     } else {
-    //         warn!(
-    //             "Unsupported firefly user: {}. Not creating firefly transaction",
-    //             user.username
-    //         );
-    //         continue;
-    //     };
-    //
-    //     if user.firefly.is_none()
-    //         || user
-    //             .firefly
-    //             .as_ref()
-    //             .is_some_and(|firefly| !firefly.enabled)
-    //     {
-    //         continue;
-    //     }
-    //     user.decrypt_firefly_api_key()?;
-    //     info!("Creating firefly transaction for user {}", &user.username);
-    //     match firefly_client::apis::transactions_api::store_transaction(
-    //         &firefly_client::apis::configuration::Configuration {
-    //             base_path: config.firefly_url.clone(),
-    //             client: http_client.clone(),
-    //             bearer_access_token: user.firefly.clone().unwrap().api_key.clone(),
-    //             ..Default::default()
-    //         },
-    //         TransactionStore {
-    //             error_if_duplicate_hash: Some(false),
-    //             apply_rules: Some(true),
-    //             fire_webhooks: Some(true),
-    //             group_title: None,
-    //             transactions: vec![TransactionSplitStore {
-    //                 r#type: TransactionTypeProperty::Withdrawal,
-    //                 date: rn.clone(),
-    //                 amount: amount.to_string(),
-    //                 description: inputs.spending_item.clone().description,
-    //                 notes: Some(Some(inputs.spending_item.clone().notes.unwrap_or_default())),
-    //                 source_name: Some(Some(
-    //                     user.firefly.unwrap().source_account.unwrap_or_default(),
-    //                 )),
-    //                 // source_name: Some(Some("Wealthsimple chequing".to_string())),
-    //                 ..Default::default()
-    //             }],
-    //         },
-    //         None,
-    //     )
-    //     .await
-    //     {
-    //         Ok(res) => res,
-    //         Err(e) => {
-    //             error!("{e:#?}");
-    //             return Ok(AddTransactionResponseV2::GraphQLErrorObject(
-    //                 GraphQlErrorObjectV2 {
-    //                     code: AddSpendingItemByMonthError::FireflyUpdateFailed,
-    //                     message: format!(
-    //                         "Failed to create firfly transaction for user {}: {e}",
-    //                         user.username
-    //                     ),
-    //                 },
-    //             ));
-    //         }
-    //     };
-    // }
-    //
-    // return Ok(AddTransactionResponseV2::SuccessResponse(
-    //     AddTransactionV2SuccessResponse { success: true },
-    // ));
 }
 
 #[cfg(test)]
