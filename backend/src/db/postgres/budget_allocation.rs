@@ -14,7 +14,7 @@ use crate::db::postgres::models::Year;
 use crate::{
     db::postgres::{
         PostgresDB,
-        models::{budget_allocation::BudgetAllocationRow, month::MonthRow},
+        models::budget_allocation::BudgetAllocationRow,
     },
     month::Month,
 };

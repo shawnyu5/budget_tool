@@ -1,15 +1,12 @@
 use std::ops::Div;
 
 use crate::config::Config;
-use crate::db::postgres::PostgresDB;
 use crate::db::postgres::models::Year;
 use crate::db::postgres::models::transaction::SplitMode;
 use crate::firefly::FireflyClient;
 use crate::graphql::utils::extract_db_client;
-use crate::graphql::utils::extract_jwt;
 use crate::models::Transaction;
 use crate::month::Month;
-use crate::routes::JwtClaim;
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
 use async_graphql::Context;
@@ -17,7 +14,6 @@ use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use chrono_tz::America::Toronto;
 use rust_decimal::dec;
-use tracing::debug;
 use tracing::info;
 use tracing::{error, instrument};
 use uuid::Uuid;

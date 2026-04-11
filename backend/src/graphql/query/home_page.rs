@@ -1,7 +1,7 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{Context, InputObject};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use rust_decimal::{Decimal, dec};
+use rust_decimal::dec;
 use tracing::{error, info};
 
 use crate::{
