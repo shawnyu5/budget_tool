@@ -1,0 +1,1228 @@
+{
+  "name": "budget_tool",
+  "tables": [
+    {
+      "name": "_sqlx_test.databases",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "db_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "test_path",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "databases_pkey",
+          "def": "CREATE UNIQUE INDEX databases_pkey ON _sqlx_test.databases USING btree (db_name)",
+          "table": "_sqlx_test.databases",
+          "columns": [
+            "db_name"
+          ]
+        },
+        {
+          "name": "databases_created_at",
+          "def": "CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_at)",
+          "table": "_sqlx_test.databases",
+          "columns": [
+            "created_at"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "databases_created_at_not_null",
+          "type": "n",
+          "def": "NOT NULL created_at",
+          "table": "_sqlx_test.databases",
+          "referenced_table": "",
+          "columns": [
+            "created_at"
+          ]
+        },
+        {
+          "name": "databases_db_name_not_null",
+          "type": "n",
+          "def": "NOT NULL db_name",
+          "table": "_sqlx_test.databases",
+          "referenced_table": "",
+          "columns": [
+            "db_name"
+          ]
+        },
+        {
+          "name": "databases_test_path_not_null",
+          "type": "n",
+          "def": "NOT NULL test_path",
+          "table": "_sqlx_test.databases",
+          "referenced_table": "",
+          "columns": [
+            "test_path"
+          ]
+        },
+        {
+          "name": "databases_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (db_name)",
+          "table": "_sqlx_test.databases",
+          "referenced_table": "",
+          "columns": [
+            "db_name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public._sqlx_migrations",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "version",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "installed_on",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "default": "now()"
+        },
+        {
+          "name": "success",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "checksum",
+          "type": "bytea",
+          "nullable": false
+        },
+        {
+          "name": "execution_time",
+          "type": "bigint",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "_sqlx_migrations_pkey",
+          "def": "CREATE UNIQUE INDEX _sqlx_migrations_pkey ON public._sqlx_migrations USING btree (version)",
+          "table": "public._sqlx_migrations",
+          "columns": [
+            "version"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "_sqlx_migrations_checksum_not_null",
+          "type": "n",
+          "def": "NOT NULL checksum",
+          "table": "public._sqlx_migrations",
+          "referenced_table": "",
+          "columns": [
+            "checksum"
+          ]
+        },
+        {
+          "name": "_sqlx_migrations_description_not_null",
+          "type": "n",
+          "def": "NOT NULL description",
+          "table": "public._sqlx_migrations",
+          "referenced_table": "",
+          "columns": [
+            "description"
+          ]
+        },
+        {
+          "name": "_sqlx_migrations_execution_time_not_null",
+          "type": "n",
+          "def": "NOT NULL execution_time",
+          "table": "public._sqlx_migrations",
+          "referenced_table": "",
+          "columns": [
+            "execution_time"
+          ]
+        },
+        {
+          "name": "_sqlx_migrations_installed_on_not_null",
+          "type": "n",
+          "def": "NOT NULL installed_on",
+          "table": "public._sqlx_migrations",
+          "referenced_table": "",
+          "columns": [
+            "installed_on"
+          ]
+        },
+        {
+          "name": "_sqlx_migrations_success_not_null",
+          "type": "n",
+          "def": "NOT NULL success",
+          "table": "public._sqlx_migrations",
+          "referenced_table": "",
+          "columns": [
+            "success"
+          ]
+        },
+        {
+          "name": "_sqlx_migrations_version_not_null",
+          "type": "n",
+          "def": "NOT NULL version",
+          "table": "public._sqlx_migrations",
+          "referenced_table": "",
+          "columns": [
+            "version"
+          ]
+        },
+        {
+          "name": "_sqlx_migrations_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (version)",
+          "table": "public._sqlx_migrations",
+          "referenced_table": "",
+          "columns": [
+            "version"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.months",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "year",
+          "type": "integer",
+          "nullable": false,
+          "default": "2026"
+        },
+        {
+          "name": "month",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "months_pkey",
+          "def": "CREATE UNIQUE INDEX months_pkey ON public.months USING btree (id)",
+          "table": "public.months",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "unique_month_year",
+          "def": "CREATE UNIQUE INDEX unique_month_year ON public.months USING btree (year, month)",
+          "table": "public.months",
+          "columns": [
+            "year",
+            "month"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "months_id_not_null",
+          "type": "n",
+          "def": "NOT NULL id",
+          "table": "public.months",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "months_month_not_null",
+          "type": "n",
+          "def": "NOT NULL month",
+          "table": "public.months",
+          "referenced_table": "",
+          "columns": [
+            "month"
+          ]
+        },
+        {
+          "name": "months_year_not_null",
+          "type": "n",
+          "def": "NOT NULL year",
+          "table": "public.months",
+          "referenced_table": "",
+          "columns": [
+            "year"
+          ]
+        },
+        {
+          "name": "months_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.months",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "unique_month_year",
+          "type": "UNIQUE",
+          "def": "UNIQUE (year, month)",
+          "table": "public.months",
+          "referenced_table": "",
+          "columns": [
+            "year",
+            "month"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.budget_allocations",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "month_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "percentage_allocation",
+          "type": "numeric(5,2)",
+          "nullable": false
+        },
+        {
+          "name": "contribution_amount",
+          "type": "numeric(10,2)",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "budget_allocations_pkey",
+          "def": "CREATE UNIQUE INDEX budget_allocations_pkey ON public.budget_allocations USING btree (id)",
+          "table": "public.budget_allocations",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "month_unique",
+          "def": "CREATE UNIQUE INDEX month_unique ON public.budget_allocations USING btree (month_id, user_id)",
+          "table": "public.budget_allocations",
+          "columns": [
+            "month_id",
+            "user_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "budget_allocations_contribution_amount_not_null",
+          "type": "n",
+          "def": "NOT NULL contribution_amount",
+          "table": "public.budget_allocations",
+          "referenced_table": "",
+          "columns": [
+            "contribution_amount"
+          ]
+        },
+        {
+          "name": "budget_allocations_id_not_null",
+          "type": "n",
+          "def": "NOT NULL id",
+          "table": "public.budget_allocations",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "budget_allocations_month_id_not_null",
+          "type": "n",
+          "def": "NOT NULL month_id",
+          "table": "public.budget_allocations",
+          "referenced_table": "",
+          "columns": [
+            "month_id"
+          ]
+        },
+        {
+          "name": "budget_allocations_percentage_allocation_not_null",
+          "type": "n",
+          "def": "NOT NULL percentage_allocation",
+          "table": "public.budget_allocations",
+          "referenced_table": "",
+          "columns": [
+            "percentage_allocation"
+          ]
+        },
+        {
+          "name": "budget_allocations_user_id_not_null",
+          "type": "n",
+          "def": "NOT NULL user_id",
+          "table": "public.budget_allocations",
+          "referenced_table": "",
+          "columns": [
+            "user_id"
+          ]
+        },
+        {
+          "name": "budget_allocations_month_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (month_id) REFERENCES months(id)",
+          "table": "public.budget_allocations",
+          "referenced_table": "months",
+          "columns": [
+            "month_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "budget_allocations_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.budget_allocations",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "month_unique",
+          "type": "UNIQUE",
+          "def": "UNIQUE (month_id, user_id)",
+          "table": "public.budget_allocations",
+          "referenced_table": "",
+          "columns": [
+            "month_id",
+            "user_id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.transactions",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "month_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "amount",
+          "type": "numeric(10,2)",
+          "nullable": false
+        },
+        {
+          "name": "date",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "split_mode",
+          "type": "split_mode",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "transactions_pkey",
+          "def": "CREATE UNIQUE INDEX transactions_pkey ON public.transactions USING btree (id)",
+          "table": "public.transactions",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "transactions_amount_not_null",
+          "type": "n",
+          "def": "NOT NULL amount",
+          "table": "public.transactions",
+          "referenced_table": "",
+          "columns": [
+            "amount"
+          ]
+        },
+        {
+          "name": "transactions_date_not_null",
+          "type": "n",
+          "def": "NOT NULL date",
+          "table": "public.transactions",
+          "referenced_table": "",
+          "columns": [
+            "date"
+          ]
+        },
+        {
+          "name": "transactions_id_not_null",
+          "type": "n",
+          "def": "NOT NULL id",
+          "table": "public.transactions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "transactions_month_id_not_null",
+          "type": "n",
+          "def": "NOT NULL month_id",
+          "table": "public.transactions",
+          "referenced_table": "",
+          "columns": [
+            "month_id"
+          ]
+        },
+        {
+          "name": "transactions_month_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (month_id) REFERENCES months(id)",
+          "table": "public.transactions",
+          "referenced_table": "months",
+          "columns": [
+            "month_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "transactions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.transactions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.users",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "username",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "users_pkey",
+          "def": "CREATE UNIQUE INDEX users_pkey ON public.users USING btree (id)",
+          "table": "public.users",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "users_id_not_null",
+          "type": "n",
+          "def": "NOT NULL id",
+          "table": "public.users",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "users_username_not_null",
+          "type": "n",
+          "def": "NOT NULL username",
+          "table": "public.users",
+          "referenced_table": "",
+          "columns": [
+            "username"
+          ]
+        },
+        {
+          "name": "users_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.users",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.firefly",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "api_key",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "encryption_nounce",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "source_account",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "nullable": false,
+          "default": "false"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "firefly_pkey",
+          "def": "CREATE UNIQUE INDEX firefly_pkey ON public.firefly USING btree (id)",
+          "table": "public.firefly",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "firefly_enabled_not_null",
+          "type": "n",
+          "def": "NOT NULL enabled",
+          "table": "public.firefly",
+          "referenced_table": "",
+          "columns": [
+            "enabled"
+          ]
+        },
+        {
+          "name": "firefly_id_not_null",
+          "type": "n",
+          "def": "NOT NULL id",
+          "table": "public.firefly",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "firefly_user_id_not_null",
+          "type": "n",
+          "def": "NOT NULL user_id",
+          "table": "public.firefly",
+          "referenced_table": "",
+          "columns": [
+            "user_id"
+          ]
+        },
+        {
+          "name": "firefly_user_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "table": "public.firefly",
+          "referenced_table": "users",
+          "columns": [
+            "user_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "firefly_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.firefly",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.notification_keys",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "auth",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "p256dh",
+          "type": "text",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "notification_keys_pkey",
+          "def": "CREATE UNIQUE INDEX notification_keys_pkey ON public.notification_keys USING btree (id)",
+          "table": "public.notification_keys",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "notification_keys_id_not_null",
+          "type": "n",
+          "def": "NOT NULL id",
+          "table": "public.notification_keys",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "notification_keys_user_id_not_null",
+          "type": "n",
+          "def": "NOT NULL user_id",
+          "table": "public.notification_keys",
+          "referenced_table": "",
+          "columns": [
+            "user_id"
+          ]
+        },
+        {
+          "name": "notification_keys_user_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "table": "public.notification_keys",
+          "referenced_table": "users",
+          "columns": [
+            "user_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "notification_keys_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.notification_keys",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "public.notification_subscription",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "endpoint",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "expiration_time",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "p256dh",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "auth",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "notification_subscription_pkey",
+          "def": "CREATE UNIQUE INDEX notification_subscription_pkey ON public.notification_subscription USING btree (id)",
+          "table": "public.notification_subscription",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "notification_subscription_auth_not_null",
+          "type": "n",
+          "def": "NOT NULL auth",
+          "table": "public.notification_subscription",
+          "referenced_table": "",
+          "columns": [
+            "auth"
+          ]
+        },
+        {
+          "name": "notification_subscription_endpoint_not_null",
+          "type": "n",
+          "def": "NOT NULL endpoint",
+          "table": "public.notification_subscription",
+          "referenced_table": "",
+          "columns": [
+            "endpoint"
+          ]
+        },
+        {
+          "name": "notification_subscription_id_not_null",
+          "type": "n",
+          "def": "NOT NULL id",
+          "table": "public.notification_subscription",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "notification_subscription_p256dh_not_null",
+          "type": "n",
+          "def": "NOT NULL p256dh",
+          "table": "public.notification_subscription",
+          "referenced_table": "",
+          "columns": [
+            "p256dh"
+          ]
+        },
+        {
+          "name": "notification_subscription_user_id_not_null",
+          "type": "n",
+          "def": "NOT NULL user_id",
+          "table": "public.notification_subscription",
+          "referenced_table": "",
+          "columns": [
+            "user_id"
+          ]
+        },
+        {
+          "name": "fk_user_id",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "table": "public.notification_subscription",
+          "referenced_table": "users",
+          "columns": [
+            "user_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "notification_subscription_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.notification_subscription",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "table": "public.budget_allocations",
+      "columns": [
+        "month_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.months",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (month_id) REFERENCES months(id)"
+    },
+    {
+      "table": "public.transactions",
+      "columns": [
+        "month_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.months",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (month_id) REFERENCES months(id)"
+    },
+    {
+      "table": "public.firefly",
+      "columns": [
+        "user_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.users",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id)"
+    },
+    {
+      "table": "public.notification_keys",
+      "columns": [
+        "user_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.users",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id)"
+    },
+    {
+      "table": "public.notification_subscription",
+      "columns": [
+        "user_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.users",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id)"
+    }
+  ],
+  "functions": [
+    {
+      "name": "public.digest",
+      "return_type": "bytea",
+      "arguments": "text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.digest",
+      "return_type": "bytea",
+      "arguments": "bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.hmac",
+      "return_type": "bytea",
+      "arguments": "text, text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.hmac",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.crypt",
+      "return_type": "text",
+      "arguments": "text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.gen_salt",
+      "return_type": "text",
+      "arguments": "text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.gen_salt",
+      "return_type": "text",
+      "arguments": "text, integer",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.encrypt",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.decrypt",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.encrypt_iv",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.decrypt_iv",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.gen_random_bytes",
+      "return_type": "bytea",
+      "arguments": "integer",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.gen_random_uuid",
+      "return_type": "uuid",
+      "arguments": "",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_sym_encrypt",
+      "return_type": "bytea",
+      "arguments": "text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_sym_encrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_sym_encrypt",
+      "return_type": "bytea",
+      "arguments": "text, text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_sym_encrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_sym_decrypt",
+      "return_type": "text",
+      "arguments": "bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_sym_decrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_sym_decrypt",
+      "return_type": "text",
+      "arguments": "bytea, text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_sym_decrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_encrypt",
+      "return_type": "bytea",
+      "arguments": "text, bytea",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_encrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_encrypt",
+      "return_type": "bytea",
+      "arguments": "text, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_encrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_decrypt",
+      "return_type": "text",
+      "arguments": "bytea, bytea",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_decrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_decrypt",
+      "return_type": "text",
+      "arguments": "bytea, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_decrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_decrypt",
+      "return_type": "text",
+      "arguments": "bytea, bytea, text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_pub_decrypt_bytea",
+      "return_type": "bytea",
+      "arguments": "bytea, bytea, text, text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_key_id",
+      "return_type": "text",
+      "arguments": "bytea",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.armor",
+      "return_type": "text",
+      "arguments": "bytea",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.armor",
+      "return_type": "text",
+      "arguments": "bytea, text[], text[]",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.dearmor",
+      "return_type": "bytea",
+      "arguments": "text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.pgp_armor_headers",
+      "return_type": "record",
+      "arguments": "text, OUT key text, OUT value text",
+      "type": "FUNCTION"
+    },
+    {
+      "name": "public.fips_mode",
+      "return_type": "bool",
+      "arguments": "",
+      "type": "FUNCTION"
+    }
+  ],
+  "enums": [
+    {
+      "name": "public.split_mode",
+      "values": [
+        "evenly",
+        "from_settings"
+      ]
+    }
+  ],
+  "driver": {
+    "name": "postgres",
+    "database_version": "PostgreSQL 18.1 (Debian 18.1-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "meta": {
+      "current_schema": "public",
+      "search_paths": [
+        "postgres",
+        "public"
+      ],
+      "dict": {
+        "Functions": "Stored procedures and functions"
+      }
+    }
+  }
+}

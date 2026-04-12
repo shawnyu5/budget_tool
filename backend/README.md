@@ -20,6 +20,7 @@ The following environment variables are required:
 - `encryption_key`: key used for encryption / decryption
 - `vapid_public_key`: VAPID public key used to sign the notification by the client
 - `vapid_private_key`: VAPID private key used to verify notifications from the client
+- `DATABASE_URL`: Postgres DB url, in the format `postgres://<username>:<password>@<port>/budget_tool_dev`
 
 The VAPID keys can be generated using the following JS:
 
@@ -33,86 +34,7 @@ console.log("Private Key:", vapidKeys.privateKey); // base64url
 
 ## Data models
 
-Postgres data models:
-
-`months`
-
-Stores budget information about a single month
-
-| Name                                                                        | Type          | Description                            | Relationship | Notes      |
-| --------------------------------------------------------------------------- | ------------- | -------------------------------------- | ------------ | ---------- |
-| ID                                                                          | UUID          |                                        | PK           |            |
-| year                                                                        | INT           | The year this month is associated with |              | Unique     |
-| month                                                                       | INT           | Numeric representation of the Month    |              | Unique     |
-| ~~total_allocation~~ Remove this, calculate using sql query on the fly      | DECIMAL(10,2) | Total allocated spending               |              |            |
-| ~~total_spending~~ Remove this, and calcuate this using sql query statement | DECIMAL(10,2) | Total spending for the month           |              | Default: 0 |
-| ~~over_budget_amount~~ Remove this and calculate at run time                | DECIMAL(10,2) | Over budget amount for the month       |              | Default: 0 |
-
-`budget_allocations`
-
-| Name                  | Type          | Description                          | Relationship | Notes |
-| --------------------- | ------------- | ------------------------------------ | ------------ | ----- |
-| ID                    | UUID          |                                      | PK           |       |
-| month_id              | UUID          | The month this allocation is for     | months(id)   |       |
-| user_id               | UUID NOT NULL | User ID of the contributor           | user(id)     |       |
-| percentage_allocation | DECIMAL(10,2) | Percentage allocation                |              |       |
-| contribution amount   | DECIMAL(10,2) | Amount of contribution for the month |              |       |
-
-`transactions`
-
-Stores all transactions
-
-| Name        | Type                | Description                            | Relationship | Notes |
-| ----------- | ------------------- | -------------------------------------- | ------------ | ----- |
-| ID          | UUID                |                                        | PK           |       |
-| month_id    | UUID                | The month this transactions is tied to | months(id)   |       |
-| amount      | DECIMAL(10,2)       | Amount of the transaction              |              |       |
-| date        | TIMESTAMPZ NOT NULL |                                        |              |       |
-| description | TEXT                |                                        |              |       |
-| notes       | TEXT                |                                        |              |       |
-
-`users`
-
-Stores all user information
-
-| Name | Type | Description | Relationship | Notes |
-| -------- | ---- | -------------------------------------- | ------------ | ----- | | ID | UUID | | PK | |
-| username | TEXT | The month this transactions is tied to | months(id) | |
-
-`firefly`
-
-Stores all firefly configuration
-
-| Name              | Type | Description                                         | Relationship | Notes |
-| ----------------- | ---- | --------------------------------------------------- | ------------ | ----- |
-| ID                | UUID |                                                     | PK           |       |
-| user_id           | UUID | The user this firefly config is tied to             | users(id)    |       |
-| enabled           | bool | Whether the firefly integration is enabled          |              |       |
-| api_key           | bool | Encrypted firefly API key                           |              |       |
-| encryption_nounce | TEXT | Encryption nounce used to encrypt / decrypt API key |              |       |
-| source_account    | TEXT | Source account to store firefly transactions in     |              |       |
-
-`notification_subscription`
-
-Store user notification subscription
-
-| Name            | Type | Description                                        | Relationship | Notes    |
-| --------------- | ---- | -------------------------------------------------- | ------------ | -------- |
-| ID              | UUID |                                                    | PK           |          |
-| user_id         | UUID | The user this notification subscription is tied to | users(id)    |          |
-| endpoint        | TEXT | The endpoint to send the notification              |              |          |
-| expiration_time | DATE |                                                    |              | Optional |
-
-`notification_keys`
-
-Stores auth keys for a user
-
-| Name    | Type | Description                               | Relationship | Notes |
-| ------- | ---- | ----------------------------------------- | ------------ | ----- |
-| ID      | UUID |                                           | PK           |       |
-| user_id | UUID | The user this notification key is tied to | users(id)    |       |
-| auth    | TEXT | Auth key                                  |              |       |
-| p256dh  | TEXT |                                           |              |       |
+See [dbdoc/README.md](./dbdoc/README.md).
 
 ## Adding a transaction
 
