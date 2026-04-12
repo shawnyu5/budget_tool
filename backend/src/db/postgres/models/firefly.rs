@@ -24,19 +24,14 @@ pub struct FireflyRow {
 impl FireflyRow {
     /// Decrypt the Firefly API key stored in this database row, and return the decrypted key
     /// If firefly integration is not enabled, decryption will be skipped and `None` will be returned.
-    pub fn decrypt_firefly_api_key(&self) -> Result<Option<String>> {
-        // If firefly integration is not enabled, dont bother decrypting
-        if !self.enabled {
-            return Ok(None);
-        }
-
+    pub fn decrypt_firefly_api_key(&self) -> Result<String> {
         let (Some(api_key), Some(nonce)) = (&self.api_key, &self.encryption_nounce) else {
-            return Ok(None);
+            return Ok("".to_string());
         };
 
         info!("Decrypting API key...");
         let decrypted =
             decrypt(api_key, nonce).map_err(|e| anyhow!("Failed to decrypt API key: {e}"))?;
-        return Ok(Some(decrypted));
+        return Ok(decrypted);
     }
 }

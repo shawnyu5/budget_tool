@@ -30,7 +30,6 @@ pub struct FireflySettings {
     /// If the user has enabled Firefly integration
     pub enabled: bool,
     /// Encrypted firefly API key, required if `enabled` = true
-    /// Must call `User.decrypt_firefly_api_key()` to get the decrypted version
     pub api_key: Option<String>,
     /// The source account to create the transaction in
     pub source_account: Option<String>,

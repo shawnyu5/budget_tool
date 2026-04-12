@@ -26,7 +26,7 @@ query SettingsPageDataV2($year: Int!, $month: Month!) {
       }
     }
   }
-  firefly {
+  fireflyV2 {
     accounts
   }
 }

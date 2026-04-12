@@ -711,7 +711,7 @@
         "fields": [
           {
             "name": "apiKey",
-            "description": "Encrypted firefly API key, required if `enabled` = true\nMust call `User.decrypt_firefly_api_key()` to get the decrypted version",
+            "description": "Encrypted firefly API key, required if `enabled` = true",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -764,7 +764,7 @@
         "inputFields": [
           {
             "name": "apiKey",
-            "description": "Encrypted firefly API key, required if `enabled` = true\nMust call `User.decrypt_firefly_api_key()` to get the decrypted version",
+            "description": "Encrypted firefly API key, required if `enabled` = true",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -827,6 +827,42 @@
                   "kind": "SCALAR",
                   "name": "String",
                   "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "FireflyV2SuccessResponse",
+        "description": null,
+        "isOneOf": null,
+        "fields": [
+          {
+            "name": "accounts",
+            "description": "List of accounts this user has",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
                 }
               }
             },
@@ -2127,6 +2163,22 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "FireflySuccessResponse",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "fireflyV2",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "FireflyV2SuccessResponse",
                 "ofType": null
               }
             },

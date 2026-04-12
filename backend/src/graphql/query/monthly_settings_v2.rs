@@ -65,6 +65,10 @@ pub async fn month_settings_v2(
         .context("Failed to compute total allocation")?;
 
     tx.commit().await.context("Failed to commit transaction")?;
+    let firefly_api_key = firefly
+        .decrypt_firefly_api_key()
+        .context("Failed to decrypt user firefly API key")?;
+
     Ok(MonthlySettingsResponse {
         settings: Settings {
             total_allocation,
@@ -74,7 +78,7 @@ pub async fn month_settings_v2(
             maggie_contribution_amount: maggie_allocation.contribution_amount,
             firefly: FireflySettings {
                 enabled: firefly.enabled,
-                api_key: firefly.api_key,
+                api_key: Some(firefly_api_key),
                 source_account: firefly.source_account,
             },
         },

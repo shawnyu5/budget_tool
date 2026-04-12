@@ -2,6 +2,7 @@ use anyhow::Result;
 use anyhow::anyhow;
 use chrono::DateTime;
 use chrono_tz::Tz;
+use firefly_client::models::TransactionSingle;
 use firefly_client::models::{TransactionSplitStore, TransactionStore, TransactionTypeProperty};
 use reqwest::header::ACCEPT;
 use rust_decimal::Decimal;
@@ -56,8 +57,8 @@ impl FireflyClient {
         description: &str,
         notes: &str,
         source_account: &str,
-    ) -> Result<()> {
-        match firefly_client::apis::transactions_api::store_transaction(
+    ) -> Result<TransactionSingle> {
+        let transaction = match firefly_client::apis::transactions_api::store_transaction(
             &firefly_client::apis::configuration::Configuration {
                 base_path: self.firefly_url.clone(),
                 client: self.http_client.clone(),
@@ -89,6 +90,41 @@ impl FireflyClient {
                 return Err(anyhow!("Failed to create firefly transaction"));
             }
         };
-        Ok(())
+
+        Ok(transaction)
+    }
+
+    pub async fn list_accounts(&self) -> Result<Vec<String>> {
+        let accounts = match firefly_client::apis::accounts_api::list_account(
+            &firefly_client::apis::configuration::Configuration {
+                base_path: self.firefly_url.clone(),
+                client: self.http_client.clone(),
+                bearer_access_token: Some(self.api_key.clone()),
+                ..Default::default()
+            },
+            None,
+            Some(50),
+            Some(1),
+            None,
+            None,
+            None,
+            Some(firefly_client::models::AccountTypeFilter::AssetAccount),
+        )
+        .await
+        {
+            Ok(a) => a,
+            Err(e) => {
+                error!("Failed to retrieve firefly user accounts: {:#?}", e);
+                return Err(anyhow!("Failed to retrieve user firefly accounts: {e}"));
+            }
+        };
+
+        let account_names = accounts
+            .data
+            .into_iter()
+            .map(|a| a.attributes.name)
+            .collect();
+
+        Ok(account_names)
     }
 }

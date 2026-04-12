@@ -5,7 +5,7 @@ import { SettingsPageDataSuccess } from "~/server";
 export function FireflySettingsForm(props: {
   data: ResourceReturn<SettingsPageDataV2Query | undefined, unknown>;
 }) {
-  // If the API key should be shown to the user
+  /** If the API key should be shown to the user */
   const [showAPIKey, setShowAPIKey] = createSignal(false);
   const [data, { mutate }] = props.data;
   return (
@@ -24,11 +24,13 @@ export function FireflySettingsForm(props: {
               if (!prev) return prev;
               return {
                 ...prev,
-                me: {
-                  ...prev.monthSettingsV2.settings,
-                  firefly: {
-                    ...prev.monthSettingsV2.settings.firefly,
-                    enabled: toggled,
+                monthSettingsV2: {
+                  ...prev.monthSettingsV2,
+                  settings: {
+                    ...prev.monthSettingsV2.settings,
+                    firefly: {
+                      enabled: toggled,
+                    },
                   },
                 },
               };
@@ -62,15 +64,16 @@ export function FireflySettingsForm(props: {
               const apiKey = input.value;
               mutate((prev) => {
                 if (!prev) return prev;
-
                 return {
                   ...prev,
-                  me: {
-                    ...prev.monthSettingsV2.settings,
-                    firefly: {
-                      enabled:
-                        prev.monthSettingsV2.settings.firefly?.enabled ?? false,
-                      apiKey: apiKey,
+                  monthSettingsV2: {
+                    ...prev.monthSettingsV2,
+                    settings: {
+                      ...prev.monthSettingsV2.settings,
+                      firefly: {
+                        ...prev.monthSettingsV2.settings.firefly,
+                        apiKey: apiKey,
+                      },
                     },
                   },
                 };
@@ -104,20 +107,21 @@ export function FireflySettingsForm(props: {
                   if (!prev) return prev;
                   return {
                     ...prev,
-                    me: {
-                      ...prev.monthSettingsV2.settings,
-                      firefly: {
-                        ...prev.monthSettingsV2.settings.firefly,
-                        enabled:
-                          prev.monthSettingsV2.settings.firefly?.enabled!,
-                        sourceAccount: e.target.value,
+                    monthSettingsV2: {
+                      ...prev.monthSettingsV2,
+                      settings: {
+                        ...prev.monthSettingsV2.settings,
+                        firefly: {
+                          ...prev.monthSettingsV2.settings.firefly,
+                          sourceAccount: e.target.value,
+                        },
                       },
                     },
                   };
                 })
               }
             >
-              <For each={data()?.firefly.accounts ?? []}>
+              <For each={data()?.fireflyV2.accounts ?? []}>
                 {(item) => <option value={item}>{item}</option>}
               </For>
             </select>

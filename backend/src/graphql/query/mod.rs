@@ -1,4 +1,7 @@
-use crate::models::User as UserModel;
+use crate::{
+    graphql::query::firefly_v2::{FireflyV2SuccessResponse, firefly_v2},
+    models::User as UserModel,
+};
 use anyhow::Result;
 use async_graphql::{Context, Object};
 use tracing::instrument;
@@ -27,6 +30,7 @@ use crate::{
 
 mod config;
 pub mod firefly;
+mod firefly_v2;
 mod home_page;
 mod me;
 mod me_v2;
@@ -79,10 +83,17 @@ impl QueryRoot {
     }
 
     #[instrument(skip_all)]
+    #[deprecated = "Use firefly_v2 to query data from the Postgres DB"]
     #[graphql(guard = "AuthGuard")]
     /// Retrieve information from Firefly it self
     async fn firefly(&self, ctx: &Context<'_>) -> Result<FireflySuccessResponse> {
         firefly_handler(ctx).await
+    }
+
+    #[instrument(skip_all)]
+    #[graphql(guard = "AuthGuard")]
+    async fn firefly_v2(&self, ctx: &Context<'_>) -> Result<FireflyV2SuccessResponse> {
+        firefly_v2(ctx).await
     }
 
     #[instrument(skip_all)]
