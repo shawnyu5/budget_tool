@@ -1,4 +1,4 @@
-/// Domain models
+//! Domain models
 use async_graphql::{InputObject, SimpleObject};
 use chrono::{DateTime, FixedOffset};
 use rust_decimal::Decimal;
