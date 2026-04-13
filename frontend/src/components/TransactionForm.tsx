@@ -1,13 +1,14 @@
-import { action, useParams } from "@solidjs/router";
+import { action } from "@solidjs/router";
 import { createEffect, createSignal, Resource, Show, Signal } from "solid-js";
 import ErrorComponent from "./errorComponent";
-import { calculatePercentage, formatRfc3339DateObj } from "~/utils";
+import { formatRfc3339DateObj } from "~/utils";
 import { Transaction } from "~/generated/graphql";
 import { clientOnly } from "@solidjs/start";
 const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
 import "@rnwonder/solid-date-picker/dist/style.css";
-import { PickerValue } from "@rnwonder/solid-date-picker";
+import { PickerValue, TimeValue } from "@rnwonder/solid-date-picker";
 import Decimal from "decimal.js";
+import TimePicker from "@rnwonder/solid-date-picker/timePicker";
 
 /**
  * A form that displays a transaction
@@ -25,6 +26,10 @@ export function TransactionForm(props: {
   const [datePicker, setDatePicker] = createSignal<PickerValue>({
     label: "",
     value: {},
+  });
+  const [timePicker, setTimePicker] = createSignal<TimeValue>({
+    value: {},
+    label: "",
   });
 
   const errorMessageSignal = createSignal<string | null>(null);
@@ -44,6 +49,17 @@ export function TransactionForm(props: {
         },
         label: "",
       });
+      setTimePicker({
+        value: {
+          hour: tx.date.getHours(),
+          minute: tx.date.getMinutes(),
+          second: tx.date.getSeconds(),
+        },
+        label: tx.date.toLocaleTimeString([], {
+          hour12: true,
+          timeStyle: "short",
+        }),
+      });
     } else {
       setDatePicker({
         value: {
@@ -60,11 +76,14 @@ export function TransactionForm(props: {
       method="post"
       action={action(async () => {
         setFormSubmitted(true);
+        let date = new Date(datePicker().value.selected ?? "");
+        date.setHours(timePicker().value.hour ?? 0);
+        date.setMinutes(timePicker().value.hour ?? 0);
         props.onSubmit(
           {
             id: props.transaction?.()?.id ?? crypto.randomUUID(),
             amount: new Decimal(amount() ?? "0"),
-            date: new Date(datePicker().value.selected ?? ""),
+            date: date,
             description: description(),
             notes: notes(),
           } satisfies Transaction,
@@ -88,24 +107,30 @@ export function TransactionForm(props: {
           }}
         />
 
-        <label>Date</label>
-        {
-          // <input
-          //   name="date"
-          //   type="text"
-          //   required
-          //   value={date()}
-          //   onInput={(e: InputEvent) => {
-          //     const input = (e.target as HTMLInputElement).value;
-          //     setDate(input);
-          //   }}
-          // />
+        <div>
+          <label>Date</label>
+          {
+            // <input
+            //   name="date"
+            //   type="text"
+            //   required
+            //   value={date()}
+            //   onInput={(e: InputEvent) => {
+            //     const input = (e.target as HTMLInputElement).value;
+            //     setDate(input);
+            //   }}
+            // />
+          }
+          {
+            // TODO: Since datePicker defaults all created item dates to midnight, add a time picker to take into account the time transaction was created
+          }
           <DatePicker
             type="single"
             value={datePicker}
             setValue={setDatePicker}
           />
-        }
+          <TimePicker value={timePicker} setValue={setTimePicker} />
+        </div>
 
         <label>Description</label>
         <input
