@@ -6,7 +6,7 @@ use rust_decimal::{Decimal, dec, prelude::ToPrimitive};
 use sqlx::{PgConnection, prelude::FromRow};
 use uuid::Uuid;
 
-use crate::{db::postgres::PostgresDB, utils::calculate_percentage};
+use crate::{db::postgres::PostgresDB, month::Month, utils::calculate_percentage};
 
 /// A single transaction
 #[derive(Debug, FromRow)]
@@ -36,7 +36,7 @@ impl TransactionRow {
     /// Retrieves transaction split from settings to calculate split
     ///
     /// # Returns
-    /// A tuple, where first element is Shawn split, second is Maggie split
+    /// A tuple, where first element is Shawn's split, second is Maggie split
     ///
     /// Returns `None` if there's no split mode in the transaction, ie it was migrated from Mongo DB
     pub async fn split_transaction(
@@ -55,7 +55,7 @@ impl TransactionRow {
                     .get_or_insert_budget_allocation(
                         executor,
                         self.date.year(),
-                        self.date.month().to_string().into(),
+                        Month::from_number(self.date.month().try_into().unwrap()),
                         shawn.id,
                     )
                     .await
@@ -94,5 +94,95 @@ impl TransactionRow {
 
 #[cfg(test)]
 mod tests {
-    // TODO: write tests for split_transaction()
+    use anyhow::{Context as _, Result};
+    use chrono::Utc;
+    use rust_decimal::dec;
+    use sqlx::PgPool;
+    use uuid::Uuid;
+
+    use crate::{
+        db::postgres::{
+            PostgresDB,
+            models::transaction::{SplitMode, TransactionRow},
+        },
+        month::Month,
+    };
+
+    #[sqlx::test]
+    #[tracing_test::traced_test]
+    /// Test splitting a transaction evenly
+    async fn split_evenly(pool: PgPool) -> Result<()> {
+        let db = PostgresDB { pool };
+        let mut tx = db
+            .transaction()
+            .await
+            .context("Failed to create transaction")?;
+
+        let month = db
+            .get_or_insert_month(&mut tx, 2026, Month::January)
+            .await?;
+        tx.commit().await?;
+
+        let mut tx = db.transaction().await?;
+
+        let transaction_row = TransactionRow {
+            id: Uuid::new_v4(),
+            month_id: month.id,
+            amount: dec!(100),
+            date: Utc::now().into(),
+            description: None,
+            notes: None,
+            split_mode: Some(SplitMode::Evenly),
+        };
+
+        let (shawn, maggie) = transaction_row.split_transaction(&mut tx).await?.unwrap();
+        assert_eq!(shawn, dec!(50));
+        assert_eq!(maggie, dec!(50));
+
+        Ok(())
+    }
+
+    /// Test splitting transaction according to budget allocation table
+    #[sqlx::test]
+    #[tracing_test::traced_test]
+    async fn split_from_settings(pool: PgPool) -> Result<()> {
+        let db = PostgresDB { pool };
+        let mut tx = db.transaction().await?;
+        let month = db
+            .get_or_insert_month(&mut tx, 2026, Month::January)
+            .await?;
+
+        let core_users = db.get_core_users(&mut tx).await?;
+        for user in core_users {
+            db.insert_new_budget_allocation(
+                &mut tx,
+                2026,
+                Month::January,
+                user.id,
+                dec!(50),
+                dec!(100),
+            )
+            .await?;
+        }
+
+        tx.commit().await?;
+
+        let mut tx = db.transaction().await?;
+
+        let transaction_row = TransactionRow {
+            id: Uuid::new_v4(),
+            month_id: month.id,
+            amount: dec!(100),
+            date: Utc::now().into(),
+            description: None,
+            notes: None,
+            split_mode: Some(SplitMode::FromSettings),
+        };
+
+        let (shawn, maggie) = transaction_row.split_transaction(&mut tx).await?.unwrap();
+        assert_eq!(shawn, dec!(50));
+        assert_eq!(maggie, dec!(50));
+
+        Ok(())
+    }
 }

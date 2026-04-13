@@ -44,7 +44,9 @@ impl FireflyClient {
     ///
     /// * `date`: the date of the transaction. Date should be in EST timezone
     /// ```rust
-    ///    let dt_est = Utc::now().with_timezone(&Toronto);
+    /// use chrono::Utc;
+    /// use chrono_tz::America::Toronto;
+    /// let dt_est = Utc::now().with_timezone(&Toronto);
     /// ```
     /// * `amount`: amount of the transaction
     /// * `description`: description of the transaction

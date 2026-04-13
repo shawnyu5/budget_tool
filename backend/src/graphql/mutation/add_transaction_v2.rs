@@ -57,6 +57,8 @@ pub async fn add_transaction_v2(
         .await
         .context("Faile to get core users")?;
 
+    let config = Config::load();
+
     // If we are not over budget yet, and adding this new transaction will put us over budget, split it into 2 transactions
     if total_spend < total_allocation
         && (total_spend + inputs.transaction.amount) > total_allocation
@@ -151,7 +153,6 @@ pub async fn add_transaction_v2(
             if !firefly_settings.enabled {
                 info!("firefly integration disabled. Skipping creating firefly transaction");
             } else {
-                let config = Config::load();
                 let api_key = firefly_settings
                     .decrypt_firefly_api_key()
                     .context("Failed to decrypt Firefly API key")?;
@@ -187,27 +188,79 @@ pub async fn add_transaction_v2(
             }
         }
     } else {
+        // Add transaction normally
         info!("New transaction will stay within budget. Adding transaction normally");
-        db.insert_new_transaction(
-            &mut tx,
-            inputs.year,
-            inputs.month,
-            inputs.transaction.id,
-            inputs.transaction.amount,
-            inputs.transaction.date,
-            &inputs.transaction.description,
-            &inputs.transaction.notes,
-            Some(SplitMode::FromSettings),
-        )
-        .await
-        .map_err(|e| {
-            error!("{e:#?}");
-            e
-        })
-        .context("Failed to insert transaction into DB")?;
+        let transaction_row = db
+            .insert_new_transaction(
+                &mut tx,
+                inputs.year,
+                inputs.month,
+                inputs.transaction.id,
+                inputs.transaction.amount,
+                inputs.transaction.date,
+                &inputs.transaction.description,
+                &inputs.transaction.notes,
+                Some(SplitMode::FromSettings),
+            )
+            .await
+            .map_err(|e| {
+                error!("{e:#?}");
+                e
+            })
+            .context("Failed to insert transaction into DB")?;
+
+        let core_users = db
+            .get_core_users(&mut tx)
+            .await
+            .context("Failed to get core users")?;
+
+        let (shawn_split, maggie_split) = transaction_row
+            .split_transaction(&mut tx)
+            .await
+            .context("Failed to split transaction")?
+            .unwrap(); // Since we just inserted the transaction, it should always contain `SplitMode`. So this function not knowing how to split a budget is not a concern here
+
+        for user in core_users {
+            info!("Creating firefly transaction for user {}", user.username);
+
+            let firefly_settings = db
+                .get_user_firefly_settings(&mut tx, user.id)
+                .await
+                .context("Failed to get user firefly settings")?;
+
+            if !firefly_settings.enabled {
+                info!(
+                    "{} has firefly setting disabled. Skipping creating Firefly transaction",
+                    user.username
+                );
+
+                continue;
+            }
+            let firefly_apikey = firefly_settings
+                .decrypt_firefly_api_key()
+                .context("Failed to decrypt firefly API key")?;
+
+            let firefly_client = FireflyClient::new(&firefly_apikey, &config.firefly_url);
+
+            let transaction = inputs.transaction.clone();
+            firefly_client
+                .create_new_transaction(
+                    transaction.date.with_timezone(&Toronto),
+                    if user.username == "shawn" {
+                        shawn_split
+                    } else {
+                        maggie_split
+                    },
+                    &transaction.description,
+                    &transaction.notes,
+                    &firefly_settings.source_account.unwrap_or_default(),
+                )
+                .await
+                .context("Failed to create firefly transaction")?;
+        }
     }
 
-    tx.commit().await.context("Failed to convert transaction")?;
+    tx.commit().await.context("Failed to commit transaction")?;
 
     Ok(AddTransactionResponseV2 { success: true })
 }

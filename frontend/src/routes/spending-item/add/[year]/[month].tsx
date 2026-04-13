@@ -31,10 +31,11 @@ export default function () {
   ) => {
     const [errorMessage, setErrorMessage] = errorMessageSignal;
 
-    if (errorMessage()) {
-      log.info("There is an error message on screen. Not submitting form...");
-      return;
-    }
+    setErrorMessage(null);
+    // if (errorMessage()) {
+    //   log.info("There is an error message on screen. Not submitting form...");
+    //   return;
+    // }
 
     log.info("Submitting form");
     const sdk = NewGraphQLSDK();
@@ -53,7 +54,7 @@ export default function () {
         },
       });
     } catch (e) {
-      handleGraphQLClientError(e, navigate);
+      handleGraphQLClientError(e, navigate, setErrorMessage);
     }
 
     if (errorMessage()) {

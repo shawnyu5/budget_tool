@@ -1,5 +1,12 @@
 import { action } from "@solidjs/router";
-import { createEffect, createSignal, Resource, Show, Signal } from "solid-js";
+import {
+  createEffect,
+  createSignal,
+  ErrorBoundary,
+  Resource,
+  Show,
+  Signal,
+} from "solid-js";
 import ErrorComponent from "./errorComponent";
 import { formatRfc3339DateObj } from "~/utils";
 import { Transaction } from "~/generated/graphql";
@@ -92,16 +99,20 @@ export function TransactionForm(props: {
         let date = new Date(datePicker().value.selected ?? "");
         date.setHours(timePicker().value.hour ?? 0);
         date.setMinutes(timePicker().value.hour ?? 0);
-        props.onSubmit(
-          {
-            id: props.transaction?.()?.id ?? crypto.randomUUID(),
-            amount: new Decimal(amount() ?? "0"),
-            date: date,
-            description: description(),
-            notes: notes(),
-          } satisfies Transaction,
-          errorMessageSignal,
-        );
+        try {
+          await props.onSubmit(
+            {
+              id: props.transaction?.()?.id ?? crypto.randomUUID(),
+              amount: new Decimal(amount() ?? "0"),
+              date: date,
+              description: description(),
+              notes: notes(),
+            } satisfies Transaction,
+            errorMessageSignal,
+          );
+        } finally {
+          setFormSubmitted(false);
+        }
       })}
     >
       <ErrorComponent errorMessage={errorMessage()} />
