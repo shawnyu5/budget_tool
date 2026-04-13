@@ -4,7 +4,6 @@
 
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
-| [_sqlx_test.databases](_sqlx_test.databases.md) | 3 |  | BASE TABLE |
 | [public._sqlx_migrations](public._sqlx_migrations.md) | 6 |  | BASE TABLE |
 | [public.months](public.months.md) | 3 |  | BASE TABLE |
 | [public.budget_allocations](public.budget_allocations.md) | 5 |  | BASE TABLE |

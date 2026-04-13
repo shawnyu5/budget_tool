@@ -1,7 +1,5 @@
 # public.firefly_transactions
 
-## Description
-
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |

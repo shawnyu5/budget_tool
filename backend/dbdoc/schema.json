@@ -2,88 +2,6 @@
   "name": "budget_tool",
   "tables": [
     {
-      "name": "_sqlx_test.databases",
-      "type": "BASE TABLE",
-      "columns": [
-        {
-          "name": "db_name",
-          "type": "text",
-          "nullable": false
-        },
-        {
-          "name": "test_path",
-          "type": "text",
-          "nullable": false
-        },
-        {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "nullable": false,
-          "default": "now()"
-        }
-      ],
-      "indexes": [
-        {
-          "name": "databases_pkey",
-          "def": "CREATE UNIQUE INDEX databases_pkey ON _sqlx_test.databases USING btree (db_name)",
-          "table": "_sqlx_test.databases",
-          "columns": [
-            "db_name"
-          ]
-        },
-        {
-          "name": "databases_created_at",
-          "def": "CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_at)",
-          "table": "_sqlx_test.databases",
-          "columns": [
-            "created_at"
-          ]
-        }
-      ],
-      "constraints": [
-        {
-          "name": "databases_created_at_not_null",
-          "type": "n",
-          "def": "NOT NULL created_at",
-          "table": "_sqlx_test.databases",
-          "referenced_table": "",
-          "columns": [
-            "created_at"
-          ]
-        },
-        {
-          "name": "databases_db_name_not_null",
-          "type": "n",
-          "def": "NOT NULL db_name",
-          "table": "_sqlx_test.databases",
-          "referenced_table": "",
-          "columns": [
-            "db_name"
-          ]
-        },
-        {
-          "name": "databases_test_path_not_null",
-          "type": "n",
-          "def": "NOT NULL test_path",
-          "table": "_sqlx_test.databases",
-          "referenced_table": "",
-          "columns": [
-            "test_path"
-          ]
-        },
-        {
-          "name": "databases_pkey",
-          "type": "PRIMARY KEY",
-          "def": "PRIMARY KEY (db_name)",
-          "table": "_sqlx_test.databases",
-          "referenced_table": "",
-          "columns": [
-            "db_name"
-          ]
-        }
-      ]
-    },
-    {
       "name": "public._sqlx_migrations",
       "type": "BASE TABLE",
       "columns": [
@@ -401,7 +319,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (month_id) REFERENCES months(id)",
           "table": "public.budget_allocations",
-          "referenced_table": "months",
+          "referenced_table": "public.months",
           "columns": [
             "month_id"
           ],
@@ -528,7 +446,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (month_id) REFERENCES months(id)",
           "table": "public.transactions",
-          "referenced_table": "months",
+          "referenced_table": "public.months",
           "columns": [
             "month_id"
           ],
@@ -688,7 +606,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.firefly",
-          "referenced_table": "users",
+          "referenced_table": "public.users",
           "columns": [
             "user_id"
           ],
@@ -769,7 +687,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.notification_keys",
-          "referenced_table": "users",
+          "referenced_table": "public.users",
           "columns": [
             "user_id"
           ],
@@ -890,7 +808,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.notification_subscription",
-          "referenced_table": "users",
+          "referenced_table": "public.users",
           "columns": [
             "user_id"
           ],
@@ -991,7 +909,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id)",
           "table": "public.firefly_transactions",
-          "referenced_table": "transactions",
+          "referenced_table": "public.transactions",
           "columns": [
             "transaction_id"
           ],
@@ -1327,7 +1245,7 @@
   ],
   "driver": {
     "name": "postgres",
-    "database_version": "PostgreSQL 18.1 (Debian 18.1-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "database_version": "PostgreSQL 18.3 (Debian 18.3-1.pgdg13+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
     "meta": {
       "current_schema": "public",
       "search_paths": [
