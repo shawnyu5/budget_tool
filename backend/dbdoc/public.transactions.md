@@ -6,7 +6,7 @@
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | uuid |  | false |  |  |  |
+| id | uuid |  | false | [public.firefly_transactions](public.firefly_transactions.md) |  |  |
 | month_id | uuid |  | false |  | [public.months](public.months.md) |  |
 | amount | numeric(10,2) |  | false |  |  |  |
 | date | timestamp with time zone |  | false |  |  |  |

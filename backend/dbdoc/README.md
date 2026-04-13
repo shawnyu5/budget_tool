@@ -13,6 +13,7 @@
 | [public.firefly](public.firefly.md) | 6 |  | BASE TABLE |
 | [public.notification_keys](public.notification_keys.md) | 4 |  | BASE TABLE |
 | [public.notification_subscription](public.notification_subscription.md) | 6 |  | BASE TABLE |
+| [public.firefly_transactions](public.firefly_transactions.md) | 4 |  | BASE TABLE |
 
 ## Stored procedures and functions
 

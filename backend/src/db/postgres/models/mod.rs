@@ -4,6 +4,7 @@
 pub type Year = i32;
 pub mod budget_allocation;
 pub mod firefly;
+pub mod firefly_transactions;
 pub mod month;
 pub mod notification_key;
 pub mod notification_subscription;

@@ -909,6 +909,107 @@
           ]
         }
       ]
+    },
+    {
+      "name": "public.firefly_transactions",
+      "type": "BASE TABLE",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "transaction_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "firefly_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "firefly_link",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "firefly_transactions_pkey",
+          "def": "CREATE UNIQUE INDEX firefly_transactions_pkey ON public.firefly_transactions USING btree (id)",
+          "table": "public.firefly_transactions",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "firefly_transactions_firefly_id_not_null",
+          "type": "n",
+          "def": "NOT NULL firefly_id",
+          "table": "public.firefly_transactions",
+          "referenced_table": "",
+          "columns": [
+            "firefly_id"
+          ]
+        },
+        {
+          "name": "firefly_transactions_firefly_link_not_null",
+          "type": "n",
+          "def": "NOT NULL firefly_link",
+          "table": "public.firefly_transactions",
+          "referenced_table": "",
+          "columns": [
+            "firefly_link"
+          ]
+        },
+        {
+          "name": "firefly_transactions_id_not_null",
+          "type": "n",
+          "def": "NOT NULL id",
+          "table": "public.firefly_transactions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "firefly_transactions_transaction_id_not_null",
+          "type": "n",
+          "def": "NOT NULL transaction_id",
+          "table": "public.firefly_transactions",
+          "referenced_table": "",
+          "columns": [
+            "transaction_id"
+          ]
+        },
+        {
+          "name": "firefly_transactions_transaction_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id)",
+          "table": "public.firefly_transactions",
+          "referenced_table": "transactions",
+          "columns": [
+            "transaction_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "firefly_transactions_pkey",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "public.firefly_transactions",
+          "referenced_table": "",
+          "columns": [
+            "id"
+          ]
+        }
+      ]
     }
   ],
   "relations": [
@@ -976,6 +1077,19 @@
       ],
       "parent_cardinality": "exactly_one",
       "def": "FOREIGN KEY (user_id) REFERENCES users(id)"
+    },
+    {
+      "table": "public.firefly_transactions",
+      "columns": [
+        "transaction_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.transactions",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id)"
     }
   ],
   "functions": [
