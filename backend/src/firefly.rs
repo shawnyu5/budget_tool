@@ -1,3 +1,4 @@
+use anyhow::Context;
 use anyhow::Result;
 use anyhow::anyhow;
 use chrono::DateTime;
@@ -6,7 +7,14 @@ use firefly_client::models::TransactionSingle;
 use firefly_client::models::{TransactionSplitStore, TransactionStore, TransactionTypeProperty};
 use reqwest::header::ACCEPT;
 use rust_decimal::Decimal;
+use sqlx::Postgres;
+use sqlx::Transaction;
 use tracing::error;
+use tracing::info;
+use uuid::Uuid;
+
+use crate::config::Config;
+use crate::db::postgres::PostgresDB;
 
 pub struct FireflyClient {
     /// Firefly API key
@@ -20,7 +28,7 @@ impl FireflyClient {
     /// Create a new Firefly client
     ///
     /// * api_key - Firefly API key
-    /// * firefly_url - URL to firefly instance
+    /// * firefly_url - URL to firefly instance. `/api` is appended to this URL
     pub fn new(api_key: &str, firefly_url: &str) -> Self {
         // Tell firefly it can return errors in JSON format, rather than auto redirecting to firefly home page
         let mut headers = reqwest::header::HeaderMap::new();
@@ -35,13 +43,17 @@ impl FireflyClient {
             .expect("Failed to build reqwest client");
         Self {
             api_key: api_key.to_string(),
-            firefly_url: firefly_url.to_string(),
+            firefly_url: format!("{}/api", firefly_url),
+            // firefly_url: firefly_url.to_string(),
             http_client,
         }
     }
 
-    /// Create a new transaction in Firefly
+    /// Create a new transaction in Firefly, and the corresponding DB entry
     ///
+    /// * `db`: the PostgresDB connection
+    /// * `tx`: the current DB transaction
+    /// * `tranaction_id`: the transaction ID of this app, NOT firefly
     /// * `date`: the date of the transaction. Date should be in EST timezone
     /// ```rust
     /// use chrono::Utc;
@@ -52,8 +64,12 @@ impl FireflyClient {
     /// * `description`: description of the transaction
     /// * `notes`: notes in the transaction
     /// * `source_account`: source account of the transaction
+    #[allow(clippy::too_many_arguments)]
     pub async fn create_new_transaction(
         &self,
+        db: &PostgresDB,
+        tx: &mut Transaction<'_, Postgres>,
+        transaction_id: Uuid,
         date: DateTime<Tz>,
         amount: Decimal,
         description: &str,
@@ -86,7 +102,20 @@ impl FireflyClient {
         )
         .await
         {
-            Ok(res) => res,
+            Ok(res) => {
+                info!("Inserting Firefly transaction into DB");
+                let config = Config::load();
+                dbg!(&res);
+                db.insert_firefly_transaction(
+                    tx,
+                    transaction_id,
+                    res.data.id.clone(),
+                    format!("{}/transactions/show/{}", config.firefly_url, res.data.id),
+                )
+                .await
+                .context("Failed to insert firefly transaction into DB")?;
+                res
+            }
             Err(e) => {
                 error!("{e:#?}");
                 return Err(anyhow!("Failed to create firefly transaction"));

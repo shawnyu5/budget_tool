@@ -159,8 +159,11 @@ pub async fn add_transaction_v2(
 
                 let firefly_client = FireflyClient::new(&api_key, &config.firefly_url);
                 let transaction = inputs.transaction.clone();
-                let firefly_transaction = firefly_client
+                firefly_client
                     .create_new_transaction(
+                        db,
+                        &mut tx,
+                        inputs.transaction.id,
                         transaction.date.with_timezone(&Toronto),
                         transaction.amount,
                         &transaction.description,
@@ -169,22 +172,6 @@ pub async fn add_transaction_v2(
                     )
                     .await
                     .context("Failed to create firefly transaction")?;
-
-                // Contains the link to the transaction in firefly
-                // firefly_transaction.data.links.param_self;
-                info!("Inserting Firefly transaction into DB");
-                db.insert_firefly_transaction(
-                    &mut tx,
-                    inputs.transaction.id,
-                    firefly_transaction.data.id,
-                    firefly_transaction
-                        .data
-                        .links
-                        .param_self
-                        .unwrap_or_default(),
-                )
-                .await
-                .context("Failed to insert firefly transaction into DB")?;
             }
         }
     } else {
@@ -245,6 +232,9 @@ pub async fn add_transaction_v2(
             let transaction = inputs.transaction.clone();
             firefly_client
                 .create_new_transaction(
+                    db,
+                    &mut tx,
+                    inputs.transaction.id,
                     transaction.date.with_timezone(&Toronto),
                     if user.username == "shawn" {
                         shawn_split
