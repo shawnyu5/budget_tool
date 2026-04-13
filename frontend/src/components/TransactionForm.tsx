@@ -61,11 +61,24 @@ export function TransactionForm(props: {
         }),
       });
     } else {
+      // Set default values
+      const date = new Date();
       setDatePicker({
         value: {
           selected: formatRfc3339DateObj(new Date()),
         },
         label: "",
+      });
+      setTimePicker({
+        value: {
+          hour: date.getHours(),
+          minute: date.getMinutes(),
+          second: date.getSeconds(),
+        },
+        label: date.toLocaleTimeString([], {
+          hour12: true,
+          timeStyle: "short",
+        }),
       });
     }
   });
