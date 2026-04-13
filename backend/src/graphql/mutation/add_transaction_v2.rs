@@ -115,42 +115,6 @@ pub async fn add_transaction_v2(
             e
         })
         .context("Failed to insert overflow transaction")?;
-
-        // Since transaction is being split evenly, create transaction with same amount for both users
-        let amount = inputs.transaction.amount.div(dec!(2));
-        for user in core_users {
-            info!(
-                "Creating transaction in firefly for user {} with amount {amount}",
-                user.username
-            );
-            let firefly_settings = db
-                .get_user_firefly_settings(&mut tx, user.id)
-                .await
-                .context("Failed to get user firefly settings")?;
-
-            if !firefly_settings.enabled {
-                info!("firefly integration disabled. Skipping creating firefly transaction");
-            } else {
-                let config = Config::load();
-                let api_key = firefly_settings
-                    .decrypt_firefly_api_key()
-                    .context("Failed to decrypt Firefly API key")?
-                    .expect("Missing firefly API key");
-
-                let firefly_client = FireflyClient::new(&api_key, &config.firefly_url);
-                let transaction = inputs.transaction.clone();
-                firefly_client
-                    .create_new_transaction(
-                        transaction.date.with_timezone(&Toronto),
-                        transaction.amount,
-                        &transaction.description,
-                        &transaction.notes,
-                        &firefly_settings.source_account.unwrap_or_default(),
-                    )
-                    .await
-                    .context("Failed to create firefly transaction")?;
-            }
-        }
     } else if total_spend >= total_allocation {
         // We are already over budget
         info!("Already over budget. Inserting transaction with SplitMode::Evenly");
@@ -171,6 +135,57 @@ pub async fn add_transaction_v2(
             e
         })
         .context("Failed to insert transaction into DB")?;
+
+        // Since transaction is being split evenly, create transaction with same amount for both users
+        let amount = inputs.transaction.amount.div(dec!(2));
+        for user in core_users {
+            info!(
+                "Creating transaction in firefly for user {} with amount {amount}",
+                user.username
+            );
+            let firefly_settings = db
+                .get_user_firefly_settings(&mut tx, user.id)
+                .await
+                .context("Failed to get user firefly settings")?;
+
+            if !firefly_settings.enabled {
+                info!("firefly integration disabled. Skipping creating firefly transaction");
+            } else {
+                let config = Config::load();
+                let api_key = firefly_settings
+                    .decrypt_firefly_api_key()
+                    .context("Failed to decrypt Firefly API key")?;
+
+                let firefly_client = FireflyClient::new(&api_key, &config.firefly_url);
+                let transaction = inputs.transaction.clone();
+                let firefly_transaction = firefly_client
+                    .create_new_transaction(
+                        transaction.date.with_timezone(&Toronto),
+                        transaction.amount,
+                        &transaction.description,
+                        &transaction.notes,
+                        &firefly_settings.source_account.unwrap_or_default(),
+                    )
+                    .await
+                    .context("Failed to create firefly transaction")?;
+
+                // Contains the link to the transaction in firefly
+                // firefly_transaction.data.links.param_self;
+                info!("Inserting Firefly transaction into DB");
+                db.insert_firefly_transaction(
+                    &mut tx,
+                    inputs.transaction.id,
+                    firefly_transaction.data.id,
+                    firefly_transaction
+                        .data
+                        .links
+                        .param_self
+                        .unwrap_or_default(),
+                )
+                .await
+                .context("Failed to insert firefly transaction into DB")?;
+            }
+        }
     } else {
         info!("New transaction will stay within budget. Adding transaction normally");
         db.insert_new_transaction(
