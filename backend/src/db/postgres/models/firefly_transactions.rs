@@ -2,7 +2,7 @@ use sqlx::FromRow;
 use uuid::Uuid;
 
 #[derive(FromRow)]
-pub struct FireflyTransaction {
+pub struct FireflyTransactionRow {
     pub id: Uuid,
     /// The transaction ID this Firefly transaction is tied to
     /// FK to transactions.id

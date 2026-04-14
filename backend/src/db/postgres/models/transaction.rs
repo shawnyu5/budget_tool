@@ -33,9 +33,9 @@ pub enum SplitMode {
 
 impl TransactionRow {
     /// Split a transaction based on its split mode.
-    /// Retrieves transaction split from settings to calculate split
+    /// If `SplitMode` `SplitMode::FromSettings`, this function will retrieves transaction split from settings to calculate split
     ///
-    /// # Returns
+    /// # Return
     /// A tuple, where first element is Shawn's split, second is Maggie split
     ///
     /// Returns `None` if there's no split mode in the transaction, ie it was migrated from Mongo DB

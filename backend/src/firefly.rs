@@ -16,6 +16,7 @@ use uuid::Uuid;
 use crate::config::Config;
 use crate::db::postgres::PostgresDB;
 
+/// Client for making calls to Firefly
 pub struct FireflyClient {
     /// Firefly API key
     api_key: String,
@@ -105,7 +106,6 @@ impl FireflyClient {
             Ok(res) => {
                 info!("Inserting Firefly transaction into DB");
                 let config = Config::load();
-                dbg!(&res);
                 db.insert_firefly_transaction(
                     tx,
                     transaction_id,
