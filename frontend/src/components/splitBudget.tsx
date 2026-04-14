@@ -55,16 +55,6 @@ export default function SplitBudget(props: {
           )
           .toNumber()
           .toFixed(2)}
-        {
-          // {round(
-          //   calculatePercentage(
-          //     (props.data()?.totalSpending ?? 0) -
-          //       (props.data()?.overBudgetAmount ?? 0),
-          //     props.data()?.budget?.maggiePercentageAllocation ?? 0,
-          //   ) +
-          //     (props.data()?.overBudgetAmount ?? 0) / 2,
-          // )}
-        }
       </p>
 
       <Show

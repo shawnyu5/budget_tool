@@ -78,8 +78,8 @@ pub async fn add_transaction_v2(
         .context("Failed to get core users")?;
     let config = Config::load();
 
-    info!("Creating Firefly transaction");
     for transaction in transactions {
+        info!("Creating Firefly transaction: {:?}", transaction);
         let (shawn_split, maggie_split) = transaction
             .split_transaction(&mut tx)
             .await
@@ -111,10 +111,10 @@ pub async fn add_transaction_v2(
                         db,
                         &mut tx,
                         transaction.id,
-                        inputs.transaction.date.with_timezone(&Toronto),
+                        transaction.date.with_timezone(&Toronto),
                         maggie_split,
-                        &inputs.transaction.description,
-                        &inputs.transaction.notes,
+                        &transaction.description.clone().unwrap_or_default(),
+                        &transaction.notes.clone().unwrap_or_default(),
                         &settings.source_account.unwrap_or_default(),
                     )
                     .await
@@ -125,10 +125,10 @@ pub async fn add_transaction_v2(
                         db,
                         &mut tx,
                         transaction.id,
-                        inputs.transaction.date.with_timezone(&Toronto),
+                        transaction.date.with_timezone(&Toronto),
                         shawn_split,
-                        &inputs.transaction.description,
-                        &inputs.transaction.notes,
+                        &transaction.description.clone().unwrap_or_default(),
+                        &transaction.notes.clone().unwrap_or_default(),
                         &settings.source_account.unwrap_or_default(),
                     )
                     .await
