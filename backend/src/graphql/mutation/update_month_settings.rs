@@ -51,6 +51,8 @@ pub async fn update_month_settings(
             .default_headers(headers)
             .build()
             .unwrap();
+
+        // TODO: move this into FireflyClient
         match firefly_client::apis::about_api::get_current_user(
             &firefly_client::apis::configuration::Configuration {
                 base_path: Config::load().firefly_url,

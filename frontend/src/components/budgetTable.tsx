@@ -15,6 +15,7 @@ import Decimal from "decimal.js";
 
 export default function BudgetTable(props: {
   data: Resource<GetHomePageDataV2Query | undefined>;
+  setErrorMessage: (msg: string | undefined) => void;
   mutate: Setter<GetHomePageDataV2Query | undefined>;
 }) {
   const navigate = useNavigate();
@@ -70,17 +71,12 @@ export default function BudgetTable(props: {
           },
         };
       });
-      handleGraphQLClientError(e, navigate);
+      handleGraphQLClientError(e, navigate, props.setErrorMessage);
     }
   };
 
   return (
     <div id="spending-table">
-      {
-        // <Show when={errorMessage()}>
-        //   <ErrorComponent message={errorMessage()} />
-        // </Show>
-      }
       <Show when={!isEditing()}>
         <div id="edit-save-buttons">
           <button

@@ -25,7 +25,7 @@ pub struct Config {
     pub vapid_public_key: String,
     /// VAPID private key used to verify notifications sent by the client
     pub vapid_private_key: String,
-    /// URL to firefly API
+    /// URL to firefly instance
     pub firefly_url: String,
 }
 
@@ -66,7 +66,7 @@ impl Config {
         return Config {
             postgres_url: env::var("DATABASE_URL")
                 .expect("Missing postgres DB URL in `DATABASE_URL` environment variable"),
-            firefly_url: "https://firefly.shawnyu.ca/api".to_string(),
+            firefly_url: "https://firefly.shawnyu.ca".to_string(),
             db_connection_string: env::var("db_connection_string")
                 .expect("MIssing `db_connection_string` env var"),
             database_name: env::var("db_name").unwrap_or("budget_tool".to_string()),

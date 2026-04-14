@@ -1,0 +1,57 @@
+use anyhow::Context;
+use anyhow::Result;
+use sqlx::query_as;
+use sqlx::{PgConnection, query};
+use tracing::instrument;
+use uuid::Uuid;
+
+use crate::db::postgres::PostgresDB;
+use crate::db::postgres::models::firefly_transactions::FireflyTransactionRow;
+
+impl PostgresDB {
+    #[instrument(skip_all)]
+    /// Insert a new Firefly transaction
+    pub async fn insert_firefly_transaction(
+        &self,
+        executor: &mut PgConnection,
+        transaction_id: Uuid,
+        firefly_id: String,
+        firefly_link: String,
+    ) -> Result<()> {
+        query!(
+            "
+            INSERT INTO firefly_transactions (id, transaction_id, firefly_id, firefly_link)
+            VALUES ($1, $2, $3, $4)
+            ",
+            Uuid::new_v4(),
+            transaction_id,
+            firefly_id,
+            firefly_link
+        )
+        .execute(executor)
+        .await
+        .context("Failed to insert Firefly transaction")?;
+
+        Ok(())
+    }
+
+    /// Get a firefly transaction associated with a specific Transaction.
+    /// Not all transactions have a Firefly DB entry, so this function returns an Option
+    pub async fn get_firfly_transaction(
+        &self,
+        executor: &mut PgConnection,
+        transaction_id: Uuid,
+    ) -> Result<Option<FireflyTransactionRow>> {
+        query_as!(
+            FireflyTransactionRow,
+            "
+            SELECT * FROM firefly_transactions
+            WHERE transaction_id = $1
+            ",
+            transaction_id
+        )
+        .fetch_optional(executor)
+        .await
+        .context("Failed to fetch transaction")
+    }
+}

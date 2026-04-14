@@ -144,10 +144,7 @@ export type FireflySettingsInput = {
 /** Firefly related settings */
 export type FireflySettingsV2 = {
   __typename?: 'FireflySettingsV2';
-  /**
-   * Encrypted firefly API key, required if `enabled` = true
-   * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
-   */
+  /** Encrypted firefly API key, required if `enabled` = true */
   apiKey?: Maybe<Scalars['String']['output']>;
   /** If the user has enabled Firefly integration */
   enabled: Scalars['Boolean']['output'];
@@ -157,10 +154,7 @@ export type FireflySettingsV2 = {
 
 /** Firefly related settings */
 export type FireflySettingsV2Input = {
-  /**
-   * Encrypted firefly API key, required if `enabled` = true
-   * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
-   */
+  /** Encrypted firefly API key, required if `enabled` = true */
   apiKey?: InputMaybe<Scalars['String']['input']>;
   /** If the user has enabled Firefly integration */
   enabled: Scalars['Boolean']['input'];
@@ -172,6 +166,12 @@ export type FireflySuccessResponse = {
   __typename?: 'FireflySuccessResponse';
   /** List of accounts this user has */
   accounts?: Maybe<Array<Scalars['String']['output']>>;
+};
+
+export type FireflyV2SuccessResponse = {
+  __typename?: 'FireflyV2SuccessResponse';
+  /** List of accounts this user has */
+  accounts: Array<Scalars['String']['output']>;
 };
 
 /** Frontend configuration */
@@ -417,6 +417,7 @@ export type QueryRoot = {
   config: FrontendConfig;
   /** Retrieve information from Firefly it self */
   firefly: FireflySuccessResponse;
+  fireflyV2: FireflyV2SuccessResponse;
   /** Get data to display on the home page */
   homePageV2: HomePage;
   /** @deprecated use `me_v2` to get user data from the PostgresDB instead */
@@ -758,7 +759,7 @@ export type SettingsPageDataV2QueryVariables = Exact<{
 }>;
 
 
-export type SettingsPageDataV2Query = { __typename?: 'QueryRoot', monthSettingsV2: { __typename?: 'MonthlySettingsResponse', settings: { __typename?: 'Settings', totalAllocation: Decimal, shawnPercentageAllocation: Decimal, shawnContributionAmount: Decimal, maggiePercentageAllocation: Decimal, maggieContributionAmount: Decimal, firefly: { __typename?: 'FireflySettingsV2', enabled: boolean, apiKey?: string | null, sourceAccount?: string | null } } }, firefly: { __typename?: 'FireflySuccessResponse', accounts?: Array<string> | null } };
+export type SettingsPageDataV2Query = { __typename?: 'QueryRoot', monthSettingsV2: { __typename?: 'MonthlySettingsResponse', settings: { __typename?: 'Settings', totalAllocation: Decimal, shawnPercentageAllocation: Decimal, shawnContributionAmount: Decimal, maggiePercentageAllocation: Decimal, maggieContributionAmount: Decimal, firefly: { __typename?: 'FireflySettingsV2', enabled: boolean, apiKey?: string | null, sourceAccount?: string | null } } }, fireflyV2: { __typename?: 'FireflyV2SuccessResponse', accounts: Array<string> } };
 
 export type GetHomePageDataV2QueryVariables = Exact<{
   inputs: HomePageV2Input;
@@ -791,14 +792,6 @@ export type SearchTransactionByIdQueryVariables = Exact<{
 
 
 export type SearchTransactionByIdQuery = { __typename?: 'QueryRoot', searchTransactionV2: { __typename?: 'SearchTransactionV2Response', transaction?: { __typename?: 'Transaction', id: any, amount: Decimal, date: Date, description: string, notes: string } | null } };
-
-export type SpendingFormQueryVariables = Exact<{
-  year: Scalars['Int']['input'];
-  month: Month;
-}>;
-
-
-export type SpendingFormQuery = { __typename?: 'QueryRoot', monthSettingsV2: { __typename?: 'MonthlySettingsResponse', settings: { __typename?: 'Settings', shawnPercentageAllocation: Decimal, maggiePercentageAllocation: Decimal } } };
 
 export const GraphQlErrorFieldsFragmentDoc = gql`
     fragment GraphQLErrorFields on GraphQLErrorObject {
@@ -941,7 +934,7 @@ export const SettingsPageDataV2Document = gql`
       }
     }
   }
-  firefly {
+  fireflyV2 {
     accounts
   }
 }
@@ -1010,16 +1003,6 @@ export const SearchTransactionByIdDocument = gql`
   }
 }
     `;
-export const SpendingFormDocument = gql`
-    query SpendingForm($year: Int!, $month: Month!) {
-  monthSettingsV2(year: $year, month: $month) {
-    settings {
-      shawnPercentageAllocation
-      maggiePercentageAllocation
-    }
-  }
-}
-    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -1072,9 +1055,6 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     SearchTransactionByID(variables: SearchTransactionByIdQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SearchTransactionByIdQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<SearchTransactionByIdQuery>({ document: SearchTransactionByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SearchTransactionByID', 'query', variables);
-    },
-    SpendingForm(variables: SpendingFormQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SpendingFormQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<SpendingFormQuery>({ document: SpendingFormDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SpendingForm', 'query', variables);
     }
   };
 }

@@ -26,13 +26,15 @@ impl PostgresDB {
         description: &str,
         notes: &str,
         split_mode: Option<SplitMode>,
-    ) -> Result<()> {
-        query!(
+    ) -> Result<TransactionRow> {
+        let row = query_as!(
+            TransactionRow,
             r#"
             INSERT INTO transactions (id, month_id, amount, date, description, notes, split_mode)
             SELECT $1, m.id, $4, $5, $6, $7, $8::split_mode AS "split_mode: SplitMode"
             FROM months m
             WHERE m.month = $2 AND m.year = $3
+            RETURNING id, month_id, amount, date, description, notes, split_mode AS "split_mode: SplitMode"
             "#,
             id,
             month.to_string(),
@@ -43,14 +45,14 @@ impl PostgresDB {
             notes,
             split_mode as Option<SplitMode>
         )
-        .execute(executor)
+        .fetch_one(executor)
         .await
         .map_err(|e| {
             error!("Failed to insert new transaction: {e:#?}");
             e
         })?;
 
-        Ok(())
+        Ok(row)
     }
 
     /// Get transactions from in a specific time frame. Sort the transactions by date

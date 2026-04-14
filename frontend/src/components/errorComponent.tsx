@@ -3,6 +3,7 @@ import { Show } from "solid-js";
 /**
  * An error component that displays an error message.
  * The component will disappear when the error message is empty
+ * @param props.errorMessage - the error message to display. This component will only be visible when errorMessage is not empty
  */
 export default function (props: { errorMessage: string | null }) {
   // const [isVisible, setIsVisible] = createSignal(true);

@@ -109,7 +109,11 @@ export default function Home() {
           <MonthlySpending data={dataResource} />
           <SplitBudget data={dataResource} />
           <br />
-          <BudgetTable data={dataResource} mutate={mutate} />
+          <BudgetTable
+            data={dataResource}
+            setErrorMessage={setErrorMessage}
+            mutate={mutate}
+          />
         </Suspense>
       </ErrorBoundary>
     </main>

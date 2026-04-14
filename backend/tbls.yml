@@ -1,0 +1,4 @@
+name: budget_tool
+dsn: postgres://postgres:postgres@localhost/budget_tool_dev?sslmode=disable
+exclude:
+  - _sqlx_test.databases

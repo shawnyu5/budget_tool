@@ -53,7 +53,7 @@ export default function () {
         },
       });
     } catch (e) {
-      handleGraphQLClientError(e, navigate);
+      handleGraphQLClientError(e, navigate, setErrorMessage);
     }
 
     if (errorMessage()) {

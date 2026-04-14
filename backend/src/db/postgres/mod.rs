@@ -11,6 +11,7 @@ use crate::{config::Config, db::postgres::models::Year};
 
 pub mod budget_allocation;
 pub mod firefly_settings;
+pub mod firefly_transaction;
 pub mod models;
 pub mod months;
 pub mod notification_subscription;

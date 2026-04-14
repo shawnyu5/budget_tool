@@ -91,19 +91,30 @@ export function handleGraphQLErrorObject(
  * Any other unrecognized errors will be thrown
  * @param e - the error thrown by a graphql call
  * @param navigate - solid JS router Navigator
+ * @param setErrorMessage - a signal, when set will display the error message to the user
  */
 export function handleGraphQLClientError(
   e: unknown,
   navigate: Navigator,
-): never {
+  setErrorMessage?: (msg?: string) => void,
+) {
   if (e instanceof ClientError) {
     console.error(`Caught grapqhql error: ${e}`);
     if (e.response.errors?.some((e) => e.message == "UNAUTHENTICATED")) {
       navigate("/login", { replace: true });
     }
-    throw e;
+
+    if (setErrorMessage) {
+      console.log(e.response.errors);
+      setErrorMessage(e.response.errors?.map((e) => e.message).join("|"));
+    }
   } else {
     // network / unexpected errors
+    if (setErrorMessage) {
+      setErrorMessage(
+        "Failed to save transaction... Please try again later...",
+      );
+    }
     throw e;
   }
 }

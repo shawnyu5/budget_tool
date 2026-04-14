@@ -12,19 +12,12 @@ use uuid::Uuid;
 
 use crate::db::postgres::models::Year;
 use crate::{
-    db::postgres::{
-        PostgresDB,
-        models::{budget_allocation::BudgetAllocationRow, month::MonthRow},
-    },
+    db::postgres::{PostgresDB, models::budget_allocation::BudgetAllocationRow},
     month::Month,
 };
 
 impl PostgresDB {
-    /// Get a budget allocation for a user in a specific month. If it doesnt exist, insert it into the table, using data from the previous month,
-    /// Since there should always be a budget allocation for a specific month
-    ///
-    /// * `user_id`: The user to get the allocation for
-    /// * `month_id`: the month to the allocation is for
+    /// Get a budget allocation for a user in a specific month. If it doesnt exist, insert it into the table, insert a default value
     #[instrument(skip_all)]
     pub async fn get_or_insert_budget_allocation(
         &self,
