@@ -31,11 +31,10 @@ export default function () {
   ) => {
     const [errorMessage, setErrorMessage] = errorMessageSignal;
 
-    setErrorMessage(null);
-    // if (errorMessage()) {
-    //   log.info("There is an error message on screen. Not submitting form...");
-    //   return;
-    // }
+    if (errorMessage()) {
+      log.info("There is an error message on screen. Not submitting form...");
+      return;
+    }
 
     log.info("Submitting form");
     const sdk = NewGraphQLSDK();

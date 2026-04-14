@@ -110,6 +110,11 @@ export function handleGraphQLClientError(
     }
   } else {
     // network / unexpected errors
+    if (setErrorMessage) {
+      setErrorMessage(
+        "Failed to save transaction... Please try again later...",
+      );
+    }
     throw e;
   }
 }
