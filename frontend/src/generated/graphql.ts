@@ -417,7 +417,7 @@ export type QueryRoot = {
   config: FrontendConfig;
   /** Retrieve information from Firefly it self */
   firefly: FireflySuccessResponse;
-  fireflyV2: FireflyV2SuccessResponse;
+  fireflyV2?: Maybe<FireflyV2SuccessResponse>;
   /** Get data to display on the home page */
   homePageV2: HomePage;
   /** @deprecated use `me_v2` to get user data from the PostgresDB instead */
@@ -759,7 +759,7 @@ export type SettingsPageDataV2QueryVariables = Exact<{
 }>;
 
 
-export type SettingsPageDataV2Query = { __typename?: 'QueryRoot', monthSettingsV2: { __typename?: 'MonthlySettingsResponse', settings: { __typename?: 'Settings', totalAllocation: Decimal, shawnPercentageAllocation: Decimal, shawnContributionAmount: Decimal, maggiePercentageAllocation: Decimal, maggieContributionAmount: Decimal, firefly: { __typename?: 'FireflySettingsV2', enabled: boolean, apiKey?: string | null, sourceAccount?: string | null } } }, fireflyV2: { __typename?: 'FireflyV2SuccessResponse', accounts: Array<string> } };
+export type SettingsPageDataV2Query = { __typename?: 'QueryRoot', monthSettingsV2: { __typename?: 'MonthlySettingsResponse', settings: { __typename?: 'Settings', totalAllocation: Decimal, shawnPercentageAllocation: Decimal, shawnContributionAmount: Decimal, maggiePercentageAllocation: Decimal, maggieContributionAmount: Decimal, firefly: { __typename?: 'FireflySettingsV2', enabled: boolean, apiKey?: string | null, sourceAccount?: string | null } } }, fireflyV2?: { __typename?: 'FireflyV2SuccessResponse', accounts: Array<string> } | null };
 
 export type GetHomePageDataV2QueryVariables = Exact<{
   inputs: HomePageV2Input;

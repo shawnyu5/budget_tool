@@ -1,6 +1,5 @@
 import { createSignal, For, ResourceReturn, Show } from "solid-js";
-import { Settings, SettingsPageDataV2Query } from "~/generated/graphql";
-import { SettingsPageDataSuccess } from "~/server";
+import { SettingsPageDataV2Query } from "~/generated/graphql";
 
 export function FireflySettingsForm(props: {
   data: ResourceReturn<SettingsPageDataV2Query | undefined, unknown>;
@@ -121,7 +120,7 @@ export function FireflySettingsForm(props: {
                 })
               }
             >
-              <For each={data()?.fireflyV2.accounts ?? []}>
+              <For each={data()?.fireflyV2?.accounts ?? []}>
                 {(item) => <option value={item}>{item}</option>}
               </For>
             </select>

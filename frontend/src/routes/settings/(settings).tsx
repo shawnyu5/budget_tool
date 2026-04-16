@@ -42,34 +42,17 @@ export default function Settings() {
         // If fetching is successful, make sure the error message is gone
         setErrorMessage(null);
         log.info(JSON.stringify(settingsPageData, null, 3));
-        return {
-          ...settingsPageData,
-          monthSettingsV2: {
-            settings: {
-              ...settingsPageData.monthSettingsV2.settings,
-              maggieContributionAmount: new Decimal(
-                settingsPageData.monthSettingsV2.settings
-                  .maggieContributionAmount,
-              ),
-              maggiePercentageAllocation: new Decimal(
-                settingsPageData.monthSettingsV2.settings
-                  .maggiePercentageAllocation,
-              ),
-              shawnPercentageAllocation: new Decimal(
-                settingsPageData.monthSettingsV2.settings
-                  .shawnPercentageAllocation,
-              ),
-              shawnContributionAmount: new Decimal(
-                settingsPageData.monthSettingsV2.settings
-                  .shawnContributionAmount,
-              ),
-              totalAllocation: new Decimal(
-                settingsPageData.monthSettingsV2.settings.totalAllocation,
-              ),
-            },
-          },
-        } satisfies SettingsPageDataV2Query;
-      } catch (e) {
+        return transformSettingsPageData(settingsPageData);
+      } catch (e: any) {
+        if (e.response?.data) {
+          log.warn("Received partial data with errors", e.response.errors);
+          setErrorMessage(
+            "Failed to load Firefly data. Showing partial results",
+          );
+
+          console.log(e.response.data);
+          return transformSettingsPageData(e.response.data);
+        }
         handleGraphQLClientError(e, navigate);
       }
     },
@@ -133,9 +116,7 @@ export default function Settings() {
         },
       });
     } catch (e) {
-      // @ts-ignore
-      log.error("Failed to update settings: ", e);
-      setErrorMessage(`Failed to update settings: ${e}`);
+      handleGraphQLClientError(e, navigate, setErrorMessage);
       return;
     }
 
@@ -171,7 +152,7 @@ export default function Settings() {
                   settingsPageDataResource()?.monthSettingsV2.settings
                     .totalAllocation ?? new Decimal(0)
                 ).toFixed(2)}
-                onChange={(e: InputEvent) => {
+                onChange={(e) => {
                   const input = (e.target as HTMLInputElement).value;
                   mutate((prev) => {
                     if (!prev) return prev;
@@ -393,4 +374,33 @@ export default function Settings() {
       </ErrorBoundary>
     </>
   );
+}
+
+/**
+ * Transform settings page graphql to proper types
+ */
+function transformSettingsPageData(data: SettingsPageDataV2Query) {
+  return {
+    ...data,
+    monthSettingsV2: {
+      settings: {
+        ...data.monthSettingsV2.settings,
+        maggieContributionAmount: new Decimal(
+          data.monthSettingsV2.settings.maggieContributionAmount,
+        ),
+        maggiePercentageAllocation: new Decimal(
+          data.monthSettingsV2.settings.maggiePercentageAllocation,
+        ),
+        shawnPercentageAllocation: new Decimal(
+          data.monthSettingsV2.settings.shawnPercentageAllocation,
+        ),
+        shawnContributionAmount: new Decimal(
+          data.monthSettingsV2.settings.shawnContributionAmount,
+        ),
+        totalAllocation: new Decimal(
+          data.monthSettingsV2.settings.totalAllocation,
+        ),
+      },
+    },
+  } satisfies SettingsPageDataV2Query;
 }

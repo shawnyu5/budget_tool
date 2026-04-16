@@ -105,7 +105,7 @@ export function handleGraphQLClientError(
     }
 
     if (setErrorMessage) {
-      console.log(e.response.errors);
+      console.error(e.response.errors);
       setErrorMessage(e.response.errors?.map((e) => e.message).join("|"));
     }
   } else {

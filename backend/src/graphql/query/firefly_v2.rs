@@ -1,5 +1,6 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{Context, SimpleObject};
+use tracing::{error, info};
 
 use crate::{
     config::Config, db::postgres::PostgresDB, firefly::FireflyClient, graphql::utils::extract_jwt,
@@ -11,7 +12,7 @@ pub struct FireflyV2SuccessResponse {
     pub accounts: Vec<String>,
 }
 
-pub async fn firefly_v2(ctx: &Context<'_>) -> Result<FireflyV2SuccessResponse> {
+pub async fn firefly_v2(ctx: &Context<'_>) -> Result<Option<FireflyV2SuccessResponse>> {
     let jwt = extract_jwt(ctx)?;
     let db = PostgresDB::new().await;
     let mut tx = db.transaction().await?;
@@ -24,8 +25,9 @@ pub async fn firefly_v2(ctx: &Context<'_>) -> Result<FireflyV2SuccessResponse> {
         .await
         .context("Failed to get user firefly settings")?;
 
-    if firefly_settings.api_key.is_none() {
-        return Ok(FireflyV2SuccessResponse { accounts: vec![] });
+    if !firefly_settings.enabled {
+        info!("User has firefly integration disabled");
+        return Ok(None);
     }
 
     let firefly_api_key = firefly_settings
@@ -34,10 +36,17 @@ pub async fn firefly_v2(ctx: &Context<'_>) -> Result<FireflyV2SuccessResponse> {
 
     let firefly_client = FireflyClient::new(&firefly_api_key, &Config::load().firefly_url);
 
-    let accounts = firefly_client
-        .list_accounts()
-        .await
-        .context("Failed to get accounts for user from firefly")?;
+    match firefly_client.list_accounts().await {
+        Ok(accounts) => Ok(Some(FireflyV2SuccessResponse { accounts })),
+        Err(e) => {
+            error!("Failed to fetch Firefly user accounts: {e:#?}");
+            ctx.add_error(async_graphql::ServerError::new(
+                format!("Failed to fetch Firefly user accounts: {e}"),
+                None,
+            ));
+            Ok(None)
+        }
+    }
 
-    Ok(FireflyV2SuccessResponse { accounts })
+    // Ok(Some(FireflyV2SuccessResponse { accounts }))
 }

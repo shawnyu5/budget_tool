@@ -2174,13 +2174,9 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "FireflyV2SuccessResponse",
-                "ofType": null
-              }
+              "kind": "OBJECT",
+              "name": "FireflyV2SuccessResponse",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null

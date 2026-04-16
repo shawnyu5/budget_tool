@@ -92,7 +92,7 @@ impl QueryRoot {
 
     #[instrument(skip_all)]
     #[graphql(guard = "AuthGuard")]
-    async fn firefly_v2(&self, ctx: &Context<'_>) -> Result<FireflyV2SuccessResponse> {
+    async fn firefly_v2(&self, ctx: &Context<'_>) -> Result<Option<FireflyV2SuccessResponse>> {
         firefly_v2(ctx).await
     }
 

@@ -2,7 +2,7 @@
 use anyhow::{Context, Result};
 use backend::db::postgres::PostgresDB;
 use backend::routes::app;
-use backend::{config::Config, db::migrations::do_mongo_migrations};
+use backend::{config::Config, db::mongo_migration::do_mongo_migrations};
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
 use tokio::net::TcpListener;
 use tracing::info;

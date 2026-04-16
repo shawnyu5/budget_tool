@@ -12,7 +12,7 @@ use tracing::info;
 use crate::config::Config;
 
 mod migration_table;
-pub mod migrations;
+pub mod mongo_migration;
 mod monthly_budget;
 pub mod postgres;
 pub mod users;

@@ -450,7 +450,7 @@ type QueryRoot {
 	Retrieve information from Firefly it self
 	"""
 	firefly: FireflySuccessResponse!
-	fireflyV2: FireflyV2SuccessResponse!
+	fireflyV2: FireflyV2SuccessResponse
 	"""
 	Search for a spending item by time and ID
 	"""
