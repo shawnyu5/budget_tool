@@ -45,13 +45,13 @@ pub async fn do_mongo_migrations() -> Result<()> {
             .await
             .context("Failed to search migration table")?;
 
-        // if let Some(migration) = existing_migration {
-        //     info!(
-        //         "Migration already applied on date {}. Skipping",
-        //         migration.applied
-        //     );
-        //     continue;
-        // }
+        if let Some(migration) = existing_migration {
+            info!(
+                "Migration already applied on date {}. Skipping",
+                migration.applied
+            );
+            continue;
+        }
 
         match (migration.1)().await {
             Ok(_) => {

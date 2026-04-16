@@ -4,6 +4,7 @@ use anyhow::anyhow;
 use chrono::DateTime;
 use chrono_tz::Tz;
 use firefly_client::models::TransactionSingle;
+use firefly_client::models::UserSingle;
 use firefly_client::models::{TransactionSplitStore, TransactionStore, TransactionTypeProperty};
 use reqwest::header::ACCEPT;
 use rust_decimal::Decimal;
@@ -157,5 +158,26 @@ impl FireflyClient {
             .collect();
 
         Ok(account_names)
+    }
+
+    /// Get info about the current Firefly user
+    pub async fn get_current_user(&self) -> Result<UserSingle> {
+        match firefly_client::apis::about_api::get_current_user(
+            &firefly_client::apis::configuration::Configuration {
+                base_path: self.firefly_url.clone(),
+                client: self.http_client.clone(),
+                bearer_access_token: Some(self.api_key.clone()),
+                ..Default::default()
+            },
+            None,
+        )
+        .await
+        {
+            Ok(user) => Ok(user),
+            Err(e) => {
+                error!("Failed to list current user: {e}");
+                return Err(anyhow!("Failed to list current user"));
+            }
+        }
     }
 }

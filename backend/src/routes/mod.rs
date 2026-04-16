@@ -143,23 +143,8 @@ async fn graphql_handler(
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let req = req.into_inner();
-
-    // Tell firefly it can return errors in JSON format, rather than auto redirecting to firefly home page
-    let mut headers = reqwest::header::HeaderMap::new();
-    headers.insert(
-        ACCEPT,
-        reqwest::header::HeaderValue::from_static("application/json"),
-    );
-    let http_client = reqwest::Client::builder()
-        .default_headers(headers)
-        .build()
-        .expect("Failed to build reqest client");
     let postgres = PostgresDB::new().await;
-
-    schema
-        .execute(req.data(jwt).data(http_client).data(postgres))
-        .await
-        .into()
+    schema.execute(req.data(jwt).data(postgres)).await.into()
 }
 
 /// Get the budget information for a specific month
