@@ -2,7 +2,7 @@ use anyhow::{Context as _, Result};
 use async_graphql::{Context, InputObject};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rust_decimal::dec;
-use tracing::{error, info};
+use tracing::{error, info, instrument};
 
 use crate::{
     db::postgres::models::Year,

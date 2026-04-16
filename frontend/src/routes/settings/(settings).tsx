@@ -22,8 +22,6 @@ export default function Settings() {
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
-  // // Whether to show the firefly settings form
-  // const [fireflySettingsToggle, setfireFlySettingsToggle] = createSignal(false);
   const graphqlsdk = NewGraphQLSDK();
   const navigate = useNavigate();
   const rawResource = createResource(
@@ -41,7 +39,7 @@ export default function Settings() {
 
         // If fetching is successful, make sure the error message is gone
         setErrorMessage(null);
-        log.info(JSON.stringify(settingsPageData, null, 3));
+        log.info(`Data: ${JSON.stringify(settingsPageData, null, 3)}`);
         return transformSettingsPageData(settingsPageData);
       } catch (e: any) {
         if (e.response?.data) {

@@ -14,7 +14,6 @@ pub struct MonthlySettingsResponse {
     pub settings: Settings,
 }
 
-#[instrument(skip_all)]
 pub async fn month_settings_v2(
     ctx: &Context<'_>,
     year: Year,

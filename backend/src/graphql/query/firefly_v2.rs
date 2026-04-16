@@ -1,6 +1,6 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{Context, SimpleObject};
-use tracing::{error, info};
+use tracing::{error, info, instrument};
 
 use crate::{
     config::Config, db::postgres::PostgresDB, firefly::FireflyClient, graphql::utils::extract_jwt,
