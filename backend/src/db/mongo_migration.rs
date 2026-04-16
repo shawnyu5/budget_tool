@@ -45,13 +45,13 @@ pub async fn do_mongo_migrations() -> Result<()> {
             .await
             .context("Failed to search migration table")?;
 
-        if let Some(migration) = existing_migration {
-            info!(
-                "Migration already applied on date {}. Skipping",
-                migration.applied
-            );
-            continue;
-        }
+        // if let Some(migration) = existing_migration {
+        //     info!(
+        //         "Migration already applied on date {}. Skipping",
+        //         migration.applied
+        //     );
+        //     continue;
+        // }
 
         match (migration.1)().await {
             Ok(_) => {
@@ -178,7 +178,8 @@ async fn migrate_to_postgres() -> Result<()> {
 
     for user in mongo_users {
         if let Some(firefly) = user.firefly {
-            info!("Previous user has Firefly settings in MongoDB. Inserting into PostgresDB");
+            info!("Previous user has Firefly settings in MongoDB: {firefly:#?}");
+            info!("Inserting into Postgres");
             let postgres_user = postgres.get_user(&user.username).await?;
             postgres
                 .update_user_firefly_settings(
