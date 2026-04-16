@@ -18,7 +18,11 @@ pub type SchemaType = Schema<QueryRoot, MutationRoot, EmptySubscription>;
 /// Generate the graphql schema, and save it to a file
 pub fn generate_graphql_schema() -> Result<SchemaType> {
     let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription).finish();
-    fs::write("schema.graphql", schema.sdl()).context("Failed to write graphql schema to file")?;
-    info!("Generated graphql schema");
+    #[cfg(debug_assertions)]
+    {
+        fs::write("schema.graphql", schema.sdl())
+            .context("Failed to write graphql schema to file")?;
+        info!("Generated graphql schema");
+    }
     return Ok(schema);
 }
