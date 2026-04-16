@@ -26,7 +26,7 @@ impl FireflyRow {
     /// If firefly integration is not enabled, decryption will be skipped and `None` will be returned.
     pub fn decrypt_firefly_api_key(&self) -> Result<String> {
         let (Some(api_key), Some(nonce)) = (&self.api_key, &self.encryption_nounce) else {
-            return Ok("".to_string());
+            return Ok(self.api_key.clone().unwrap_or_default());
         };
 
         info!("Decrypting API key...");
