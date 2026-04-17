@@ -1,14 +1,22 @@
-import { Show } from "solid-js";
+import { Alert } from "solid-bootstrap";
+import { createSignal, Show } from "solid-js";
 
 /**
  * An component that displays a success message
  */
 export default function (props: { message: string | null }) {
+  const [show, setShow] = createSignal(true);
+
   return (
-    <Show when={props.message}>
-      <div class="callout success" data-closable>
-        <p>{props.message}</p>
-      </div>
+    <Show when={show()}>
+      <Alert
+        variant="success"
+        dismissible
+        onClose={() => setShow(false)}
+        class="mt-3"
+      >
+        {props.message}
+      </Alert>
     </Show>
   );
 }
