@@ -12,6 +12,7 @@ import log from "~/logger";
 import { formatRfc3339DateObj } from "~/utils";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import Decimal from "decimal.js";
+import { Button, Table } from "solid-bootstrap";
 
 export default function BudgetTable(props: {
   data: Resource<GetHomePageDataV2Query | undefined>;
@@ -79,8 +80,8 @@ export default function BudgetTable(props: {
     <div id="spending-table">
       <Show when={!isEditing()}>
         <div id="edit-save-buttons">
-          <button
-            class="button"
+          <Button
+            variant="primary"
             onClick={() => {
               navigate(
                 `/spending-item/add/${searchParams.year}/${searchParams.month}`,
@@ -88,16 +89,16 @@ export default function BudgetTable(props: {
             }}
           >
             Add
-          </button>
+          </Button>
           <p></p>
-          <button
-            class="button"
+          <Button
+            variant="danger"
             onClick={() => {
               setIsEditing(true);
             }}
           >
             Delete
-          </button>
+          </Button>
         </div>
       </Show>
       <form
@@ -124,7 +125,7 @@ export default function BudgetTable(props: {
             // <p></p>
           }
         </Show>
-        <table>
+        <Table striped bordered hover>
           <thead>
             <tr>
               <Show when={isEditing()}>
@@ -190,7 +191,7 @@ export default function BudgetTable(props: {
               }}
             </For>
           </tbody>
-        </table>
+        </Table>
       </form>
     </div>
   );
