@@ -80,7 +80,7 @@ export default function CustomNavBar() {
               size="sm"
               name="month"
               value={searchParam.month}
-              onChange={(e) => setSearchParam({ year: e.currentTarget.value })}
+              onChange={(e) => setSearchParam({ month: e.currentTarget.value })}
             >
               <For each={months}>
                 {(month) => (
