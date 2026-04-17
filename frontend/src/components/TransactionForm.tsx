@@ -7,7 +7,7 @@ import {
   Show,
   Signal,
 } from "solid-js";
-import ErrorComponent from "./errorComponent";
+import ErrorComponent from "./ErrorComponent";
 import { formatRfc3339DateObj } from "~/utils";
 import { Transaction } from "~/generated/graphql";
 import { clientOnly } from "@solidjs/start";
@@ -16,6 +16,7 @@ import "@rnwonder/solid-date-picker/dist/style.css";
 import { PickerValue, TimeValue } from "@rnwonder/solid-date-picker";
 import Decimal from "decimal.js";
 import TimePicker from "@rnwonder/solid-date-picker/timePicker";
+import { Button, Col, Form, Row, Spinner } from "solid-bootstrap";
 
 /**
  * A form that displays a transaction
@@ -91,14 +92,14 @@ export function TransactionForm(props: {
   });
 
   return (
-    <form
+    <Form
       id="spending-item"
       method="post"
       action={action(async () => {
         setFormSubmitted(true);
         let date = new Date(datePicker().value.selected ?? "");
         date.setHours(timePicker().value.hour ?? 0);
-        date.setMinutes(timePicker().value.hour ?? 0);
+        date.setMinutes(timePicker().value.minute ?? 0); // Fixed typo from .hour to .minute
         try {
           await props.onSubmit(
             {
@@ -117,78 +118,89 @@ export function TransactionForm(props: {
     >
       <ErrorComponent errorMessage={errorMessage()} />
 
-      <Show when={!props.transaction?.loading} fallback={<p>Loading...</p>}>
-        <label>Amount ($)</label>
-        <input
-          name="amount"
-          type="number"
-          step="0.01"
-          required
-          value={amount()}
-          onInput={(e: InputEvent) => {
-            const input = (e.target as HTMLInputElement).value;
-            setAmount(input);
-          }}
-        />
-
-        <div>
-          <label>Date</label>
-          {
-            // <input
-            //   name="date"
-            //   type="text"
-            //   required
-            //   value={date()}
-            //   onInput={(e: InputEvent) => {
-            //     const input = (e.target as HTMLInputElement).value;
-            //     setDate(input);
-            //   }}
-            // />
-          }
-          {
-            // TODO: Since datePicker defaults all created item dates to midnight, add a time picker to take into account the time transaction was created
-          }
-          <DatePicker
-            type="single"
-            value={datePicker}
-            setValue={setDatePicker}
-          />
-          <TimePicker value={timePicker} setValue={setTimePicker} />
-        </div>
-
-        <label>Description</label>
-        <input
-          name="description"
-          type="text"
-          required
-          value={description()}
-          onInput={(e: InputEvent) => {
-            const input = (e.target as HTMLInputElement).value;
-            setDescription(input);
-          }}
-        />
-
-        <label>Notes</label>
-        <textarea
-          name="notes"
-          style="height: 100px"
-          // type="text"
-          value={notes()}
-          onInput={(e: InputEvent) => {
-            const input = (e.target as HTMLInputElement).value;
-            setNotes(input);
-          }}
-        />
-
-        <button class="button success" type="submit" disabled={formSubmitted()}>
-          Save
-        </button>
-
-        {
-          // <p>Shawn - ${shawnSplit().toString()}</p>
-          // <p>Maggie - ${maggieSplit().toString()}</p>
+      <Show
+        when={!props.transaction?.loading}
+        fallback={
+          <div class="text-center p-5">
+            <Spinner animation="border" /> <p>Loading...</p>
+          </div>
         }
+      >
+        {/* Amount Field */}
+        <Form.Group controlId="amount" class="mb-3">
+          <Form.Label>Amount ($)</Form.Label>
+          <Form.Control
+            name="amount"
+            type="number"
+            step="0.01"
+            required
+            value={amount()}
+            onInput={(e) => setAmount(e.currentTarget.value)}
+          />
+        </Form.Group>
+
+        {/* Date and Time Pickers */}
+        <Form.Group class="mb-3">
+          <Form.Label>Date & Time</Form.Label>
+          <Row>
+            <Col md={7} class="mb-2 mb-md-0">
+              <DatePicker
+                type="single"
+                value={datePicker}
+                setValue={setDatePicker}
+              />
+            </Col>
+            <Col md={5}>
+              <TimePicker value={timePicker} setValue={setTimePicker} />
+            </Col>
+          </Row>
+        </Form.Group>
+
+        {/* Description Field */}
+        <Form.Group controlId="description" class="mb-3">
+          <Form.Label>Description</Form.Label>
+          <Form.Control
+            name="description"
+            type="text"
+            required
+            value={description()}
+            onInput={(e) => setDescription(e.currentTarget.value)}
+          />
+        </Form.Group>
+
+        {/* Notes Field */}
+        <Form.Group controlId="notes" class="mb-4">
+          <Form.Label>Notes</Form.Label>
+          <Form.Control
+            as="textarea"
+            name="notes"
+            rows={3}
+            value={notes()}
+            onInput={(e) => setNotes(e.currentTarget.value)}
+            style={{ height: "100px" }}
+          />
+        </Form.Group>
+
+        {/* Submit Button */}
+        <Button
+          variant="success"
+          type="submit"
+          disabled={formSubmitted()}
+          class="w-100"
+        >
+          <Show when={formSubmitted()} fallback="Save">
+            <Spinner
+              as="span"
+              animation="border"
+              size="sm"
+              role="status"
+              aria-hidden="true"
+              class="me-2"
+            />
+            Saving...
+          </Show>
+        </Button>
       </Show>
-    </form>
+    </Form>
   );
 }

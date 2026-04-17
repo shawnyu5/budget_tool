@@ -8,14 +8,15 @@ import {
   Suspense,
 } from "solid-js";
 import log from "~/logger";
-import NavBar from "~/components/navBar";
-import ErrorComponent from "~/components/errorComponent";
-import SuccessComponent from "~/components/successComponent";
+import CustomNavBar from "~/components/NavBar";
+import ErrorComponent from "~/components/ErrorComponent";
+import SuccessComponent from "~/components/SuccessComponent";
 import { calculateOtherContribution, calculatePercentage } from "~/utils";
 import { Month, SettingsPageDataV2Query } from "~/generated/graphql";
 import { FireflySettingsForm } from "./firefly_settings";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import Decimal from "decimal.js";
+import { Button, Form, InputGroup } from "solid-bootstrap";
 
 export default function Settings() {
   const [searchParam, _setSearchParam] = useSearchParams();
@@ -128,7 +129,7 @@ export default function Settings() {
   return (
     <>
       <span class="inline-flex-container">
-        <NavBar />
+        <CustomNavBar />
       </span>
       <ErrorBoundary fallback={<p>Failed to load settings...</p>}>
         <div id="settings-form">
@@ -138,235 +139,250 @@ export default function Settings() {
             <Show when={errorMessage() == null && successMessage()}>
               <SuccessComponent message={successMessage()} />
             </Show>
-            <form action={onSubmit} method="post">
-              <label for="month-budget">Month's budget($)</label>
-              <input
-                type="number"
-                step="0.01"
-                id="month-budget"
-                name="month-budget"
-                disabled
-                value={(
-                  settingsPageDataResource()?.monthSettingsV2.settings
-                    .totalAllocation ?? new Decimal(0)
-                ).toFixed(2)}
-                onChange={(e) => {
-                  const input = (e.target as HTMLInputElement).value;
-                  mutate((prev) => {
-                    if (!prev) return prev;
-                    return {
-                      ...prev,
-                      monthlyBudgetConfig: {
-                        ...prev?.monthSettingsV2.settings,
-                        totalAllocation: parseFloat(input),
-                      },
-                    };
-                  });
-                }}
-                required
-              />
-
-              <label for="shawn-contribution-percentage">
-                Shawn contribution percentage:
-              </label>
-              <input
-                type="number"
-                id="shawn-contribution-percentage"
-                name="shawn-contribution-percentage"
-                step="0.01"
-                placeholder="50"
-                value={(
-                  settingsPageDataResource()?.monthSettingsV2.settings
-                    .shawnPercentageAllocation ?? new Decimal(0)
-                ).toNumber()}
-                onChange={(e) => {
-                  const input = e.target as HTMLInputElement;
-                  if (!input.value.trim()) return;
-                  const shawnPercentageContribution = new Decimal(input.value);
-                  const maggiePercentageAllocation = new Decimal(100).minus(
-                    shawnPercentageContribution,
-                  );
-                  mutate((prev) => {
-                    if (!prev) return prev;
-                    return {
-                      ...prev,
-                      monthSettingsV2: {
-                        settings: {
-                          ...prev.monthSettingsV2.settings,
-                          shawnPercentageAllocation:
-                            shawnPercentageContribution,
-                          shawnContributionAmount: calculatePercentage(
-                            settingsPageDataResource()?.monthSettingsV2.settings
-                              .totalAllocation ?? new Decimal(0),
-                            shawnPercentageContribution,
-                          ),
-                          maggiePercentageAllocation:
-                            maggiePercentageAllocation,
-                          maggieContributionAmount: calculatePercentage(
-                            settingsPageDataResource()?.monthSettingsV2.settings
-                              .totalAllocation ?? new Decimal(0),
-                            maggiePercentageAllocation,
-                          ),
-                        },
-                      },
-                    };
-                  });
-                }}
-                required
-              />
-
-              <label for="shawn-contribution-amount">
-                Shawn contribution amount:
-              </label>
-              <input
-                type="number"
-                id="shawn-contribution-amount"
-                name="shawn-contribution-amount"
-                step="0.01"
-                placeholder="50.00"
-                value={(
-                  settingsPageDataResource()?.monthSettingsV2.settings
-                    .shawnContributionAmount ?? new Decimal(0)
-                ).toFixed(2)}
-                onChange={(e) => {
-                  const input = e.target as HTMLInputElement;
-                  if (!input.value.trim()) return;
-
-                  const shawnContributionAmount = new Decimal(input.value);
-                  const maggieContributionAmount = calculateOtherContribution(
-                    shawnContributionAmount,
+            <Form action={onSubmit} method="post">
+              <Form.Group controlId="month-budget">
+                <Form.Label>Month's budget($)</Form.Label>
+                <Form.Control
+                  type="number"
+                  step="0.01"
+                  name="month-budget"
+                  disabled // Note: onChange won't fire while disabled
+                  required
+                  value={(
                     settingsPageDataResource()?.monthSettingsV2.settings
-                      .shawnPercentageAllocation ?? new Decimal(0),
-                    settingsPageDataResource()?.monthSettingsV2.settings
-                      .maggiePercentageAllocation ?? new Decimal(0),
-                  );
-
-                  mutate((prev) => {
-                    if (!prev) return prev;
-                    return {
-                      ...prev,
-                      monthSettingsV2: {
-                        settings: {
-                          ...prev.monthSettingsV2.settings,
-                          totalAllocation: maggieContributionAmount.plus(
-                            shawnContributionAmount,
-                          ),
-                          maggieContributionAmount,
-                          shawnContributionAmount,
+                      .totalAllocation ?? new Decimal(0)
+                  ).toFixed(2)}
+                  onChange={(e) => {
+                    const input = (e.target as HTMLInputElement).value;
+                    mutate((prev) => {
+                      if (!prev) return prev;
+                      return {
+                        ...prev,
+                        monthlyBudgetConfig: {
+                          ...prev?.monthSettingsV2.settings,
+                          totalAllocation: parseFloat(input),
                         },
-                      },
-                    };
-                  });
-                }}
-                required
-              />
+                      };
+                    });
+                  }}
+                />
+                <Form.Text datatype="number" class="text-muted"></Form.Text>
+                <Form.Group
+                  controlId="shawn-contribution-percentage"
+                  class="mb-3"
+                >
+                  <Form.Label>Shawn contribution percentage:</Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type="number"
+                      step="0.01"
+                      placeholder="50"
+                      required
+                      value={(
+                        settingsPageDataResource()?.monthSettingsV2.settings
+                          .shawnPercentageAllocation ?? new Decimal(0)
+                      ).toNumber()}
+                      onInput={(e) => {
+                        const val = e.currentTarget.value;
+                        if (!val.trim()) return;
 
-              <hr />
+                        const shawnPercentage = new Decimal(val);
+                        const maggiePercentage = new Decimal(100).minus(
+                          shawnPercentage,
+                        );
+                        const totalAlloc =
+                          settingsPageDataResource()?.monthSettingsV2.settings
+                            .totalAllocation ?? new Decimal(0);
 
-              <label for="maggie-contribution-percentage">
-                Maggie contribution percentage:
-              </label>
-              <input
-                type="number"
-                id="maggie-contribution-percentage"
-                placeholder="50"
-                name="maggie-contribution-percentage"
-                value={(
-                  settingsPageDataResource()?.monthSettingsV2.settings
-                    .maggiePercentageAllocation ?? new Decimal(0)
-                ).toNumber()}
-                onChange={(e) => {
-                  const input = e.target as HTMLInputElement;
-                  if (!input.value.trim()) return;
-                  const contribution = new Decimal(input.value);
-                  const shawnPercentageAllocation = new Decimal(100).minus(
-                    contribution,
-                  );
-                  mutate((prev) => {
-                    if (!prev) return prev;
+                        mutate((prev) => {
+                          if (!prev) return prev;
+                          return {
+                            ...prev,
+                            monthSettingsV2: {
+                              ...prev.monthSettingsV2,
+                              settings: {
+                                ...prev.monthSettingsV2.settings,
+                                shawnPercentageAllocation: shawnPercentage,
+                                maggiePercentageAllocation: maggiePercentage,
+                                shawnContributionAmount: calculatePercentage(
+                                  totalAlloc,
+                                  shawnPercentage,
+                                ),
+                                maggieContributionAmount: calculatePercentage(
+                                  totalAlloc,
+                                  maggiePercentage,
+                                ),
+                              },
+                            },
+                          };
+                        });
+                      }}
+                    />
+                    <InputGroup.Text>%</InputGroup.Text>
+                  </InputGroup>
+                </Form.Group>
 
-                    return {
-                      ...prev,
-                      monthSettingsV2: {
-                        settings: {
-                          ...prev.monthSettingsV2.settings,
-                          maggiePercentageAllocation: contribution,
-                          maggieContributionAmount: calculatePercentage(
-                            settingsPageDataResource()?.monthSettingsV2.settings
-                              .totalAllocation ?? new Decimal(0),
-                            contribution,
-                          ),
-                          shawnPercentageAllocation: shawnPercentageAllocation,
-                          shawnContributionAmount: calculatePercentage(
-                            settingsPageDataResource()?.monthSettingsV2.settings
-                              .totalAllocation ?? new Decimal(0),
-                            shawnPercentageAllocation,
-                          ),
-                        },
-                      },
-                    };
-                  });
-                }}
-                required
-              />
+                <Form.Group controlId="shawn-contribution-amount" class="mb-3">
+                  <Form.Label>Shawn contribution amount:</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>$</InputGroup.Text>
+                    <Form.Control
+                      type="number"
+                      step="0.01"
+                      placeholder="50.00"
+                      required
+                      value={(
+                        settingsPageDataResource()?.monthSettingsV2.settings
+                          .shawnContributionAmount ?? new Decimal(0)
+                      ).toFixed(2)}
+                      onInput={(e) => {
+                        const val = e.currentTarget.value;
+                        if (!val.trim()) return;
 
-              <label for="maggie-contribution-amount">
-                Maggie contribution amount:
-              </label>
-              <input
-                type="number"
-                id="maggie-contribution-amount"
-                name="maggie-contribution-amount"
-                step="0.01"
-                placeholder="50"
-                value={(
-                  settingsPageDataResource()?.monthSettingsV2.settings
-                    .maggieContributionAmount ?? new Decimal(0)
-                ).toFixed(2)}
-                onChange={(e) => {
-                  const input = e.target as HTMLInputElement;
-                  if (!input.value.trim()) return;
+                        const shawnAmt = new Decimal(val);
+                        const settings =
+                          settingsPageDataResource()?.monthSettingsV2.settings;
 
-                  const maggieContributionAmount = new Decimal(input.value);
-                  const mPct =
-                    settingsPageDataResource()?.monthSettingsV2.settings
-                      .maggiePercentageAllocation ?? new Decimal(0);
-                  const sPct =
-                    settingsPageDataResource()?.monthSettingsV2.settings
-                      .shawnPercentageAllocation ?? new Decimal(0);
+                        // Calculate the corresponding amount for Maggie based on current split
+                        const maggieAmt = calculateOtherContribution(
+                          shawnAmt,
+                          settings?.shawnPercentageAllocation ?? new Decimal(0),
+                          settings?.maggiePercentageAllocation ??
+                            new Decimal(0),
+                        );
 
-                  const shawnContributionAmount = calculateOtherContribution(
-                    maggieContributionAmount,
-                    mPct,
-                    sPct,
-                  );
+                        mutate((prev) => {
+                          if (!prev) return prev;
+                          return {
+                            ...prev,
+                            monthSettingsV2: {
+                              ...prev.monthSettingsV2,
+                              settings: {
+                                ...prev.monthSettingsV2.settings,
+                                shawnContributionAmount: shawnAmt,
+                                maggieContributionAmount: maggieAmt,
+                                totalAllocation: shawnAmt.plus(maggieAmt),
+                              },
+                            },
+                          };
+                        });
+                      }}
+                    />
+                  </InputGroup>
+                </Form.Group>
+                <hr />
 
-                  mutate((prev) => {
-                    if (!prev) return prev;
-                    console.log("Mutating");
+                <Form.Group
+                  controlId="maggie-contribution-percentage"
+                  class="mb-3"
+                >
+                  <Form.Label>Maggie contribution percentage:</Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type="number"
+                      step="0.01"
+                      placeholder="50"
+                      required
+                      value={(
+                        settingsPageDataResource()?.monthSettingsV2.settings
+                          .maggiePercentageAllocation ?? new Decimal(0)
+                      ).toNumber()}
+                      onInput={(e) => {
+                        const val = e.currentTarget.value;
+                        if (!val.trim()) return;
 
-                    let a = {
-                      ...prev,
-                      monthSettingsV2: {
-                        settings: {
-                          ...prev.monthSettingsV2.settings,
-                          totalAllocation: maggieContributionAmount.plus(
-                            shawnContributionAmount,
-                          ),
-                          maggieContributionAmount,
-                          shawnContributionAmount,
-                        },
-                      },
-                    };
-                    return a;
-                  });
-                }}
-                required
-              />
+                        const contribution = new Decimal(val);
+                        const shawnPercentage = new Decimal(100).minus(
+                          contribution,
+                        );
+                        const totalAlloc =
+                          settingsPageDataResource()?.monthSettingsV2.settings
+                            .totalAllocation ?? new Decimal(0);
 
-              <FireflySettingsForm data={rawResource} />
-              <button class="submit success button">Submit</button>
-            </form>
+                        mutate((prev) => {
+                          if (!prev) return prev;
+                          return {
+                            ...prev,
+                            monthSettingsV2: {
+                              ...prev.monthSettingsV2,
+                              settings: {
+                                ...prev.monthSettingsV2.settings,
+                                maggiePercentageAllocation: contribution,
+                                maggieContributionAmount: calculatePercentage(
+                                  totalAlloc,
+                                  contribution,
+                                ),
+                                shawnPercentageAllocation: shawnPercentage,
+                                shawnContributionAmount: calculatePercentage(
+                                  totalAlloc,
+                                  shawnPercentage,
+                                ),
+                              },
+                            },
+                          };
+                        });
+                      }}
+                    />
+                    <InputGroup.Text>%</InputGroup.Text>
+                  </InputGroup>
+                </Form.Group>
+                <Form.Group controlId="maggie-contribution-amount" class="mb-3">
+                  <Form.Label>Maggie contribution amount:</Form.Label>
+                  <InputGroup>
+                    <InputGroup.Text>$</InputGroup.Text>
+                    <Form.Control
+                      type="number"
+                      step="0.01"
+                      placeholder="50.00"
+                      required
+                      value={(
+                        settingsPageDataResource()?.monthSettingsV2.settings
+                          .maggieContributionAmount ?? new Decimal(0)
+                      ).toFixed(2)}
+                      onInput={(e) => {
+                        const val = e.currentTarget.value;
+                        if (!val.trim()) return;
+
+                        const maggieAmt = new Decimal(val);
+                        const settings =
+                          settingsPageDataResource()?.monthSettingsV2.settings;
+                        const mPct =
+                          settings?.maggiePercentageAllocation ??
+                          new Decimal(0);
+                        const sPct =
+                          settings?.shawnPercentageAllocation ?? new Decimal(0);
+
+                        const shawnAmt = calculateOtherContribution(
+                          maggieAmt,
+                          mPct,
+                          sPct,
+                        );
+
+                        mutate((prev) => {
+                          if (!prev) return prev;
+                          return {
+                            ...prev,
+                            monthSettingsV2: {
+                              ...prev.monthSettingsV2,
+                              settings: {
+                                ...prev.monthSettingsV2.settings,
+                                totalAllocation: maggieAmt.plus(shawnAmt),
+                                maggieContributionAmount: maggieAmt,
+                                shawnContributionAmount: shawnAmt,
+                              },
+                            },
+                          };
+                        });
+                      }}
+                    />
+                  </InputGroup>
+                </Form.Group>
+                <FireflySettingsForm data={rawResource} />
+                <Button variant="success" type="submit">
+                  Submit
+                </Button>
+              </Form.Group>
+            </Form>
           </Suspense>
         </div>
       </ErrorBoundary>

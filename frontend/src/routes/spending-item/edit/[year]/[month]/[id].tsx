@@ -9,7 +9,7 @@ import {
   Show,
   Signal,
 } from "solid-js";
-import ErrorComponent from "~/components/errorComponent";
+import ErrorComponent from "~/components/ErrorComponent";
 import { TransactionForm } from "~/components/TransactionForm";
 import { loadLocalConfig } from "~/config";
 import { Month, SpendingItem, Transaction } from "~/generated/graphql";
@@ -46,7 +46,7 @@ export default function () {
         return undefined;
       }
     } catch (e) {
-      handleGraphQLClientError(e, navigate);
+      handleGraphQLClientError(e, navigate, setErrorMessage);
     }
   });
 

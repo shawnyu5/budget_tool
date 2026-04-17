@@ -61,15 +61,24 @@ export default function App() {
     <Router
       root={(props) => (
         <MetaProvider>
+          {
+            // <link
+            //   rel="stylesheet"
+            //   href="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/css/foundation.min.css"
+            //   crossorigin="anonymous"
+            // ></link>
+            // <script
+            //   src="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/js/foundation.min.js"
+            //   crossorigin="anonymous"
+            // ></script>
+          }
           <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
             rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/css/foundation.min.css"
+            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
             crossorigin="anonymous"
-          ></link>
-          <script
-            src="https://cdn.jsdelivr.net/npm/foundation-sites@6.9.0/dist/js/foundation.min.js"
-            crossorigin="anonymous"
-          ></script>
+          />
+
           <Title>Budget tool</Title>
           <Suspense>{props.children}</Suspense>
         </MetaProvider>

@@ -1,3 +1,4 @@
+import { Form } from "solid-bootstrap";
 import { createSignal, For, ResourceReturn, Show } from "solid-js";
 import { SettingsPageDataV2Query } from "~/generated/graphql";
 
@@ -11,56 +12,14 @@ export function FireflySettingsForm(props: {
     <div id="firefly-settings">
       <h2>Firefly integration</h2>
       <div id="firefly-toggle" class="switch">
-        <input
-          class="switch-input"
-          id="firefly-settings-toggle"
-          type="checkbox"
-          name="firefly-settings-toggle"
-          checked={data()?.monthSettingsV2.settings.firefly?.enabled ?? false}
-          onChange={(e) => {
-            const toggled = e.currentTarget.checked;
-            mutate((prev) => {
-              if (!prev) return prev;
-              return {
-                ...prev,
-                monthSettingsV2: {
-                  ...prev.monthSettingsV2,
-                  settings: {
-                    ...prev.monthSettingsV2.settings,
-                    firefly: {
-                      enabled: toggled,
-                    },
-                  },
-                },
-              };
-            });
-          }}
-        />
-        <label class="switch-paddle" for="firefly-settings-toggle">
-          <span class="show-for-sr">Toggle firefly settings</span>
-        </label>
-      </div>
-
-      {
-        // Firefly specific settings
-      }
-      <Show when={data()?.monthSettingsV2.settings.firefly?.enabled}>
-        <label for="api-key">Firefly API key:</label>
-        <div id="api-key-form">
-          <input
-            required={data()?.monthSettingsV2.settings.firefly?.enabled}
-            type={showAPIKey() ? "text" : "password"}
-            id="api-key"
-            name="api-key"
-            value={data()?.monthSettingsV2.settings.firefly?.apiKey ?? ""}
-            onBlur={() => {
-              if (data()?.monthSettingsV2.settings.firefly?.apiKey == null) {
-                return;
-              }
-            }}
-            onInput={(e: InputEvent) => {
-              const input = e.target as HTMLInputElement;
-              const apiKey = input.value;
+        <Form.Group controlId="firefly-settings-toggle" class="mb-3">
+          <Form.Check
+            type="switch"
+            label="Enable Firefly Settings"
+            id="firefly-settings-toggle"
+            checked={data()?.monthSettingsV2.settings.firefly?.enabled ?? false}
+            onChange={(e) => {
+              const toggled = e.currentTarget.checked;
               mutate((prev) => {
                 if (!prev) return prev;
                 return {
@@ -70,8 +29,8 @@ export function FireflySettingsForm(props: {
                     settings: {
                       ...prev.monthSettingsV2.settings,
                       firefly: {
-                        ...prev.monthSettingsV2.settings.firefly,
-                        apiKey: apiKey,
+                        ...prev.monthSettingsV2.settings.firefly, // spread existing firefly sub-settings
+                        enabled: toggled,
                       },
                     },
                   },
@@ -79,29 +38,23 @@ export function FireflySettingsForm(props: {
               });
             }}
           />
-          <label class="form-check-label" for="check-api-key">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="check-api-key"
-              checked={showAPIKey()}
-              onchange={(e: Event) => {
-                const input = e.target as HTMLInputElement;
-                setShowAPIKey(input.checked);
-              }}
-            ></input>
-            Show me
-          </label>
-        </div>
-        <div id="select-default-account">
-          <label>
-            Default account
-            <select
-              // required={data()?.me.firefly?.enabled}
-              value={
-                data()?.monthSettingsV2.settings.firefly?.sourceAccount ?? ""
-              }
-              onInput={(e) =>
+        </Form.Group>
+      </div>
+
+      {
+        // Firefly specific settings
+      }
+      <Show when={data()?.monthSettingsV2.settings.firefly?.enabled}>
+        <div id="api-key-form">
+          <Form.Group controlId="api-key" class="mb-3">
+            <Form.Label>API Key</Form.Label>
+            <Form.Control
+              required={data()?.monthSettingsV2.settings.firefly?.enabled}
+              type={showAPIKey() ? "text" : "password"}
+              placeholder="Enter Firefly API Key"
+              value={data()?.monthSettingsV2.settings.firefly?.apiKey ?? ""}
+              onInput={(e) => {
+                const val = e.currentTarget.value;
                 mutate((prev) => {
                   if (!prev) return prev;
                   return {
@@ -112,19 +65,56 @@ export function FireflySettingsForm(props: {
                         ...prev.monthSettingsV2.settings,
                         firefly: {
                           ...prev.monthSettingsV2.settings.firefly,
-                          sourceAccount: e.target.value,
+                          apiKey: val,
                         },
                       },
                     },
                   };
-                })
+                });
+              }}
+            />
+            <Form.Check
+              type="checkbox"
+              id="check-api-key"
+              label="Show me"
+              class="mt-2"
+              checked={showAPIKey()}
+              onChange={(e) => setShowAPIKey(e.currentTarget.checked)}
+            />
+          </Form.Group>
+
+          <Form.Group controlId="select-default-account" class="mb-3">
+            <Form.Label>Default account</Form.Label>
+            <Form.Select
+              value={
+                data()?.monthSettingsV2.settings.firefly?.sourceAccount ?? ""
               }
+              onInput={(e) => {
+                const val = e.currentTarget.value;
+                mutate((prev) => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    monthSettingsV2: {
+                      ...prev.monthSettingsV2,
+                      settings: {
+                        ...prev.monthSettingsV2.settings,
+                        firefly: {
+                          ...prev.monthSettingsV2.settings.firefly,
+                          sourceAccount: val,
+                        },
+                      },
+                    },
+                  };
+                });
+              }}
             >
+              <option value="">Select an account...</option>
               <For each={data()?.fireflyV2?.accounts ?? []}>
                 {(item) => <option value={item}>{item}</option>}
               </For>
-            </select>
-          </label>
+            </Form.Select>
+          </Form.Group>
         </div>
       </Show>
     </div>

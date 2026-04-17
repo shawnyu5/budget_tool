@@ -1,16 +1,17 @@
 import { createEffect, For, Show } from "solid-js";
-import "./monthsDropDown.css";
-import { useLocation, useNavigate, useSearchParams } from "@solidjs/router";
+import "./MonthsDropDown.css";
+import { A, useLocation, useNavigate, useSearchParams } from "@solidjs/router";
 import { monthNumberToName, setLocalAuthToken } from "~/utils";
 import log from "~/logger";
 import { exportCSV } from "~/server";
+import { Container, Form, Nav, Navbar } from "solid-bootstrap";
 
 /**
- * A dropdown menu that contains the selected month.
+ * Custom Nav bar at the top of the page
  *
  * Puts the selected month in the query param, in the `month` param
  */
-export default function NavBar() {
+export default function CustomNavBar() {
   const [searchParam, setSearchParam] = useSearchParams();
   const date = new Date();
   const navigate = useNavigate();
@@ -47,17 +48,22 @@ export default function NavBar() {
   const years = [date.getFullYear(), date.getFullYear() - 1];
 
   return (
-    <div id="nav-bar" class="top-bar">
-      <div class="top-bar-left">
-        <ul class="dropdown menu" data-dropdown-menu>
-          <li>
-            <select
+    <Navbar bg="light" expand="lg">
+      <Container fluid>
+        {
+          // TODO: consider adding logo here
+        }
+        <Navbar.Brand as={A} href="/">
+          Big Cry baby Budget
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav>
+            <Form.Select
+              size="sm"
               name="year"
-              id="year-dropdown"
-              onChange={(e) => {
-                const selectedYear = e.target.value;
-                setSearchParam({ year: selectedYear });
-              }}
+              value={searchParam.year}
+              onChange={(e) => setSearchParam({ year: e.currentTarget.value })}
             >
               <For each={years}>
                 {(year) => (
@@ -69,16 +75,12 @@ export default function NavBar() {
                   </option>
                 )}
               </For>
-            </select>
-          </li>
-          <li>
-            <select
+            </Form.Select>
+            <Form.Select
+              size="sm"
               name="month"
-              id="month-dropdown"
-              onChange={(e) => {
-                const selectedMonth = e.target.value;
-                setSearchParam({ month: selectedMonth });
-              }}
+              value={searchParam.month}
+              onChange={(e) => setSearchParam({ year: e.currentTarget.value })}
             >
               <For each={months}>
                 {(month) => (
@@ -87,38 +89,24 @@ export default function NavBar() {
                   </option>
                 )}
               </For>
-            </select>
-          </li>
-          <Show when={location.pathname == "/"}>
-            <li>
-              <a
-                onClick={() => {
-                  navigate(
-                    `/settings?month=${searchParam.month}&year=${searchParam.year}`,
-                    { replace: true },
-                  );
-                }}
+            </Form.Select>
+            <Show when={location.pathname == "/"}>
+              <Nav.Link
+                as={A}
+                href={`/settings?month=${searchParam.month}&year=${searchParam.year}`}
               >
                 Settings
-              </a>
-            </li>
-          </Show>
-          <Show when={location.pathname == "/settings"}>
-            <li>
-              <a
-                onClick={() => {
-                  navigate(
-                    `/?month=${searchParam.month}&year=${searchParam.year}`,
-                    { replace: true },
-                  );
-                }}
+              </Nav.Link>
+            </Show>
+            <Show when={location.pathname == "/settings"}>
+              <Nav.Link
+                as={A}
+                href={`/?month=${searchParam.month}&year=${searchParam.year}`}
               >
                 Home
-              </a>
-            </li>
-          </Show>
-          <li>
-            <a
+              </Nav.Link>
+            </Show>
+            <Nav.Link
               onClick={async () => {
                 const response = await exportCSV(
                   searchParam.year as string,
@@ -135,20 +123,18 @@ export default function NavBar() {
               }}
             >
               Export
-            </a>
-          </li>
-          <li>
-            <a
+            </Nav.Link>
+            <Nav.Link
               onClick={() => {
                 setLocalAuthToken("");
                 navigate("/login");
               }}
             >
               Logout
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
+            </Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 }

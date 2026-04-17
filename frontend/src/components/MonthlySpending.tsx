@@ -1,15 +1,13 @@
 import Decimal from "decimal.js";
-import "./monthlySpending.css";
+import "./MonthlySpending.css";
 import { createEffect, createSignal, Resource } from "solid-js";
-import { GetHomePageDataV2Query, MonthlyBudget } from "~/generated/graphql";
-import { round } from "~/utils";
+import { GetHomePageDataV2Query } from "~/generated/graphql";
 
 /**
  * Displays the monthly spending. Including:
  * - The total budget for the month
  * - The total spending
  * - Amount left in budget
- * -  TODO: over budget amount if any
  */
 export default function (props: {
   data: Resource<GetHomePageDataV2Query | undefined>;
@@ -36,7 +34,7 @@ export default function (props: {
   });
 
   return (
-    <div id="monthly-budget" class="container">
+    <div id="monthly-budget" class="budget-wrapper">
       <p>Spent:</p>
       <h1 style={{ background: "yellow", color: color() }}>
         ${(props.data()?.homePageV2.totalSpending ?? new Decimal(0)).toNumber()}
