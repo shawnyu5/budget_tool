@@ -109,9 +109,9 @@ export default function BudgetTable(props: {
         method="post"
       >
         <Show when={isEditing()}>
-          <button class="button" type="submit">
+          <Button variant="success" type="submit">
             Save
-          </button>
+          </Button>
           {
             // TODO: implement this cancel button
             // <button
@@ -170,13 +170,12 @@ export default function BudgetTable(props: {
                     }
                     <Show when={isEditing()}>
                       <td>
-                        <button
-                          type="button"
-                          class="alert button"
+                        <Button
+                          variant="danger"
                           onClick={() => deleteTransaction(entry)}
                         >
                           ❎
-                        </button>
+                        </Button>
                       </td>
                     </Show>
                     <td>
