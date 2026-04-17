@@ -46,7 +46,7 @@ export default function () {
         return undefined;
       }
     } catch (e) {
-      handleGraphQLClientError(e, navigate);
+      handleGraphQLClientError(e, navigate, setErrorMessage);
     }
   });
 
