@@ -66,32 +66,6 @@ impl MongoDB<MonthlyBudget> {
                     trying_prev_months = true;
                     info!("Trying previous month {month_to_check}");
 
-                    // match month_to_check - Month::from_number(1).unwrap() {
-                    //     Ok(prev_month) => {
-                    //         month_to_check = prev_month;
-                    //         trying_prev_months = true;
-                    //         info!("Trying previous month {month_to_check}");
-                    //     }
-                    //     Err(MonthError::InvalidMonth) => {
-                    //         // If there are no more months in the current year, start at the beginning of previous year
-                    //         let collection_year: i32 = collection
-                    //             .name()
-                    //             .parse()
-                    //             .context("Failed to parse collection into valid year")?;
-                    //         let prev_collection_year = collection_year - 1;
-                    //         trying_prev_months = true;
-                    //         info!(
-                    //             "There are no more months in current year to check. Checking previous year: {prev_collection_year}"
-                    //         );
-                    //
-                    //         collection =
-                    //             self.client
-                    //                 .database(&Config::load().database_name)
-                    //                 .collection::<MonthlyBudget>(&prev_collection_year.to_string());
-                    //
-                    //         month_to_check = Month::from_number(12).unwrap();
-                    //     }
-                    // }
                     if iteration == 12 {
                         error!(
                             "Checked 12 months before target month. Assuming no budget information will be found"

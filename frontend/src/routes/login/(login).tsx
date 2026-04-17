@@ -1,5 +1,6 @@
 import { action, useNavigate } from "@solidjs/router";
 import axios from "axios";
+import { Button, Form } from "solid-bootstrap";
 import { createSignal, onMount } from "solid-js";
 import ErrorComponent from "~/components/ErrorComponent";
 import { NewGraphQLSDK } from "~/graphql";
@@ -51,40 +52,38 @@ export default function Login() {
 
   return (
     <div id="login-form">
-      <form onSubmit={onSubmit} method="post">
+      <Form onSubmit={onSubmit} method="post">
         <ErrorComponent errorMessage={errorMessage()} />
 
-        <label>Username</label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          value={userName()}
-          required
-          onInput={(e: InputEvent) => {
-            const input = e.target as HTMLInputElement;
-            const username = input.value;
-            setUserName(username);
-          }}
-        />
-        <label>Password</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          autocomplete="password"
-          value={password()}
-          onInput={(e: InputEvent) => {
-            const input = e.target as HTMLInputElement;
-            const password = input.value;
-            setPassword(password);
-          }}
-          required
-        />
-        <br />
-        <br />
-        <button class="submit success button">Login</button>
-      </form>
+        <Form.Group controlId="username" class="mb-3">
+          <Form.Label>Username</Form.Label>
+          <Form.Control
+            type="text"
+            name="username"
+            value={userName()}
+            required
+            onInput={(e) => setUserName(e.currentTarget.value)}
+            placeholder="Enter username"
+          />
+        </Form.Group>
+
+        <Form.Group controlId="password" class="mb-4">
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            value={password()}
+            required
+            onInput={(e) => setPassword(e.currentTarget.value)}
+            placeholder="Enter password"
+          />
+        </Form.Group>
+
+        <Button variant="success" type="submit" class="w-100">
+          Login
+        </Button>
+      </Form>
     </div>
   );
 }
