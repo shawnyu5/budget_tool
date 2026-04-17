@@ -14,6 +14,7 @@ COPY ./firefly_client ./firefly_client
 # Build dependencies - this is the caching Docker layer!
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
+ENV SQLX_OFFLINE=true
 COPY . .
 RUN cargo build --release --bin backend
 
