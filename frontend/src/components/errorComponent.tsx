@@ -1,4 +1,5 @@
-import { Show } from "solid-js";
+import { Alert } from "solid-bootstrap";
+import { createSignal, Show } from "solid-js";
 
 /**
  * An error component that displays an error message.
@@ -6,30 +7,18 @@ import { Show } from "solid-js";
  * @param props.errorMessage - the error message to display. This component will only be visible when errorMessage is not empty
  */
 export default function (props: { errorMessage: string | null }) {
-  // const [isVisible, setIsVisible] = createSignal(true);
-
-  //   <div class="callout" data-closable>
-  //   <p>You can so totally close this!</p>
-  //   <button class="close-button" aria-label="Dismiss alert" type="button" data-close>
-  //     <span aria-hidden="true">&times;</span>
-  //   </button>
-  // </div>
+  const [show, setShow] = createSignal(true);
 
   return (
-    <Show when={props.errorMessage}>
-      <div class="callout alert" data-closable>
-        <p>{props.errorMessage}</p>
-        {
-          // <button
-          //   class="close-button"
-          //   aria-label="Dismiss alert"
-          //   type="button"
-          //   // onClick={() => setIsVisible(false)}
-          // >
-          //   <span aria-hidden="true">&times;</span>
-          // </button>
-        }
-      </div>
+    <Show when={show() && props.errorMessage}>
+      <Alert
+        variant="danger"
+        dismissible
+        onClose={() => setShow(false)}
+        class="mt-3"
+      >
+        {props.errorMessage}
+      </Alert>
     </Show>
   );
 }
