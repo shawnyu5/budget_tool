@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import "./monthlySpending.css";
+import "./MonthlySpending.css";
 import { createEffect, createSignal, Resource } from "solid-js";
 import { GetHomePageDataV2Query } from "~/generated/graphql";
 

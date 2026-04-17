@@ -7,7 +7,7 @@ import {
   Show,
   Signal,
 } from "solid-js";
-import ErrorComponent from "./errorComponent";
+import ErrorComponent from "./ErrorComponent";
 import { formatRfc3339DateObj } from "~/utils";
 import { Transaction } from "~/generated/graphql";
 import { clientOnly } from "@solidjs/start";

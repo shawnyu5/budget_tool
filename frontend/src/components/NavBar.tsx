@@ -1,10 +1,10 @@
 import { createEffect, For, Show } from "solid-js";
-import "./monthsDropDown.css";
+import "./MonthsDropDown.css";
 import { A, useLocation, useNavigate, useSearchParams } from "@solidjs/router";
 import { monthNumberToName, setLocalAuthToken } from "~/utils";
 import log from "~/logger";
 import { exportCSV } from "~/server";
-import { Container, Form, Nav, Navbar, NavDropdown } from "solid-bootstrap";
+import { Container, Form, Nav, Navbar } from "solid-bootstrap";
 
 /**
  * Custom Nav bar at the top of the page
@@ -124,114 +124,17 @@ export default function CustomNavBar() {
             >
               Export
             </Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-  );
-  return (
-    <div id="nav-bar" class="top-bar">
-      <div class="top-bar-left">
-        <ul class="dropdown menu" data-dropdown-menu>
-          <li>
-            <select
-              name="year"
-              id="year-dropdown"
-              onChange={(e) => {
-                const selectedYear = e.target.value;
-                setSearchParam({ year: selectedYear });
-              }}
-            >
-              <For each={years}>
-                {(year) => (
-                  <option
-                    value={year}
-                    selected={searchParam.year == year.toString()}
-                  >
-                    {year}
-                  </option>
-                )}
-              </For>
-            </select>
-          </li>
-          <li>
-            <select
-              name="month"
-              id="month-dropdown"
-              onChange={(e) => {
-                const selectedMonth = e.target.value;
-                setSearchParam({ month: selectedMonth });
-              }}
-            >
-              <For each={months}>
-                {(month) => (
-                  <option value={month} selected={searchParam.month == month}>
-                    {month}
-                  </option>
-                )}
-              </For>
-            </select>
-          </li>
-          <Show when={location.pathname == "/"}>
-            <li>
-              <a
-                onClick={() => {
-                  navigate(
-                    `/settings?month=${searchParam.month}&year=${searchParam.year}`,
-                    { replace: true },
-                  );
-                }}
-              >
-                Settings
-              </a>
-            </li>
-          </Show>
-          <Show when={location.pathname == "/settings"}>
-            <li>
-              <a
-                onClick={() => {
-                  navigate(
-                    `/?month=${searchParam.month}&year=${searchParam.year}`,
-                    { replace: true },
-                  );
-                }}
-              >
-                Home
-              </a>
-            </li>
-          </Show>
-          <li>
-            <a
-              onClick={async () => {
-                const response = await exportCSV(
-                  searchParam.year as string,
-                  searchParam.month as string,
-                );
-                const blob = new Blob([response], { type: "text/plain" });
-                log.info(`blob: ${blob}`);
-
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = `dating_budget_${searchParam.year}_${searchParam.month}.csv`; // Set the desired file name
-                link.click();
-                URL.revokeObjectURL(link.href);
-              }}
-            >
-              Export
-            </a>
-          </li>
-          <li>
-            <a
+            <Nav.Link
               onClick={() => {
                 setLocalAuthToken("");
                 navigate("/login");
               }}
             >
               Logout
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
+            </Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 }

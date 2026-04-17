@@ -1,7 +1,7 @@
 import { action, useNavigate } from "@solidjs/router";
 import axios from "axios";
 import { createSignal, onMount } from "solid-js";
-import ErrorComponent from "~/components/errorComponent";
+import ErrorComponent from "~/components/ErrorComponent";
 import { NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
 import { getNotificationSubscription } from "~/notification";

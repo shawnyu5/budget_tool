@@ -6,13 +6,13 @@ import {
   Show,
   Suspense,
 } from "solid-js";
-import MonthlySpending from "~/components/monthlySpending";
-import BudgetTable from "~/components/budgetTable";
+import MonthlySpending from "~/components/MonthlySpending";
+import BudgetTable from "~/components/BudgetTable";
 import { useNavigate, useSearchParams } from "@solidjs/router";
 import log from "~/logger";
-import SplitBudget from "~/components/splitBudget";
-import ErrorComponent from "~/components/errorComponent";
-import CustomNavBar from "~/components/navBar";
+import SplitBudget from "~/components/SplitBudget";
+import ErrorComponent from "~/components/ErrorComponent";
+import CustomNavBar from "~/components/NavBar";
 import { GetHomePageDataV2Query, Month } from "~/generated/graphql";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import Decimal from "decimal.js";
@@ -22,17 +22,8 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
   const graphqlSdk = NewGraphQLSDK();
-
-  /**
-   * Update the budget resource
-   * @param budget - the new budget
-   */
-  // function setMonthlyBudget(budget: MonthlyBudget) {
-  //   log.info("Mutating monthly budget");
-  //   mutate(budget);
-  // }
-
   const navigate = useNavigate();
+
   const [dataResource, { mutate }] = createResource(
     () => [searchParamSignal().year, searchParamSignal().month],
     async () => {

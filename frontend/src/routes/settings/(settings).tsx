@@ -8,9 +8,9 @@ import {
   Suspense,
 } from "solid-js";
 import log from "~/logger";
-import CustomNavBar from "~/components/navBar";
-import ErrorComponent from "~/components/errorComponent";
-import SuccessComponent from "~/components/successComponent";
+import CustomNavBar from "~/components/NavBar";
+import ErrorComponent from "~/components/ErrorComponent";
+import SuccessComponent from "~/components/SuccessComponent";
 import { calculateOtherContribution, calculatePercentage } from "~/utils";
 import { Month, SettingsPageDataV2Query } from "~/generated/graphql";
 import { FireflySettingsForm } from "./firefly_settings";
