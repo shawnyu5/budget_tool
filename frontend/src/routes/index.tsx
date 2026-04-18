@@ -1,4 +1,5 @@
 import "./index.css";
+import { z } from "zod";
 import {
   createResource,
   createSignal,
@@ -16,23 +17,29 @@ import CustomNavBar from "~/components/NavBar";
 import { GetHomePageDataV2Query, Month } from "~/generated/graphql";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import Decimal from "decimal.js";
+import { useValidatedSearchParams } from "~/hooks/useValidatedSearchParams";
+
+const searchParamsSchema = z.object({
+  /** Selected year */
+  year: z.string().default(new Date().getFullYear().toString()),
+  /** Selected month */
+  month: z.nativeEnum(Month).default(Month.January),
+});
 
 export default function Home() {
-  const [searchParam, _setSearchParam] = useSearchParams();
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
-  const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
+  const [searchParamSignal, _setSearchParamSignal] =
+    useValidatedSearchParams(searchParamsSchema);
   const graphqlSdk = NewGraphQLSDK();
   const navigate = useNavigate();
 
   const [dataResource, { mutate }] = createResource(
-    () => [searchParamSignal().year, searchParamSignal().month],
-    async () => {
-      if (!searchParamSignal().year || !searchParamSignal().month) {
+    () => searchParamSignal(),
+    async (searchParam) => {
+      if (!searchParam.year || !searchParam.month) {
         return undefined;
       }
-      log.info(
-        `[Resource] Fetching budget for month ${searchParamSignal().month}`,
-      );
+      log.info(`[Resource] Fetching budget for month ${searchParam.month}`);
       try {
         let response = await graphqlSdk.GetHomePageDataV2({
           inputs: {

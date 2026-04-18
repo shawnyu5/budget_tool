@@ -17,25 +17,35 @@ import { FireflySettingsForm } from "./firefly_settings";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import Decimal from "decimal.js";
 import { Button, Form, InputGroup } from "solid-bootstrap";
+import { z } from "zod";
+import { useValidatedSearchParams } from "~/hooks/useValidatedSearchParams";
+
+const searchParamsSchema = z.object({
+  /** Selected year */
+  year: z.string().default(new Date().getFullYear().toString()),
+  /** Selected month */
+  month: z.nativeEnum(Month).default(Month.January),
+});
 
 export default function Settings() {
   const [searchParam, _setSearchParam] = useSearchParams();
-  const [searchParamSignal, _setSearchParamSignal] = createSignal(searchParam);
+  const [searchParamSignal, _setSearchParamSignal] =
+    useValidatedSearchParams(searchParamsSchema);
   const [errorMessage, setErrorMessage] = createSignal<string | null>(null);
   const [successMessage, setSuccessMessage] = createSignal<string | null>(null);
   const graphqlsdk = NewGraphQLSDK();
   const navigate = useNavigate();
   const rawResource = createResource(
-    () => [searchParamSignal().year, searchParamSignal().month],
-    async () => {
-      if (!searchParamSignal().year || !searchParamSignal().month) {
+    () => searchParamSignal(),
+    async (searchParam) => {
+      if (!searchParam.year || !searchParam.month) {
         return;
       }
-      log.info(`Fetching settings for month ${searchParamSignal().month}`);
+      log.info(`Fetching settings for month ${searchParam.month}`);
       try {
         const settingsPageData = await graphqlsdk.SettingsPageDataV2({
-          year: parseInt(searchParamSignal().year as string),
-          month: searchParamSignal().month as Month,
+          year: parseInt(searchParam.year as string),
+          month: searchParam.month as Month,
         });
 
         // If fetching is successful, make sure the error message is gone
@@ -52,7 +62,7 @@ export default function Settings() {
           console.log(e.response.data);
           return transformSettingsPageData(e.response.data);
         }
-        handleGraphQLClientError(e, navigate);
+        handleGraphQLClientError(e, navigate, setErrorMessage);
       }
     },
   );

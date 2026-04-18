@@ -16,7 +16,6 @@ use async_graphql::InputObject;
 use async_graphql::SimpleObject;
 use chrono_tz::America::Toronto;
 use rust_decimal::Decimal;
-use rust_decimal::dec;
 use sqlx::{Postgres, Transaction as DBTransaction};
 use tracing::info;
 use tracing::{error, instrument};
