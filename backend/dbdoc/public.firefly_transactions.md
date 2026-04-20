@@ -1,5 +1,7 @@
 # public.firefly_transactions
 
+## Description
+
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
@@ -17,7 +19,7 @@
 | firefly_transactions_firefly_link_not_null | n | NOT NULL firefly_link |
 | firefly_transactions_id_not_null | n | NOT NULL id |
 | firefly_transactions_transaction_id_not_null | n | NOT NULL transaction_id |
-| firefly_transactions_transaction_id_fkey | FOREIGN KEY | FOREIGN KEY (transaction_id) REFERENCES transactions(id) |
+| firefly_transactions_transaction_id_fkey | FOREIGN KEY | FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE |
 | firefly_transactions_pkey | PRIMARY KEY | PRIMARY KEY (id) |
 
 ## Indexes

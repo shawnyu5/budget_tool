@@ -259,7 +259,7 @@
 <title>public.firefly_transactions:transaction_id&#45;&gt;public.transactions:id</title>
 <path fill="none" stroke="black" d="M799.47,-772.4C849.26,-744.05 821.89,-493.8 762.67,-493.8"/>
 <polygon fill="black" stroke="black" points="799.64,-772.35 788.82,-770.56 794.49,-773.72 790.3,-774.83 790.3,-774.83 790.3,-774.83 794.49,-773.72 791.13,-779.26 799.64,-772.35"/>
-<text text-anchor="start" x="796.65" y="-785" font-family="Arial" font-size="10.00">FOREIGN KEY (transaction_id) REFERENCES transactions(id)</text>
+<text text-anchor="start" x="389.77" y="-785" font-family="Arial" font-size="10.00">FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE</text>
 </g>
 </g>
 </svg>
