@@ -86,6 +86,7 @@ impl MutationRoot {
     }
 
     /// Save the user subscription to Postgres DB
+    #[graphql(guard = "AuthGuard")]
     async fn save_subscription_v2(
         &self,
         ctx: &Context<'_>,
