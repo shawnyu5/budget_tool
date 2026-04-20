@@ -1,7 +1,5 @@
 # public.transactions
 
-## Description
-
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |

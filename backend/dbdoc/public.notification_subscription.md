@@ -1,7 +1,5 @@
 # public.notification_subscription
 
-## Description
-
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |

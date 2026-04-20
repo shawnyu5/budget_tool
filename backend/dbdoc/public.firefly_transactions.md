@@ -1,7 +1,5 @@
 # public.firefly_transactions
 
-## Description
-
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
@@ -10,6 +8,7 @@
 | transaction_id | uuid |  | false |  | [public.transactions](public.transactions.md) |  |
 | firefly_id | text |  | false |  |  |  |
 | firefly_link | text |  | false |  |  |  |
+| user_id | uuid |  | true |  | [public.users](public.users.md) | The user this firefly transaction is associated with |
 
 ## Constraints
 
@@ -20,6 +19,7 @@
 | firefly_transactions_id_not_null | n | NOT NULL id |
 | firefly_transactions_transaction_id_not_null | n | NOT NULL transaction_id |
 | firefly_transactions_transaction_id_fkey | FOREIGN KEY | FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE |
+| firefly_transactions_user_id_fkey | FOREIGN KEY | FOREIGN KEY (user_id) REFERENCES users(id) |
 | firefly_transactions_pkey | PRIMARY KEY | PRIMARY KEY (id) |
 
 ## Indexes
