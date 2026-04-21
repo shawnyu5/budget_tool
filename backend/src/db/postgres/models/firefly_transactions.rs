@@ -1,7 +1,7 @@
 use sqlx::FromRow;
 use uuid::Uuid;
 
-#[derive(FromRow)]
+#[derive(FromRow, Debug)]
 pub struct FireflyTransactionRow {
     pub id: Uuid,
     /// The user this transaction is associated with

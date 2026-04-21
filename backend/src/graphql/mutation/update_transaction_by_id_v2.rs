@@ -3,7 +3,7 @@ use async_graphql::{InputObject, SimpleObject};
 use chrono::DateTime;
 use firefly_client::models::{TransactionSplitUpdate, TransactionUpdate};
 use rust_decimal::Decimal;
-use tracing::{info, warn};
+use tracing::{error, info, warn};
 use uuid::Uuid;
 
 use crate::{config::Config, db::postgres::PostgresDB, firefly::FireflyClient};

@@ -3,6 +3,8 @@ use anyhow::Result;
 use anyhow::anyhow;
 use chrono::DateTime;
 use chrono_tz::Tz;
+use firefly_client::apis::transactions_api::UpdateTransactionError;
+use firefly_client::models::NotFoundResponse;
 use firefly_client::models::TransactionSingle;
 use firefly_client::models::TransactionSplitUpdate;
 use firefly_client::models::UserSingle;
@@ -13,6 +15,7 @@ use sqlx::Postgres;
 use sqlx::Transaction;
 use tracing::error;
 use tracing::info;
+use tracing::warn;
 use uuid::Uuid;
 
 use crate::config::Config;
@@ -200,22 +203,38 @@ impl FireflyClient {
     ///
     /// * `firefly_transaction_id`: Firefly transaction ID
     /// * `transaction_update`: the new transaction spec
+    ///
+    /// If the Firefly transaction is not found, it will be ignored. All other error responses returned by Firefly will be returned as Err response
     pub async fn update_transaction_by_id(
         &self,
         firefly_transaction_id: &str,
         transaction_update: firefly_client::models::TransactionUpdate,
     ) -> Result<()> {
-        firefly_client::apis::transactions_api::update_transaction(
+        match firefly_client::apis::transactions_api::update_transaction(
             &self.firefly_api_configuration,
             firefly_transaction_id,
             transaction_update,
             None,
         )
         .await
-        .map_err(|e| {
-            error!("{e:#?}");
-            e
-        })?;
+        {
+            Ok(_) => {
+                info!("Transaction updated successfully")
+            }
+            Err(firefly_client::apis::Error::ResponseError(e)) => match e.entity {
+                Some(UpdateTransactionError::Status422(ValidationErrorResponse))
+                    if ValidationErrorResponse.message.as_deref() == Some("Resource not found") =>
+                {
+                    warn!("Firefly transaction not found");
+                    return Ok(());
+                }
+                _ => {
+                    error!("Got unknown Firefly error: {e:#?}");
+                    return Err(anyhow!("{e:#?}"));
+                }
+            },
+            Err(e) => return Err(anyhow!("{e:#?}")),
+        };
         Ok(())
     }
 }
