@@ -4,9 +4,11 @@ use async_graphql::SimpleObject;
 use base64::Engine;
 use base64::prelude::BASE64_STANDARD;
 use dotenvy::dotenv;
+use serde::Serialize;
+use validator::Validate;
 
 #[non_exhaustive]
-#[derive(Debug, SimpleObject)]
+#[derive(Debug, SimpleObject, Validate)]
 pub struct Config {
     pub db_connection_string: String,
     /// URL of the postgres DB
@@ -20,6 +22,7 @@ pub struct Config {
     /// decoded credentials, where each item is a `username:password` pair
     pub basic_auth: Vec<BasicAuth>,
     /// Key used for encryption / decryption
+    #[validate(length(equal = 32))]
     pub encryption_key: String,
     /// VAPID public key used to sign notifications by the client
     pub vapid_public_key: String,
@@ -63,7 +66,7 @@ impl Config {
                 }
             })
             .collect();
-        return Config {
+        let config = Config {
             postgres_url: env::var("DATABASE_URL")
                 .expect("Missing postgres DB URL in `DATABASE_URL` environment variable"),
             firefly_url: "https://firefly.shawnyu.ca".to_string(),
@@ -83,5 +86,7 @@ impl Config {
                 "Missing vapid_private_key env var. Used for server notification verification",
             ),
         };
+        config.validate().expect("Failed to validate config");
+        config
     }
 }

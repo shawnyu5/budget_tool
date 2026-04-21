@@ -1,14 +1,6 @@
-mutation saveSubscription($subscription: SubscriptionInput!) {
-  saveSubscription(subscription: $subscription) {
-    username
-    notificationSubscription {
-      endpoint
-      expirationTime
-      keys {
-        p256Dh
-        auth
-      }
-    }
+mutation saveSubscription($subscription: SaveSubscriptionV2Input!) {
+  saveSubscriptionV2(input: $subscription) {
+    success
   }
 }
 

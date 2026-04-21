@@ -1,6 +1,6 @@
 use anyhow::Context as _;
 use async_graphql::{Context, InputObject, Result, SimpleObject};
-use tracing::info;
+use tracing::{error, info, instrument};
 
 use crate::graphql::utils::{extract_db_client, extract_jwt};
 
@@ -17,6 +17,7 @@ pub struct SaveSubscriptionV2Response {
     pub success: bool,
 }
 
+#[instrument(skip_all)]
 pub async fn save_subscription_v2(
     ctx: &Context<'_>,
     inputs: SaveSubscriptionV2input,
@@ -39,7 +40,12 @@ pub async fn save_subscription_v2(
         &inputs.auth,
     )
     .await
-    .context("Failed to get user notification_subscription")?;
+    .map_err(|e| {
+        error!("{e:#?}");
+        e
+    })
+    .context("Failed to save user notification_subscription")?;
+    tx.commit().await.context("Failed to commit transaction")?;
 
     Ok(SaveSubscriptionV2Response { success: true })
 }

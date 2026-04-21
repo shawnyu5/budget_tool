@@ -1,12 +1,10 @@
 # public.users
 
-## Description
-
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | uuid |  | false | [public.firefly](public.firefly.md) [public.notification_keys](public.notification_keys.md) [public.notification_subscription](public.notification_subscription.md) |  |  |
+| id | uuid |  | false | [public.firefly](public.firefly.md) [public.notification_keys](public.notification_keys.md) [public.notification_subscription](public.notification_subscription.md) [public.firefly_transactions](public.firefly_transactions.md) |  |  |
 | username | text |  | false |  |  |  |
 
 ## Constraints

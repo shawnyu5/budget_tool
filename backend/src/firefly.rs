@@ -55,6 +55,7 @@ impl FireflyClient {
     ///
     /// * `db`: the PostgresDB connection
     /// * `tx`: the current DB transaction
+    /// * `user_id`: the user this firefly transaction is associated with
     /// * `tranaction_id`: the transaction ID of this app, NOT firefly
     /// * `date`: the date of the transaction. Date should be in EST timezone
     /// ```rust
@@ -71,6 +72,7 @@ impl FireflyClient {
         &self,
         db: &PostgresDB,
         tx: &mut Transaction<'_, Postgres>,
+        user_id: Option<Uuid>,
         transaction_id: Uuid,
         date: DateTime<Tz>,
         amount: Decimal,
@@ -109,6 +111,7 @@ impl FireflyClient {
                 let config = Config::load();
                 db.insert_firefly_transaction(
                     tx,
+                    user_id,
                     transaction_id,
                     res.data.id.clone(),
                     format!("{}/transactions/show/{}", config.firefly_url, res.data.id),

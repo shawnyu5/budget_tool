@@ -319,7 +319,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (month_id) REFERENCES months(id)",
           "table": "public.budget_allocations",
-          "referenced_table": "months",
+          "referenced_table": "public.months",
           "columns": [
             "month_id"
           ],
@@ -446,7 +446,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (month_id) REFERENCES months(id)",
           "table": "public.transactions",
-          "referenced_table": "months",
+          "referenced_table": "public.months",
           "columns": [
             "month_id"
           ],
@@ -606,7 +606,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.firefly",
-          "referenced_table": "users",
+          "referenced_table": "public.users",
           "columns": [
             "user_id"
           ],
@@ -687,7 +687,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.notification_keys",
-          "referenced_table": "users",
+          "referenced_table": "public.users",
           "columns": [
             "user_id"
           ],
@@ -808,7 +808,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.notification_subscription",
-          "referenced_table": "users",
+          "referenced_table": "public.users",
           "columns": [
             "user_id"
           ],
@@ -851,6 +851,12 @@
           "name": "firefly_link",
           "type": "text",
           "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": true,
+          "comment": "The user this firefly transaction is associated with"
         }
       ],
       "indexes": [
@@ -909,9 +915,22 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE",
           "table": "public.firefly_transactions",
-          "referenced_table": "transactions",
+          "referenced_table": "public.transactions",
           "columns": [
             "transaction_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "firefly_transactions_user_id_fkey",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
+          "table": "public.firefly_transactions",
+          "referenced_table": "public.users",
+          "columns": [
+            "user_id"
           ],
           "referenced_columns": [
             "id"
@@ -1008,6 +1027,19 @@
       ],
       "parent_cardinality": "exactly_one",
       "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE"
+    },
+    {
+      "table": "public.firefly_transactions",
+      "columns": [
+        "user_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "public.users",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (user_id) REFERENCES users(id)"
     }
   ],
   "functions": [
@@ -1245,7 +1277,7 @@
   ],
   "driver": {
     "name": "postgres",
-    "database_version": "PostgreSQL 18.3 (Debian 18.3-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "database_version": "PostgreSQL 18.3 (Debian 18.3-1.pgdg13+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
     "meta": {
       "current_schema": "public",
       "search_paths": [

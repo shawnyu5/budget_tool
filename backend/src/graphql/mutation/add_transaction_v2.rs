@@ -109,6 +109,7 @@ pub async fn add_transaction_v2(
                     .create_new_transaction(
                         db,
                         &mut tx,
+                        Some(user.id),
                         transaction.id,
                         transaction.date.with_timezone(&Toronto),
                         maggie_split,
@@ -123,6 +124,7 @@ pub async fn add_transaction_v2(
                     .create_new_transaction(
                         db,
                         &mut tx,
+                        Some(user.id),
                         transaction.id,
                         transaction.date.with_timezone(&Toronto),
                         shawn_split,

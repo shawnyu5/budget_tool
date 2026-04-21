@@ -1,7 +1,5 @@
 # public._sqlx_migrations
 
-## Description
-
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
