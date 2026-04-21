@@ -4,6 +4,7 @@ use anyhow::anyhow;
 use chrono::DateTime;
 use chrono_tz::Tz;
 use firefly_client::models::TransactionSingle;
+use firefly_client::models::TransactionSplitUpdate;
 use firefly_client::models::UserSingle;
 use firefly_client::models::{TransactionSplitStore, TransactionStore, TransactionTypeProperty};
 use reqwest::header::ACCEPT;
@@ -19,11 +20,13 @@ use crate::db::postgres::PostgresDB;
 
 /// Client for making calls to Firefly
 pub struct FireflyClient {
-    /// Firefly API key
-    api_key: String,
-    /// URL to firefly instance
-    firefly_url: String,
-    http_client: reqwest::Client,
+    // /// Firefly API key
+    // api_key: String,
+    // /// URL to firefly instance
+    // firefly_url: String,
+    /// Firefly API configuration
+    firefly_api_configuration: firefly_client::apis::configuration::Configuration,
+    // http_client: reqwest::Client,
 }
 
 impl FireflyClient {
@@ -44,10 +47,16 @@ impl FireflyClient {
             .build()
             .expect("Failed to build reqwest client");
         Self {
-            api_key: api_key.to_string(),
-            firefly_url: format!("{}/api", firefly_url),
+            // api_key: api_key.to_string(),
+            // firefly_url: format!("{}/api", firefly_url),
             // firefly_url: firefly_url.to_string(),
-            http_client,
+            // http_client,
+            firefly_api_configuration: firefly_client::apis::configuration::Configuration {
+                base_path: format!("{}/api", firefly_url),
+                client: http_client,
+                bearer_access_token: Some(api_key.to_string()),
+                ..Default::default()
+            },
         }
     }
 
@@ -81,12 +90,7 @@ impl FireflyClient {
         source_account: &str,
     ) -> Result<TransactionSingle> {
         let transaction = match firefly_client::apis::transactions_api::store_transaction(
-            &firefly_client::apis::configuration::Configuration {
-                base_path: self.firefly_url.clone(),
-                client: self.http_client.clone(),
-                bearer_access_token: Some(self.api_key.clone()),
-                ..Default::default()
-            },
+            &self.firefly_api_configuration,
             TransactionStore {
                 error_if_duplicate_hash: Some(false),
                 apply_rules: Some(true),
@@ -131,12 +135,7 @@ impl FireflyClient {
 
     pub async fn list_accounts(&self) -> Result<Vec<String>> {
         let accounts = match firefly_client::apis::accounts_api::list_account(
-            &firefly_client::apis::configuration::Configuration {
-                base_path: self.firefly_url.clone(),
-                client: self.http_client.clone(),
-                bearer_access_token: Some(self.api_key.clone()),
-                ..Default::default()
-            },
+            &self.firefly_api_configuration,
             None,
             Some(50),
             Some(1),
@@ -166,12 +165,7 @@ impl FireflyClient {
     /// Get info about the current Firefly user
     pub async fn get_current_user(&self) -> Result<UserSingle> {
         match firefly_client::apis::about_api::get_current_user(
-            &firefly_client::apis::configuration::Configuration {
-                base_path: self.firefly_url.clone(),
-                client: self.http_client.clone(),
-                bearer_access_token: Some(self.api_key.clone()),
-                ..Default::default()
-            },
+            &self.firefly_api_configuration,
             None,
         )
         .await
@@ -182,5 +176,46 @@ impl FireflyClient {
                 return Err(anyhow!("Failed to list current user"));
             }
         }
+    }
+
+    /// Retrieve a Firefly transaction by its Firefly ID
+    ///
+    /// * `firefly_transaction_id`: firefly transaction ID
+    pub async fn get_transaction_by_id(
+        &self,
+        firefly_transaction_id: &str,
+    ) -> Result<TransactionSingle> {
+        let transaction = firefly_client::apis::transactions_api::get_transaction(
+            &self.firefly_api_configuration,
+            firefly_transaction_id,
+            None,
+        )
+        .await
+        .context("Failed to get transaction from Firefly")?;
+
+        Ok(transaction)
+    }
+
+    /// Updates a Firefly transaction by its ID
+    ///
+    /// * `firefly_transaction_id`: Firefly transaction ID
+    /// * `transaction_update`: the new transaction spec
+    pub async fn update_transaction_by_id(
+        &self,
+        firefly_transaction_id: &str,
+        transaction_update: firefly_client::models::TransactionUpdate,
+    ) -> Result<()> {
+        firefly_client::apis::transactions_api::update_transaction(
+            &self.firefly_api_configuration,
+            firefly_transaction_id,
+            transaction_update,
+            None,
+        )
+        .await
+        .map_err(|e| {
+            error!("{e:#?}");
+            e
+        })?;
+        Ok(())
     }
 }

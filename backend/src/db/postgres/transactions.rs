@@ -122,14 +122,16 @@ impl PostgresDB {
     /// Update a transaction by ID
     pub async fn update_transaction_by_id(
         &self,
+        tx: &mut PgConnection,
         id: Uuid,
         amount: Decimal,
         date: DateTime<chrono::FixedOffset>,
         description: Option<&str>,
         notes: Option<&str>,
-    ) -> Result<()> {
-        query!(
-            "
+    ) -> Result<TransactionRow> {
+        let transaction = query_as!(
+            TransactionRow,
+            r#"
             UPDATE transactions
             SET
                 amount = $2,
@@ -137,21 +139,22 @@ impl PostgresDB {
                 description = $4,
                 notes = $5
             WHERE id = $1
-            ",
+            RETURNING id, month_id, amount, date, description, notes, split_mode AS "split_mode: SplitMode"
+            "#,
             id,
             amount,
             date,
             description,
             notes
         )
-        .execute(&self.pool)
+        .fetch_one(tx)
         .await
         .map_err(|e| {
             error!("{e:#?}");
             e
         })?;
 
-        return Ok(());
+        return Ok(transaction);
     }
 
     /// Delete a transaction by ID
