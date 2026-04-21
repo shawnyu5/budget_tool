@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO notification_subscription (id, user_id, endpoint, expiration_time, p256dh, auth)\n            SELECT\n                $1,\n                u.id,\n                $2,\n                $3,\n                $4,\n                $5\n            FROM users u\n            WHERE u.username = $6\n            ON CONFLICT (user_id)\n            DO UPDATE SET\n                endpoint = EXCLUDED.endpoint,\n                p256dh = EXCLUDED.p256dh,\n                auth = EXCLUDED.auth,\n                expiration_time = EXCLUDED.expiration_time;\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "782bc509fa4cc2c6243aa985a19bf9b0b6aab71b05f66a256bd803103144df7e"
+}
