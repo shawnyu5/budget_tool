@@ -65,7 +65,7 @@ impl PostgresDB {
         p256dh: &str,
         auth: &str,
     ) -> Result<()> {
-        let result = query!(
+        query!(
             r#"
             INSERT INTO notification_subscription (id, user_id, endpoint, expiration_time, p256dh, auth)
             SELECT
@@ -97,7 +97,6 @@ impl PostgresDB {
             error!("{e:#?}");
             e
         })?;
-        dbg!(result);
 
         Ok(())
     }
