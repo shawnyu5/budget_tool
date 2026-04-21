@@ -71,3 +71,5 @@ jobs:
           context: backend
           push: true
           tags: ghcr.io/shawnyu5/budget_tool_backend:${{ steps.semantic_release.outputs.release-version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
