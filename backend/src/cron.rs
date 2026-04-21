@@ -21,6 +21,7 @@ pub async fn init_all_user_crons(scheduler: &JobScheduler) -> Result<HashMap<Str
         .transaction()
         .await
         .context("Failed to create DB transaction")?;
+
     let users = db
         .get_core_users(&mut tx)
         .await
@@ -37,6 +38,12 @@ pub async fn init_all_user_crons(scheduler: &JobScheduler) -> Result<HashMap<Str
             .get_user_notification_subscription(&mut tx, &user.username)
             .await
             .context("Failed to get user notification subscription")?;
+
+        if notification.is_none() {
+            info!("User does not have notifications configured. Skipping sending notifications");
+            continue;
+        }
+        let notification = notification.unwrap();
 
         let cron_id = scheduler
             .add(Job::new_async_tz(

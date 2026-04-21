@@ -687,11 +687,11 @@ export type UserV2 = {
 };
 
 export type SaveSubscriptionMutationVariables = Exact<{
-  subscription: SubscriptionInput;
+  subscription: SaveSubscriptionV2Input;
 }>;
 
 
-export type SaveSubscriptionMutation = { __typename?: 'MutationRoot', saveSubscription: { __typename?: 'User', username: string, notificationSubscription: { __typename?: 'NotificationSubscription', endpoint: string, expirationTime?: string | null, keys: { __typename?: 'NotificationKeys', p256Dh: string, auth: string } } } };
+export type SaveSubscriptionMutation = { __typename?: 'MutationRoot', saveSubscriptionV2: { __typename?: 'SaveSubscriptionV2Response', success: boolean } };
 
 export type UpdateMonthlyBudgetConfigMutationVariables = Exact<{
   inputs: UpdateBudgetConfigInput;
@@ -808,17 +808,9 @@ export const GraphQlErrorFieldsV2FragmentDoc = gql`
 }
     `;
 export const SaveSubscriptionDocument = gql`
-    mutation saveSubscription($subscription: SubscriptionInput!) {
-  saveSubscription(subscription: $subscription) {
-    username
-    notificationSubscription {
-      endpoint
-      expirationTime
-      keys {
-        p256Dh
-        auth
-      }
-    }
+    mutation saveSubscription($subscription: SaveSubscriptionV2Input!) {
+  saveSubscriptionV2(input: $subscription) {
+    success
   }
 }
     `;

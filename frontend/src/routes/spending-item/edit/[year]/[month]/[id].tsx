@@ -54,11 +54,7 @@ export default function () {
     transaction: Transaction,
     errorMessageSignal: Signal<string | null>,
   ) => {
-    const [errorMessage, setErrorMessage] = errorMessageSignal;
-    if (errorMessage()) {
-      log.info("There is an error message on screen. Not submitting form...");
-      return;
-    }
+    const [_errorMessage, setErrorMessage] = errorMessageSignal;
     log.info("Submitting form");
 
     try {
@@ -73,7 +69,7 @@ export default function () {
       });
       navigate(`/?year=${year}&month=${month}`, { replace: false });
     } catch (e) {
-      handleGraphQLClientError(e, navigate);
+      handleGraphQLClientError(e, navigate, setErrorMessage);
     }
   };
 

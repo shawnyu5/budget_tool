@@ -18,8 +18,13 @@ pub async fn delete_transaction_by_id_v2(
     inputs: DeleteTransactionByIdV2Input,
 ) -> Result<DeleteTransactionByIdV2Response> {
     let db = PostgresDB::new().await;
-    db.delete_transaction_by_id(inputs.transaction_id)
+    let mut tx = db.transaction().await?;
+    db.delete_transaction_by_id(&mut tx, inputs.transaction_id)
         .await
         .context("Failed to delete transaction by ID")?;
+
+    tx.commit()
+        .await
+        .context("Failed to commit DB transaction")?;
     return Ok(DeleteTransactionByIdV2Response { success: true });
 }

@@ -23,19 +23,34 @@ export default function Login() {
       await basicAuthLogin(userName(), password()).then(async () => {
         navigate("/");
 
-        getNotificationSubscription().then((subscription) => {
-          if (!subscription) return;
-          log.info("Saving push notification subscription to backend");
-          const sdk = NewGraphQLSDK();
-          const s = subscription.toJSON();
-          sdk.saveSubscription({
-            subscription: {
-              auth: s.keys?.auth ?? "",
-              endpoint: s.endpoint ?? "",
-              p256Dh: s.keys?.p256dh ?? "",
-            },
+        getNotificationSubscription()
+          .then((subscription) => {
+            if (!subscription) return;
+            log.info("Saving push notification subscription to backend");
+            const sdk = NewGraphQLSDK();
+            const s = subscription.toJSON();
+            sdk
+              .saveSubscription({
+                subscription: {
+                  auth: s.keys?.auth ?? "",
+                  endpoint: s.endpoint ?? "",
+                  p256Dh: s.keys?.p256dh ?? "",
+                },
+              })
+              .then(() => {
+                console.log("Successfully saved notification subscription");
+              })
+              .catch((e) => {
+                console.error(
+                  `Failed to save notification subscription to backend: ${e}`,
+                );
+              });
+          })
+          .catch((e) => {
+            console.error(
+              `Failed to save user notification subscription: ${e}`,
+            );
           });
-        });
       });
     } catch (e) {
       log.error("Caught error in component");

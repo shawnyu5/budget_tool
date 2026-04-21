@@ -13,6 +13,7 @@ pub struct FireflyRow {
     /// If firefly integration is enabled
     pub enabled: bool,
     /// Encrypted API key
+    /// Call `FireflyRow.decrypt_firefly_api_key()` to get the decrypted version
     // TODO: use secret data type here
     pub api_key: Option<String>,
     /// Nounce used for encryption / decryption

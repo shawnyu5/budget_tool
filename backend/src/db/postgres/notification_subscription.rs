@@ -1,6 +1,7 @@
 use anyhow::Result;
 use sqlx::{PgConnection, query, query_as};
 use tracing::error;
+use uuid::Uuid;
 
 use crate::{
     db::postgres::{PostgresDB, models::notification_subscription::NotificationSubscriptionRow},
@@ -9,11 +10,13 @@ use crate::{
 
 impl PostgresDB {
     /// Get a user's notification subscription
+    ///
+    /// Users can reject getting notifications send to them, so this will return an Option object
     pub async fn get_user_notification_subscription(
         &self,
         executor: &mut PgConnection,
         username: &str,
-    ) -> Result<NotificationSubscription> {
+    ) -> Result<Option<NotificationSubscription>> {
         let notification_subscription = query_as!(
             NotificationSubscriptionRow,
             r#"
@@ -31,21 +34,25 @@ impl PostgresDB {
             "#,
             username
         )
-        .fetch_one(executor)
+        .fetch_optional(executor)
         .await
         .map_err(|e| {
             error!("{e:#?}");
             e
         })?;
 
-        return Ok(NotificationSubscription {
-            endpoint: notification_subscription.clone().endpoint,
-            expiration_time: notification_subscription.clone().expiration_time,
-            keys: NotificationKeys {
-                p256dh: notification_subscription.clone().p256dh,
-                auth: notification_subscription.auth,
-            },
-        });
+        if let Some(notification_subscription) = notification_subscription {
+            return Ok(Some(NotificationSubscription {
+                endpoint: notification_subscription.clone().endpoint,
+                expiration_time: notification_subscription.clone().expiration_time,
+                keys: NotificationKeys {
+                    p256dh: notification_subscription.clone().p256dh,
+                    auth: notification_subscription.auth,
+                },
+            }));
+        } else {
+            return Ok(None);
+        }
     }
 
     /// Updates a user's notification subscription
@@ -60,20 +67,29 @@ impl PostgresDB {
     ) -> Result<()> {
         query!(
             r#"
-            INSERT INTO notification_subscription (endpoint, expiration_time, p256dh, auth)
+            INSERT INTO notification_subscription (id, user_id, endpoint, expiration_time, p256dh, auth)
             SELECT
+                $1,
+                u.id,
                 $2,
                 $3,
                 $4,
                 $5
             FROM users u
-            WHERE u.username = $1
+            WHERE u.username = $6
+            ON CONFLICT (user_id)
+            DO UPDATE SET
+                endpoint = EXCLUDED.endpoint,
+                p256dh = EXCLUDED.p256dh,
+                auth = EXCLUDED.auth,
+                expiration_time = EXCLUDED.expiration_time;
             "#,
-            username,
+            Uuid::new_v4(),
             endpoint,
             expiration_time,
             p256dh,
-            auth
+            auth,
+            username,
         )
         .execute(executor)
         .await

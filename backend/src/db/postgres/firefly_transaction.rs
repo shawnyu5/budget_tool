@@ -14,19 +14,21 @@ impl PostgresDB {
     pub async fn insert_firefly_transaction(
         &self,
         executor: &mut PgConnection,
+        user_id: Option<Uuid>,
         transaction_id: Uuid,
         firefly_id: String,
         firefly_link: String,
     ) -> Result<()> {
         query!(
             "
-            INSERT INTO firefly_transactions (id, transaction_id, firefly_id, firefly_link)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO firefly_transactions (id, transaction_id, firefly_id, firefly_link, user_id)
+            VALUES ($1, $2, $3, $4, $5)
             ",
             Uuid::new_v4(),
             transaction_id,
             firefly_id,
-            firefly_link
+            firefly_link,
+            user_id
         )
         .execute(executor)
         .await
@@ -36,7 +38,7 @@ impl PostgresDB {
     }
 
     /// Get a firefly transaction associated with a specific Transaction.
-    /// Not all transactions have a Firefly DB entry, so this function returns an Option
+    /// If a transaction was migrated from MongoDB, it will not have a Firefly DB entry, so this function returns an Option
     pub async fn get_firfly_transaction(
         &self,
         executor: &mut PgConnection,

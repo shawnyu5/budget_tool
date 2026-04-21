@@ -97,7 +97,6 @@ pub async fn send_notification_handler(body: Json<NotificationSendBody>) -> Resu
 
     // Finally, send the notification!
     let built = builder.build()?;
-    dbg!(&built);
     client.send(built).await?;
     Ok(())
 }
