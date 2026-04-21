@@ -157,8 +157,12 @@ impl PostgresDB {
         return Ok(transaction);
     }
 
-    /// Delete a transaction by ID
-    pub async fn delete_transaction_by_id(&self, id: Uuid) -> Result<()> {
+    /// Delete a transaction by ID, along with the Firefly transaction DB entry
+    pub async fn delete_transaction_by_id(
+        &self,
+        executor: &mut PgConnection,
+        id: Uuid,
+    ) -> Result<()> {
         query!(
             "
         DELETE FROM transactions t

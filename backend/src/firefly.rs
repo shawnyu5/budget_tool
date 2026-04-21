@@ -15,6 +15,7 @@ use sqlx::Postgres;
 use sqlx::Transaction;
 use tracing::error;
 use tracing::info;
+use tracing::instrument;
 use tracing::warn;
 use uuid::Uuid;
 
@@ -205,6 +206,7 @@ impl FireflyClient {
     /// * `transaction_update`: the new transaction spec
     ///
     /// If the Firefly transaction is not found, it will be ignored. All other error responses returned by Firefly will be returned as Err response
+    #[instrument(skip_all)]
     pub async fn update_transaction_by_id(
         &self,
         firefly_transaction_id: &str,
@@ -235,6 +237,21 @@ impl FireflyClient {
             },
             Err(e) => return Err(anyhow!("{e:#?}")),
         };
+        Ok(())
+    }
+
+    /// Delete a Firefly transaction
+    ///
+    /// * `firefly_transaction_id`: Firefly transaction ID
+    pub async fn delete_firefly_transaction(&self, firefly_transaction_id: &str) -> Result<()> {
+        firefly_client::apis::transactions_api::delete_transaction(
+            &self.firefly_api_configuration,
+            firefly_transaction_id,
+            None,
+        )
+        .await
+        .context("Failed to delete Firefly transaction")?;
+
         Ok(())
     }
 }
