@@ -1,5 +1,3 @@
-use std::ops::Div;
-
 use crate::config::Config;
 use crate::db::postgres::PostgresDB;
 use crate::db::postgres::models::Year;
@@ -169,58 +167,6 @@ async fn insert_regular_transaction(
         })
         .context("Failed to insert transaction into DB")?;
 
-    // let core_users = db
-    //     .get_core_users(tx)
-    //     .await
-    //     .context("Failed to get core users")?;
-    //
-    // let (shawn_split, maggie_split) = transaction_row
-    //     .split_transaction(tx)
-    //     .await
-    //     .context("Failed to split transaction")?
-    //     .unwrap(); // Since we just inserted the transaction, it should always contain `SplitMode`. So this function not knowing how to split a budget is not a concern here
-    //
-    // for user in core_users {
-    //     info!("Creating firefly transaction for user {}", user.username);
-    //
-    //     let firefly_settings = db
-    //         .get_user_firefly_settings(tx, user.id)
-    //         .await
-    //         .context("Failed to get user firefly settings")?;
-    //
-    //     if !firefly_settings.enabled {
-    //         info!(
-    //             "{} has firefly setting disabled. Skipping creating Firefly transaction",
-    //             user.username
-    //         );
-    //
-    //         continue;
-    //     }
-    //     let firefly_apikey = firefly_settings
-    //         .decrypt_firefly_api_key()
-    //         .context("Failed to decrypt firefly API key")?;
-    //
-    //     let firefly_client = FireflyClient::new(&firefly_apikey, &config.firefly_url);
-    //
-    //     let transaction = inputs.transaction.clone();
-    //     firefly_client
-    //         .create_new_transaction(
-    //             db,
-    //             tx,
-    //             inputs.transaction.id,
-    //             transaction.date.with_timezone(&Toronto),
-    //             if user.username == "shawn" {
-    //                 shawn_split
-    //             } else {
-    //                 maggie_split
-    //             },
-    //             &transaction.description,
-    //             &transaction.notes,
-    //             &firefly_settings.source_account.unwrap_or_default(),
-    //         )
-    //         .await
-    //         .context("Failed to create firefly transaction")?;
-    // }
     Ok(vec![transaction_row])
 }
 
@@ -250,42 +196,6 @@ async fn insert_over_budget_transaction(
         })
         .context("Failed to insert transaction into DB")?;
 
-    // Since transaction is being split evenly, create transaction with same amount for both users
-    // let amount = inputs.transaction.amount.div(dec!(2));
-    // for user in core_users {
-    //     info!(
-    //         "Creating transaction in firefly for user {} with amount {amount}",
-    //         user.username
-    //     );
-    //     let firefly_settings = db
-    //         .get_user_firefly_settings(tx, user.id)
-    //         .await
-    //         .context("Failed to get user firefly settings")?;
-    //
-    //     if !firefly_settings.enabled {
-    //         info!("firefly integration disabled. Skipping creating firefly transaction");
-    //     } else {
-    //         let api_key = firefly_settings
-    //             .decrypt_firefly_api_key()
-    //             .context("Failed to decrypt Firefly API key")?;
-    //
-    //         let firefly_client = FireflyClient::new(&api_key, &config.firefly_url);
-    //         let transaction = inputs.transaction.clone();
-    //         firefly_client
-    //             .create_new_transaction(
-    //                 db,
-    //                 tx,
-    //                 inputs.transaction.id,
-    //                 transaction.date.with_timezone(&Toronto),
-    //                 transaction.amount,
-    //                 &transaction.description,
-    //                 &transaction.notes,
-    //                 &firefly_settings.source_account.unwrap_or_default(),
-    //             )
-    //             .await
-    //             .context("Failed to create firefly transaction")?;
-    //     }
-    // }
     Ok(vec![transaction_row])
 }
 
