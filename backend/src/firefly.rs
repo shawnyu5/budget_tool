@@ -223,11 +223,13 @@ impl FireflyClient {
             Ok(_) => {
                 info!("Transaction updated successfully")
             }
-            Err(firefly_client::apis::Error::ResponseError(e)) => match e.entity {
+            Err(firefly_client::apis::Error::ResponseError(e)) => match &e.entity {
                 Some(UpdateTransactionError::Status422(ValidationErrorResponse))
-                    if ValidationErrorResponse.message.as_deref() == Some("Resource not found") =>
+                    if ValidationErrorResponse.message.clone()
+                        == Some("Resource not found".to_string()) =>
                 {
-                    warn!("Firefly transaction not found");
+                    warn!("Updating Firefly transaction: transaction not found");
+                    info!("{e:?}");
                     return Ok(());
                 }
                 _ => {
