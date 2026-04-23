@@ -81,7 +81,8 @@ impl FireflyClient {
     /// * `notes`: notes in the transaction
     /// * `source_account`: source account of the transaction
     #[allow(clippy::too_many_arguments)]
-    pub async fn create_new_transaction(
+    #[instrument(skip(self, db))]
+    pub async fn create_firefly_transaction(
         &self,
         db: &PostgresDB,
         tx: &mut Transaction<'_, Postgres>,
@@ -137,7 +138,8 @@ impl FireflyClient {
         Ok(transaction)
     }
 
-    pub async fn list_accounts(&self) -> Result<Vec<String>> {
+    #[instrument(skip_all)]
+    pub async fn list_firefly_accounts(&self) -> Result<Vec<String>> {
         let accounts = match firefly_client::apis::accounts_api::list_account(
             &self.firefly_api_configuration,
             None,
@@ -206,8 +208,8 @@ impl FireflyClient {
     /// * `transaction_update`: the new transaction spec
     ///
     /// If the Firefly transaction is not found, it will be ignored. All other error responses returned by Firefly will be returned as Err response
-    #[instrument(skip_all)]
-    pub async fn update_transaction_by_id(
+    #[instrument(skip(self))]
+    pub async fn update_firefly_transaction_by_id(
         &self,
         firefly_transaction_id: &str,
         transaction_update: firefly_client::models::TransactionUpdate,

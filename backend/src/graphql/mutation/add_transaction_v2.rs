@@ -104,7 +104,7 @@ pub async fn add_transaction_v2(
 
             if user.username == "maggie" {
                 firefly_client
-                    .create_new_transaction(
+                    .create_firefly_transaction(
                         db,
                         &mut tx,
                         Some(user.id),
@@ -119,7 +119,7 @@ pub async fn add_transaction_v2(
                     .context("Failed to crete Firefly transaction")?;
             } else if user.username == "shawn" {
                 firefly_client
-                    .create_new_transaction(
+                    .create_firefly_transaction(
                         db,
                         &mut tx,
                         Some(user.id),

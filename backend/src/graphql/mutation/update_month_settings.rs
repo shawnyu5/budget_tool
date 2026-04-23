@@ -47,7 +47,7 @@ pub async fn update_month_settings(
         );
 
         info!("Testing user Firefly API key");
-        match firefly_client.list_accounts().await {
+        match firefly_client.list_firefly_accounts().await {
             Ok(_) => {}
             Err(e) => {
                 error!("Failed to talk to firfly: {e}");

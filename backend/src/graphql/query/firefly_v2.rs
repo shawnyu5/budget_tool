@@ -36,7 +36,7 @@ pub async fn firefly_v2(ctx: &Context<'_>) -> Result<Option<FireflyV2SuccessResp
 
     let firefly_client = FireflyClient::new(&firefly_api_key, &Config::load().firefly_url);
 
-    match firefly_client.list_accounts().await {
+    match firefly_client.list_firefly_accounts().await {
         Ok(accounts) => Ok(Some(FireflyV2SuccessResponse { accounts })),
         Err(e) => {
             error!("Failed to fetch Firefly user accounts: {e:#?}");

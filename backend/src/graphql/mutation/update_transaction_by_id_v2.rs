@@ -89,7 +89,7 @@ pub async fn update_transaction_by_id_v2(
             if user.username == "shawn" {
                 info!("Updating Shawn Firefly transaction");
                 firefly_client
-                    .update_transaction_by_id(
+                    .update_firefly_transaction_by_id(
                         &firefly_transaction.firefly_id,
                         firefly_client::models::TransactionUpdate {
                             apply_rules: Some(true),
@@ -110,7 +110,7 @@ pub async fn update_transaction_by_id_v2(
             } else if user.username == "maggie" {
                 info!("Updating Maggie Firefly transaction");
                 firefly_client
-                    .update_transaction_by_id(
+                    .update_firefly_transaction_by_id(
                         &firefly_transaction.firefly_id,
                         firefly_client::models::TransactionUpdate {
                             apply_rules: Some(true),
