@@ -37,13 +37,13 @@ impl PostgresDB {
         Ok(())
     }
 
-    /// Get a firefly transaction associated with a specific Transaction.
-    /// If a transaction was migrated from MongoDB, it will not have a Firefly DB entry, so this function returns an Option
-    pub async fn get_firfly_transaction(
+    /// Get a firefly transactions associated with a specific Transaction.
+    /// Since a single transaction is split 2 ways, there may be 2 Firefly transactions associated with a single transaction.
+    pub async fn get_firfly_transactions(
         &self,
         executor: &mut PgConnection,
         transaction_id: Uuid,
-    ) -> Result<Option<FireflyTransactionRow>> {
+    ) -> Result<Vec<FireflyTransactionRow>> {
         query_as!(
             FireflyTransactionRow,
             "
@@ -52,7 +52,7 @@ impl PostgresDB {
             ",
             transaction_id
         )
-        .fetch_optional(executor)
+        .fetch_all(executor)
         .await
         .context("Failed to fetch transaction")
     }

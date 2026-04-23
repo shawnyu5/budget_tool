@@ -55,92 +55,82 @@ pub async fn update_transaction_by_id_v2(
         }
     };
 
-    let firefly_transaction = db
-        .get_firfly_transaction(&mut tx, inputs.transaction_id)
+    let firefly_transactions = db
+        .get_firfly_transactions(&mut tx, inputs.transaction_id)
         .await
         .context("Failed to get Firefly transaction from DB")?;
 
-    match firefly_transaction {
-        // if there is a firefly transaction associated with the transaction the user sent, update the firefly transaction as well
-        Some(t) => {
-            info!("Found Firefly transaction in DB. Updating Firefly");
-            let config = Config::load();
-            let core_users = db
-                .get_core_users(&mut tx)
+    for firefly_transaction in firefly_transactions {
+        info!("Found Firefly transaction in DB: {firefly_transaction:?}. Updating Firefly");
+        let config = Config::load();
+        let core_users = db
+            .get_core_users(&mut tx)
+            .await
+            .context("Failed to get core users")?;
+
+        for user in core_users {
+            let firefly_settings = db
+                .get_user_firefly_settings(&mut tx, user.id)
                 .await
-                .context("Failed to get core users")?;
-            for user in core_users {
-                let firefly_settings = db
-                    .get_user_firefly_settings(&mut tx, user.id)
+                .context("Failed to get user from DB")?;
+            if !firefly_settings.enabled {
+                info!(
+                    "{} does not have Firefly integration enabled. Skipping",
+                    user.username
+                );
+                continue;
+            }
+
+            let firefly_api_key = firefly_settings
+                .decrypt_firefly_api_key()
+                .context("Failed to decrypt Firefly API key")?;
+
+            let firefly_client = FireflyClient::new(&firefly_api_key, &config.firefly_url);
+            if user.username == "shawn" {
+                info!("Updating Shawn Firefly transaction");
+                firefly_client
+                    .update_transaction_by_id(
+                        &firefly_transaction.firefly_id,
+                        firefly_client::models::TransactionUpdate {
+                            apply_rules: Some(true),
+                            fire_webhooks: Some(true),
+                            group_title: None,
+                            transactions: Some(vec![TransactionSplitUpdate {
+                                r#type: Some(
+                                    firefly_client::models::TransactionTypeProperty::Withdrawal,
+                                ),
+                                amount: Some(shawn_split.to_string()),
+                                description: transaction_row.description.clone(),
+                                ..Default::default()
+                            }]),
+                        },
+                    )
                     .await
-                    .context("Failed to get user from DB")?;
-                if !firefly_settings.enabled {
-                    info!(
-                        "{} does not have Firefly integration enabled. Skipping",
-                        user.username
-                    );
-                    continue;
-                }
-
-                let firefly_api_key = firefly_settings
-                    .decrypt_firefly_api_key()
-                    .context("Failed to decrypt Firefly API key")?;
-                let firefly_client = FireflyClient::new(&firefly_api_key, &config.firefly_url);
-
-                if user.username == "shawn" {
-                    info!("Updating Shawn Firefly transaction");
-                    firefly_client
-                        .update_transaction_by_id(
-                            &t.firefly_id,
-                            firefly_client::models::TransactionUpdate {
-                                apply_rules: Some(true),
-                                fire_webhooks: Some(true),
-                                group_title: None,
-                                transactions: Some(vec![TransactionSplitUpdate {
-                                    r#type: Some(
-                                        firefly_client::models::TransactionTypeProperty::Withdrawal,
-                                    ),
-                                    amount: Some(shawn_split.to_string()),
-                                    description: transaction_row.description.clone(),
-                                    ..Default::default()
-                                }]),
-                            },
-                        )
-                        .await
-                        .context("Failed to update Shawn Firefly transaction")?;
-                } else if user.username == "maggie" {
-                    info!("Updating Maggie Firefly transaction");
-                    firefly_client
-                        .update_transaction_by_id(
-                            &t.firefly_id,
-                            firefly_client::models::TransactionUpdate {
-                                apply_rules: Some(true),
-                                fire_webhooks: Some(true),
-                                group_title: None,
-                                transactions: Some(vec![TransactionSplitUpdate {
-                                    r#type: Some(
-                                        firefly_client::models::TransactionTypeProperty::Withdrawal,
-                                    ),
-                                    amount: Some(maggie_split.to_string()),
-                                    description: transaction_row.description.clone(),
-                                    ..Default::default()
-                                }]),
-                            },
-                        )
-                        .await
-                        .context("Failed to update Maggie Firefly transaction")?;
-                }
+                    .context("Failed to update Shawn Firefly transaction")?;
+            } else if user.username == "maggie" {
+                info!("Updating Maggie Firefly transaction");
+                firefly_client
+                    .update_transaction_by_id(
+                        &firefly_transaction.firefly_id,
+                        firefly_client::models::TransactionUpdate {
+                            apply_rules: Some(true),
+                            fire_webhooks: Some(true),
+                            group_title: None,
+                            transactions: Some(vec![TransactionSplitUpdate {
+                                r#type: Some(
+                                    firefly_client::models::TransactionTypeProperty::Withdrawal,
+                                ),
+                                amount: Some(maggie_split.to_string()),
+                                description: transaction_row.description.clone(),
+                                ..Default::default()
+                            }]),
+                        },
+                    )
+                    .await
+                    .context("Failed to update Maggie Firefly transaction")?;
             }
         }
-        None => {
-            info!(
-                "No firefly transaction associated with transaction {}. Skip updating Firefly",
-                inputs.transaction_id
-            );
-
-            return Ok(UpdateTransactionByIdV2Response { success: true });
-        }
-    };
+    }
 
     tx.commit().await.context("Failed to commit transaction")?;
 
