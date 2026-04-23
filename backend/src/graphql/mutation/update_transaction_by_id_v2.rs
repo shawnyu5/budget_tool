@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::{config::Config, db::postgres::PostgresDB, firefly::FireflyClient};
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct UpdateTransactionByIdV2Input {
     pub transaction_id: Uuid,
     pub amount: Decimal,

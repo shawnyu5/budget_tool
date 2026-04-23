@@ -11,7 +11,7 @@ use crate::{
     month::Month,
 };
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct HomePageV2Input {
     pub year: Year,
     pub month: Month,

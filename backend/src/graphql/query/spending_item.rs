@@ -14,7 +14,7 @@ use crate::{
     monthly_budget::{MonthlyBudget, SpendingItem},
 };
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct SearchSpendingItemInput {
     year: u16,
     month: Month,

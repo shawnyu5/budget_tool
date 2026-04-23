@@ -9,7 +9,7 @@ use anyhow::{Context as AnhowContext, Result};
 use async_graphql::{Context, InputObject};
 use tracing::{debug, info, instrument, warn};
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct SubscriptionInput {
     pub endpoint: String,
     pub p256dh: String,

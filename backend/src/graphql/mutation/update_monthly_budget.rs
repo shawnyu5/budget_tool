@@ -7,7 +7,7 @@ use crate::{
     monthly_budget::MonthlyBudget,
 };
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct UpdateMonthlyBudgetInput {
     year: u16,
     month: Month,

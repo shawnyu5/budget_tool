@@ -76,7 +76,7 @@ impl MutationRoot {
     /// The user is extracted from the JWT
     #[deprecated = "Save to the PostgresDB instead"]
     #[graphql(deprecation = "Save to the PostgresDB instead")]
-    #[instrument(skip_all)]
+    #[instrument(skip(self, ctx))]
     async fn save_subscription(
         &self,
         ctx: &Context<'_>,
@@ -111,7 +111,7 @@ impl MutationRoot {
     }
 
     /// Update the settings for a specific month, in the Postgres DB
-    #[instrument(skip_all)]
+    #[instrument(skip(self, ctx))]
     #[graphql(guard = "AuthGuard")]
     async fn update_month_settings_v2(
         &self,
@@ -149,7 +149,7 @@ impl MutationRoot {
         return delete_spending_item_by_id_handler(ctx, inputs).await;
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip(self))]
     #[graphql(guard = "AuthGuard")]
     /// Delete a transaction by ID from the PostgresDB
     async fn delete_transaction_by_id_v2(
@@ -159,7 +159,7 @@ impl MutationRoot {
         delete_transaction_by_id_v2(inputs).await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip(self, ctx))]
     /// Update a spending item by ID
     #[graphql(guard = "AuthGuard")]
     async fn update_spending_item_by_id(
@@ -171,7 +171,7 @@ impl MutationRoot {
     }
 
     /// Add a transaction
-    #[instrument(skip_all)]
+    #[instrument(skip(self, ctx))]
     #[graphql(guard = "AuthGuard")]
     async fn add_transaction_v2(
         &self,
@@ -182,7 +182,7 @@ impl MutationRoot {
     }
 
     /// Update a transaction by ID
-    #[instrument(skip_all)]
+    #[instrument(skip(self))]
     #[graphql(guard = "AuthGuard")]
     pub async fn update_transaction_by_id_v2(
         &self,
@@ -191,7 +191,7 @@ impl MutationRoot {
         update_transaction_by_id_v2(inputs).await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip(self, ctx))]
     #[graphql(
         guard = "AuthGuard",
         deprecation = "Do not use this handler anymore. Prefer the more finegrained updates instead"
@@ -205,7 +205,7 @@ impl MutationRoot {
         update_monthly_budget_handler(ctx, inputs).await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip(self, ctx))]
     #[graphql(guard = "AuthGuard")]
     async fn me(&self, ctx: &Context<'_>, inputs: UpdateMe) -> Result<UpdateMeResponse> {
         update_me_handler(ctx, inputs).await

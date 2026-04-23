@@ -19,7 +19,7 @@ use tracing::info;
 use tracing::{error, instrument};
 use uuid::Uuid;
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct AddTransactionV2Input {
     pub year: Year,
     pub month: Month,

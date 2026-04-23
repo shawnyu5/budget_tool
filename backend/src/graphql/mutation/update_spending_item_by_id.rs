@@ -8,7 +8,7 @@ use mongodb::bson::doc;
 use rayon::prelude::*;
 use tracing::{debug, error, info, instrument};
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct UpdateSpendingItemByIdInput {
     pub year: i32,
     pub month: Month,

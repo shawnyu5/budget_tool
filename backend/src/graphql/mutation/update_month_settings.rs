@@ -11,7 +11,7 @@ use crate::{
     month::Month,
 };
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct UpdateMonthSettingsInput {
     /// The year of the budget to update
     pub year: Year,

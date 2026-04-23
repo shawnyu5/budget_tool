@@ -9,7 +9,7 @@ use crate::{
     graphql::utils::extract_jwt,
 };
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct UpdateMe {
     pub user: User,
 }

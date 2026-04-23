@@ -48,14 +48,14 @@ pub struct QueryRoot;
 /// Root of the query
 impl QueryRoot {
     /// Configuration for the frontend to consume
-    #[instrument(skip_all, name = "query_config")]
+    #[instrument(skip(self), name = "query_config")]
     async fn config(&self) -> FrontendConfig {
         config_handler().await
     }
 
     /// Get the settings for a particular month. Retrieves the data from PostgresDB
     /// If there are no settings for the month, check the previous month. If it exists, insert the previous month settings into the month being queried
-    #[instrument(skip_all, name = "query_month_settings_v2")]
+    #[instrument(skip(self, ctx), name = "query_month_settings_v2")]
     #[graphql(guard = "AuthGuard")]
     async fn month_settings_v2(
         &self,
@@ -66,7 +66,7 @@ impl QueryRoot {
         month_settings_v2(ctx, year, month).await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip(self, ctx))]
     #[deprecated = "replaced by me_v2"]
     #[graphql(
         guard = "AuthGuard",
@@ -82,7 +82,7 @@ impl QueryRoot {
         me_v2_handler(ctx).await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip(self, ctx))]
     #[deprecated = "Use firefly_v2 to query data from the Postgres DB"]
     #[graphql(guard = "AuthGuard")]
     /// Retrieve information from Firefly it self
@@ -90,13 +90,13 @@ impl QueryRoot {
         firefly_handler(ctx).await
     }
 
-    #[instrument(skip_all, name = "query_firefly_v2")]
+    #[instrument(skip(self, ctx), name = "query_firefly_v2")]
     #[graphql(guard = "AuthGuard")]
     async fn firefly_v2(&self, ctx: &Context<'_>) -> Result<Option<FireflyV2SuccessResponse>> {
         firefly_v2(ctx).await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip(self))]
     #[deprecated = "Use search_transaction_v2"]
     #[graphql(
         guard = "AuthGuard",
@@ -111,7 +111,7 @@ impl QueryRoot {
     }
 
     /// Get data to display on the home page
-    #[instrument(skip_all, name = "query_home_page_v2")]
+    #[instrument(skip(self, ctx), name = "query_home_page_v2")]
     #[graphql(guard = "AuthGuard")]
     pub async fn home_page_v2(
         &self,
@@ -122,7 +122,7 @@ impl QueryRoot {
     }
 
     /// Search for a transaction from the PostgresDB
-    #[instrument(skip_all, name = "query_search_transaction_v2")]
+    #[instrument(skip(self, ctx), name = "query_search_transaction_v2")]
     #[graphql(guard = "AuthGuard")]
     async fn search_transaction_v2(
         &self,

@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::db::postgres::PostgresDB;
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct DeleteTransactionByIdV2Input {
     pub transaction_id: Uuid,
 }

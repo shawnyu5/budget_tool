@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::graphql::utils::extract_db_client;
 use crate::models::Transaction;
 
-#[derive(InputObject)]
+#[derive(InputObject, Debug)]
 pub struct SearchTransactionV2Inputs {
     /// ID of the transaction to search for
     pub transaction_id: Uuid,
