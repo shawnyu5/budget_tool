@@ -82,3 +82,19 @@ query SearchTransactionByID($inputs: SearchTransactionV2Inputs!) {
     }
   }
 }
+
+# # Get core users of the system
+# query CoreUsers {
+#   getCoreUsers {
+#     users {
+#       username
+#     }
+#   }
+# }
+#
+# # Send notifications to certain users
+# query SendNotification($inputs: SendNotificationInput!) {
+#   sendNotification(inputs: $inputs) {
+#     success
+#   }
+# }

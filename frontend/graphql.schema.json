@@ -839,7 +839,7 @@
           },
           {
             "name": "fireflyV2",
-            "description": null,
+            "description": "Query information from the Firefly server",
             "args": [],
             "type": {
               "kind": "OBJECT",

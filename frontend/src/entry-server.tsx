@@ -1,45 +1,5 @@
 // @refresh reload
 import { createHandler, StartServer } from "@solidjs/start/server";
-import { createResource } from "solid-js";
-import { loadLocalConfig, loadServerConfig } from "./config";
-import { paths } from "./backend_schema";
-import axios from "axios";
-
-/**
- * Request to send notifications to user
- */
-async function requestPushPermission() {
-  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-    alert("Push notifications are not supported. Ignore this...");
-    return;
-  }
-
-  const result = await Notification.requestPermission();
-  if (result === "granted") {
-    // You can now subscribe with PushManager
-    const reg = await navigator.serviceWorker.ready;
-    const [serverConfig] = createResource(loadServerConfig);
-
-    console.log(`public key: ${serverConfig()?.vapidPublicKey}`);
-    const subscription = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: serverConfig()?.vapidPublicKey,
-    });
-
-    // Send `subscription` to your backend
-    console.log("Push subscription:", JSON.stringify(subscription, null, 3));
-
-    type RequestBody =
-      paths["/notification/send"]["post"]["requestBody"]["content"]["application/json"];
-
-    await axios.post<RequestBody>(
-      `${loadLocalConfig().backendUrl}/notification/send`,
-      subscription,
-    );
-  } else {
-    alert("Permission denied for notifications.");
-  }
-}
 
 export default createHandler(() => (
   <StartServer

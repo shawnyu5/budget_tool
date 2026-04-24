@@ -3,10 +3,14 @@ use crate::db::postgres::PostgresDB;
 use crate::db::postgres::models::Year;
 use crate::db::postgres::models::transaction::SplitMode;
 use crate::db::postgres::models::transaction::TransactionRow;
+use crate::db::postgres::models::user::UserRow;
 use crate::firefly::FireflyClient;
 use crate::graphql::utils::extract_db_client;
+use crate::graphql::utils::extract_jwt;
 use crate::models::Transaction;
 use crate::month::Month;
+use crate::routes::notification::NotificationBody;
+use crate::routes::notification::send_web_push_notification;
 use anyhow::Context as AnhowContext;
 use anyhow::Result;
 use async_graphql::Context;
@@ -16,6 +20,7 @@ use chrono_tz::America::Toronto;
 use rust_decimal::Decimal;
 use sqlx::{Postgres, Transaction as DBTransaction};
 use tracing::info;
+use tracing::warn;
 use tracing::{error, instrument};
 use uuid::Uuid;
 
@@ -37,6 +42,7 @@ pub async fn add_transaction_v2(
     inputs: AddTransactionV2Input,
 ) -> Result<AddTransactionResponseV2> {
     let db = extract_db_client(ctx);
+    let jwt = extract_jwt(ctx)?;
     let mut tx = db
         .transaction()
         .await
@@ -137,6 +143,41 @@ pub async fn add_transaction_v2(
     }
 
     tx.commit().await.context("Failed to commit transaction")?;
+
+    let mut tx = db.transaction().await?;
+    info!("Sending notification");
+
+    // let users = core_users;
+    let users: Vec<UserRow> = core_users
+        .iter()
+        .filter(|&user| user.username != jwt.username)
+        .cloned()
+        .collect();
+
+    for user in users {
+        let notification_subscription = db
+            .get_user_notification_subscription(&mut tx, &user.username)
+            .await?;
+        if notification_subscription.is_none() {
+            warn!(
+                "User {} does not have notification subscriptions. Skipping",
+                user.username
+            );
+            continue;
+        }
+
+        let notification_subscription = notification_subscription.unwrap();
+        send_web_push_notification(
+            notification_subscription,
+            NotificationBody {
+                title: "Added new transaction!".to_string(),
+                body: inputs.transaction.description.clone(),
+            },
+        )
+        .await
+        .context("Failed to send notification subscription")?;
+    }
+
     Ok(AddTransactionResponseV2 { success: true })
 }
 

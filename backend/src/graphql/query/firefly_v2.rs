@@ -3,7 +3,9 @@ use async_graphql::{Context, SimpleObject};
 use tracing::{error, info, instrument};
 
 use crate::{
-    config::Config, db::postgres::PostgresDB, firefly::FireflyClient, graphql::utils::extract_jwt,
+    config::Config,
+    firefly::FireflyClient,
+    graphql::utils::{extract_db_client, extract_jwt},
 };
 
 #[derive(SimpleObject)]
@@ -14,7 +16,7 @@ pub struct FireflyV2SuccessResponse {
 
 pub async fn firefly_v2(ctx: &Context<'_>) -> Result<Option<FireflyV2SuccessResponse>> {
     let jwt = extract_jwt(ctx)?;
-    let db = PostgresDB::new().await;
+    let db = extract_db_client(ctx);
     let mut tx = db.transaction().await?;
     let user = db
         .get_user(&jwt.username)

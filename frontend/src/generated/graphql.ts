@@ -176,6 +176,7 @@ export type QueryRoot = {
   __typename?: 'QueryRoot';
   /** Configuration for the frontend to consume */
   config: FrontendConfig;
+  /** Query information from the Firefly server */
   fireflyV2?: Maybe<FireflyV2SuccessResponse>;
   /** Get data to display on the home page */
   homePageV2: HomePage;

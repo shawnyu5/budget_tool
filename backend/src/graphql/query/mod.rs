@@ -63,6 +63,7 @@ impl QueryRoot {
         me_v2_handler(ctx).await
     }
 
+    /// Query information from the Firefly server
     #[instrument(skip(self, ctx), name = "query_firefly_v2")]
     #[graphql(guard = "AuthGuard")]
     async fn firefly_v2(&self, ctx: &Context<'_>) -> Result<Option<FireflyV2SuccessResponse>> {
@@ -90,4 +91,21 @@ impl QueryRoot {
     ) -> Result<SearchTransactionV2Response> {
         search_transaction_v2(ctx, inputs).await
     }
+
+    // /// Send notifications to certain users
+    // #[instrument(skip(self, ctx))]
+    // #[graphql(guard = "AuthGuard")]
+    // async fn send_notification(
+    //     &self,
+    //     ctx: &Context<'_>,
+    //     inputs: SendNotificationInput,
+    // ) -> Result<SendNotificationResponse> {
+    //     send_notification(ctx, inputs).await
+    // }
+    //
+    // /// Get a list of the core users of the system
+    // #[graphql(guard = "AuthGuard")]
+    // async fn get_core_users(&self, ctx: &Context<'_>) -> Result<CoreUsersResponse> {
+    //     core_users(ctx).await
+    // }
 }

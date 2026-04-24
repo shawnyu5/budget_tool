@@ -172,6 +172,9 @@ type QueryRoot {
 	Returns the content of the JWT
 	"""
 	meV2: UserV2!
+	"""
+	Query information from the Firefly server
+	"""
 	fireflyV2: FireflyV2SuccessResponse
 	"""
 	Get data to display on the home page
