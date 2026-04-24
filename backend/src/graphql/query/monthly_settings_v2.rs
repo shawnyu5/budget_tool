@@ -1,6 +1,6 @@
 use anyhow::{Context as _, Result};
-use async_graphql::{Context, Object, SimpleObject};
-use tracing::{info, instrument};
+use async_graphql::{Context, SimpleObject};
+use tracing::info;
 
 use crate::{
     db::postgres::models::Year,

@@ -1,6 +1,5 @@
 use async_graphql::SimpleObject;
 use base64::{Engine, prelude::BASE64_STANDARD};
-use tracing::instrument;
 
 use crate::config::Config;
 

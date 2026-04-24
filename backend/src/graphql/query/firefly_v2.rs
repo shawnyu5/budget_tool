@@ -1,6 +1,6 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{Context, SimpleObject};
-use tracing::{error, info, instrument};
+use tracing::{error, info};
 
 use crate::{
     config::Config,

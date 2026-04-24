@@ -1,9 +1,9 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{InputObject, SimpleObject};
 use chrono::DateTime;
-use firefly_client::models::{TransactionSplitUpdate, TransactionUpdate};
+use firefly_client::models::TransactionSplitUpdate;
 use rust_decimal::Decimal;
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 use uuid::Uuid;
 
 use crate::{config::Config, db::postgres::PostgresDB, firefly::FireflyClient};

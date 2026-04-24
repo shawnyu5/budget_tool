@@ -4,7 +4,6 @@ use async_graphql::SimpleObject;
 use base64::Engine;
 use base64::prelude::BASE64_STANDARD;
 use dotenvy::dotenv;
-use serde::Serialize;
 use validator::Validate;
 
 #[non_exhaustive]

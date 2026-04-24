@@ -1,5 +1,5 @@
 use anyhow::Result;
-use async_graphql::{Context, Object, Result as GraphqlResult, Union};
+use async_graphql::{Context, Object, Result as GraphqlResult};
 use tracing::instrument;
 
 use crate::graphql::{
