@@ -142,17 +142,14 @@ pub async fn add_transaction_v2(
         }
     }
 
-    tx.commit().await.context("Failed to commit transaction")?;
-
-    let mut tx = db.transaction().await?;
-    info!("Sending notification");
-
     // let users = core_users;
     let users: Vec<UserRow> = core_users
         .iter()
         .filter(|&user| user.username != jwt.username)
         .cloned()
         .collect();
+
+    info!("Sending notification to users: {users:#?}");
 
     for user in users {
         let notification_subscription = db
@@ -167,7 +164,7 @@ pub async fn add_transaction_v2(
         }
 
         let notification_subscription = notification_subscription.unwrap();
-        send_web_push_notification(
+        match send_web_push_notification(
             notification_subscription,
             NotificationBody {
                 title: "Added new transaction!".to_string(),
@@ -175,9 +172,15 @@ pub async fn add_transaction_v2(
             },
         )
         .await
-        .context("Failed to send notification subscription")?;
+        {
+            Ok(_) => {}
+            Err(e) => {
+                error!("Failed to send web push notification: {e}");
+            }
+        };
     }
 
+    tx.commit().await.context("Failed to commit transaction")?;
     Ok(AddTransactionResponseV2 { success: true })
 }
 
