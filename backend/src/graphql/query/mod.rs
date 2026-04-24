@@ -7,38 +7,29 @@ use async_graphql::{Context, Object};
 use tracing::instrument;
 
 use crate::{
-    db::{postgres::models::Year, users::User},
+    db::postgres::models::Year,
     graphql::{
         query::{
             config::{FrontendConfig, config_handler},
-            firefly::{FireflySuccessResponse, firefly_handler},
             home_page::{HomePageV2Input, home_page_v2},
-            me::me_handler,
             me_v2::me_v2_handler,
             monthly_settings_v2::{MonthlySettingsResponse, month_settings_v2},
             search_transaction_v2::{
                 SearchTransactionV2Inputs, SearchTransactionV2Response, search_transaction_v2,
             },
-            spending_item::{SearchSpendingItemInput, search_spending_item_handler},
         },
         utils::AuthGuard,
     },
     models::HomePage,
     month::Month,
-    monthly_budget::SpendingItem,
 };
 
 mod config;
-pub mod firefly;
 mod firefly_v2;
 mod home_page;
-mod me;
 mod me_v2;
-mod monthly_budget;
-mod monthly_budget_config;
 mod monthly_settings_v2;
 mod search_transaction_v2;
-pub mod spending_item;
 
 /// Root of the graphql query
 #[derive(Default, Clone, Debug)]
@@ -66,48 +57,16 @@ impl QueryRoot {
         month_settings_v2(ctx, year, month).await
     }
 
-    #[instrument(skip(self, ctx))]
-    #[deprecated = "replaced by me_v2"]
-    #[graphql(
-        guard = "AuthGuard",
-        deprecation = "use `me_v2` to get user data from the PostgresDB instead"
-    )]
-    async fn me(&self, ctx: &Context<'_>) -> Result<User> {
-        me_handler(ctx).await
-    }
-
     /// Returns the content of the JWT
     #[graphql(guard = "AuthGuard")]
     async fn me_v2(&self, ctx: &Context<'_>) -> Result<UserModel> {
         me_v2_handler(ctx).await
     }
 
-    #[instrument(skip(self, ctx))]
-    #[deprecated = "Use firefly_v2 to query data from the Postgres DB"]
-    #[graphql(guard = "AuthGuard")]
-    /// Retrieve information from Firefly it self
-    async fn firefly(&self, ctx: &Context<'_>) -> Result<FireflySuccessResponse> {
-        firefly_handler(ctx).await
-    }
-
     #[instrument(skip(self, ctx), name = "query_firefly_v2")]
     #[graphql(guard = "AuthGuard")]
     async fn firefly_v2(&self, ctx: &Context<'_>) -> Result<Option<FireflyV2SuccessResponse>> {
         firefly_v2(ctx).await
-    }
-
-    #[instrument(skip(self))]
-    #[deprecated = "Use search_transaction_v2"]
-    #[graphql(
-        guard = "AuthGuard",
-        deprecation = "Use `search_transaction_v2` to search the PostgresDB instead"
-    )]
-    /// Search for a spending item by time and ID
-    pub async fn search_spending_item(
-        &self,
-        inputs: SearchSpendingItemInput,
-    ) -> Result<Option<SpendingItem>> {
-        search_spending_item_handler(inputs).await
     }
 
     /// Get data to display on the home page

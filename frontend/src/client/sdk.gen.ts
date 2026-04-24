@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AppVersionData, AppVersionErrors, AppVersionResponses, BasicAuthHandlerData, BasicAuthHandlerErrors, BasicAuthHandlerResponses, BasicAuthHandlerV2Data, BasicAuthHandlerV2Errors, BasicAuthHandlerV2Responses, ExportCsvHandlerData, ExportCsvHandlerErrors, ExportCsvHandlerResponses, GetMonthBudgetHandlerData, GetMonthBudgetHandlerErrors, GetMonthBudgetHandlerResponses, GetSpendingItemData, GetSpendingItemErrors, GetSpendingItemResponses, GraphqlHandlerData, GraphqlHandlerResponses, SaveNotificationSubscriptionHandlerData, SaveNotificationSubscriptionHandlerResponses, SendNotificationHandlerData, SendNotificationHandlerResponses, UpdateBudgetHandlerData, UpdateBudgetHandlerErrors, UpdateBudgetHandlerResponses, UpdateSpendingItemData, UpdateSpendingItemErrors, UpdateSpendingItemResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponses, ValidateTokenV2Data, ValidateTokenV2Errors, ValidateTokenV2Responses } from './types.gen';
+import type { AppVersionData, AppVersionErrors, AppVersionResponses, BasicAuthHandlerData, BasicAuthHandlerErrors, BasicAuthHandlerResponses, BasicAuthHandlerV2Data, BasicAuthHandlerV2Errors, BasicAuthHandlerV2Responses, ExportCsvHandlerData, ExportCsvHandlerErrors, ExportCsvHandlerResponses, GraphqlHandlerData, GraphqlHandlerResponses, SendNotificationHandlerData, SendNotificationHandlerResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponses, ValidateTokenV2Data, ValidateTokenV2Errors, ValidateTokenV2Responses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -49,35 +49,6 @@ export const validateTokenV2 = <ThrowOnError extends boolean = false>(options?: 
 };
 
 /**
- * Get the budget information for a specific month
- *
- * @deprecated
- */
-export const getMonthBudgetHandler = <ThrowOnError extends boolean = false>(options: Options<GetMonthBudgetHandlerData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetMonthBudgetHandlerResponses, GetMonthBudgetHandlerErrors, ThrowOnError>({
-        responseType: 'json',
-        url: '/budget/{year}/{month}',
-        ...options
-    });
-};
-
-/**
- * Update the budget for a specific month in a specific year. This route will also ensure the `totalSpending`, and `overBudgetAmount` is up to date
- *
- * @deprecated
- */
-export const updateBudgetHandler = <ThrowOnError extends boolean = false>(options: Options<UpdateBudgetHandlerData, ThrowOnError>) => {
-    return (options.client ?? client).post<UpdateBudgetHandlerResponses, UpdateBudgetHandlerErrors, ThrowOnError>({
-        url: '/budget/{year}/{month}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
-
-/**
  * Gets the spending items in csv form. If converting budget information to CSV fails at any point, partial data will not be returned
  */
 export const exportCsvHandler = <ThrowOnError extends boolean = false>(options: Options<ExportCsvHandlerData, ThrowOnError>) => {
@@ -118,52 +89,11 @@ export const basicAuthHandlerV2 = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * @deprecated
- */
-export const saveNotificationSubscriptionHandler = <ThrowOnError extends boolean = false>(options: Options<SaveNotificationSubscriptionHandlerData, ThrowOnError>) => {
-    return (options.client ?? client).post<SaveNotificationSubscriptionHandlerResponses, unknown, ThrowOnError>({
-        url: '/notification/save-subscription',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
-
-/**
  * Send a notification
  */
 export const sendNotificationHandler = <ThrowOnError extends boolean = false>(options: Options<SendNotificationHandlerData, ThrowOnError>) => {
     return (options.client ?? client).post<SendNotificationHandlerResponses, unknown, ThrowOnError>({
         url: '/notification/send',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
-
-/**
- * Search for a spending item by time and ID
- */
-export const getSpendingItem = <ThrowOnError extends boolean = false>(options: Options<GetSpendingItemData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSpendingItemResponses, GetSpendingItemErrors, ThrowOnError>({
-        responseType: 'json',
-        url: '/spending-item/{year}/{month}/{id}',
-        ...options
-    });
-};
-
-/**
- * Update a single spending item by ID in a specific year and month. As well as updating the `totalSpending`
- *
- * @deprecated
- */
-export const updateSpendingItem = <ThrowOnError extends boolean = false>(options: Options<UpdateSpendingItemData, ThrowOnError>) => {
-    return (options.client ?? client).post<UpdateSpendingItemResponses, UpdateSpendingItemErrors, ThrowOnError>({
-        url: '/spending-item/{year}/{month}/{id}',
         ...options,
         headers: {
             'Content-Type': 'application/json',

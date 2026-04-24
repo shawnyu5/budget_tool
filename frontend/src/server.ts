@@ -11,23 +11,8 @@ import { useNavigate } from "@solidjs/router";
 import { getLocalAuthToken, setLocalAuthToken } from "./utils";
 import axiosRetry from "axios-retry";
 import { client } from "~/client/client.gen";
-import {
-  basicAuthHandlerV2,
-  saveNotificationSubscriptionHandler,
-} from "~/client/sdk.gen";
-import {
-  handleGraphQLClientError,
-  handleGraphQLErrorObject,
-  NewGraphQLSDK,
-} from "./graphql";
-import {
-  BudgetConfig,
-  BudgetConfigInput,
-  FireflySettings,
-  Month,
-  MonthlyBudget,
-  UpdateMonthlyBudgetConfigMutation,
-} from "./generated/graphql";
+import { basicAuthHandlerV2 } from "~/client/sdk.gen";
+import {} from "./generated/graphql";
 
 axiosRetry(axios, {
   retries: 4,
@@ -39,82 +24,6 @@ client.setConfig({
   axios: axios,
 });
 
-/**
-   @deprecated - use the graphql type instead
-*/
-export type SpendingItem =
-  paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"][0];
-
-// // The budget for a month
-// export type MonthlyBudget =
-// paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"];
-
-// The spending for a month
-export type MonthlySpending =
-  paths["/budget/{year}/{month}"]["get"]["responses"][200]["content"]["application/json"]["spending"];
-
-/**
- * Errors that could happen when fetching the monthly budget
- * @deprecated use GraphQlErrorCode instead
- */
-export enum MonthlyBudgetErrors {
-  /**
-   * Failed to fetch the budget for a particular month
-   **/
-  FAILED_TO_FETCH_BUDGET,
-  /**
-   * Forbidden to fetch the budget. User does not have the correct access
-   **/
-  FORBIDDEN,
-  /**
-   * Authentication token expired. Needs re authentication
-   */
-  RE_AUTH_NEEDED,
-}
-
-/**
- * Updates the budget config for a specific month
- */
-export async function updateMonthlyBudgetConfig(
-  year: number,
-  month: Month,
-  budgetConfig: BudgetConfig,
-  fireflySettings: FireflySettings,
-  navigate: Navigator,
-): Promise<UpdateMonthlyBudgetConfigMutation> {
-  const sdk = NewGraphQLSDK();
-  try {
-    const budgetConfigInput: BudgetConfigInput = {
-      totalAllocation: budgetConfig.totalAllocation,
-      maggieContributionAmount: budgetConfig.maggieContributionAmount,
-      maggiePercentageAllocation: budgetConfig.maggiePercentageAllocation,
-      shawnContributionAmount: budgetConfig.shawnContributionAmount,
-      shawnPercentageAllocation: budgetConfig.shawnPercentageAllocation,
-    };
-    const response = await sdk.UpdateMonthlyBudgetConfig({
-      inputs: {
-        year,
-        month,
-        budgetConfig: budgetConfigInput,
-        firefly: {
-          enabled: fireflySettings.enabled,
-          apiKey: fireflySettings.apiKey,
-          sourceAccount: fireflySettings.sourceAccount,
-        },
-      },
-    });
-
-    if (response.updateMonthlyBudgetConfig.__typename == "GraphQLErrorObject") {
-      const err = handleGraphQLErrorObject(response.updateMonthlyBudgetConfig);
-      if (err) {
-        throw new Error(err);
-      }
-    }
-    return response;
-  } catch (e) {
-    handleGraphQLClientError(e, navigate);
-  }
-}
 /**
  * Validate the JWT token with the server. If the token is invalid or expired, redirect to `/login`
  */
@@ -164,21 +73,6 @@ export async function basicAuthLogin(userName: string, password: string) {
   }
 
   setLocalAuthToken(response.data ?? "");
-}
-
-/**
- * Calculates the total spending for a month
- * @param monthlyBudget - the month's budget to calculate the total of
- */
-export function calculateTotalSpending(monthlyBudget: MonthlyBudget): number {
-  if (!monthlyBudget) {
-    return 0;
-  }
-  let total = 0;
-  for (let spending of monthlyBudget.spending) {
-    total += spending.amount;
-  }
-  return total;
 }
 
 export async function exportCSV(year: string, month: string): Promise<string> {

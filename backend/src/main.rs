@@ -1,8 +1,8 @@
 #![allow(clippy::needless_return)]
 use anyhow::{Context, Result};
+use backend::config::Config;
 use backend::db::postgres::PostgresDB;
 use backend::routes::app;
-use backend::{config::Config, db::mongo_migration::do_mongo_migrations};
 use common_axum::axum::{axum_serve, init_tracing_subcriber};
 use tokio::net::TcpListener;
 use tracing::info;
@@ -13,11 +13,6 @@ async fn main() -> Result<()> {
     init_tracing_subcriber().expect("Failed to init tracing subscriber");
     // Attempt to load config. If it fails, dont bother starting the server
     Config::load();
-
-    do_mongo_migrations()
-        .await
-        .expect("DB schema migration failed....");
-
     PostgresDB::new()
         .await
         .do_migrations()

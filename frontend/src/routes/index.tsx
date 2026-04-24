@@ -9,7 +9,7 @@ import {
 } from "solid-js";
 import MonthlySpending from "~/components/MonthlySpending";
 import BudgetTable from "~/components/BudgetTable";
-import { useNavigate, useSearchParams } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 import log from "~/logger";
 import SplitBudget from "~/components/SplitBudget";
 import ErrorComponent from "~/components/ErrorComponent";

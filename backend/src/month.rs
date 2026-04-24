@@ -15,7 +15,7 @@ pub enum MonthError {
     InvalidMonth,
 }
 
-#[derive(Debug, Deserialize, PartialEq, ToSchema, Clone, Serialize, Copy, Enum, Eq)]
+#[derive(Debug, Deserialize, PartialEq, Clone, Serialize, Copy, Enum, Eq, ToSchema)]
 pub enum Month {
     #[graphql(name = "January")]
     January,

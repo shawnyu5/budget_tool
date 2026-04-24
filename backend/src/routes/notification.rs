@@ -3,7 +3,6 @@ use anyhow::{Context, Result};
 use async_graphql::{InputObject, SimpleObject};
 use axum::Json;
 use common_axum::app_error_v2::AppError;
-use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use web_push::*;

@@ -36,26 +36,6 @@ export type Scalars = {
   UUID: { input: any; output: any; }
 };
 
-/** Errors that could happen during adding an item by month */
-export enum AddSpendingItemByMonthError {
-  /** Failed to create / update transactions in firefly */
-  FireflyUpdateFailed = 'FIREFLY_UPDATE_FAILED'
-}
-
-export type AddSpendingItemByMonthErrorObject = {
-  __typename?: 'AddSpendingItemByMonthErrorObject';
-  code: AddSpendingItemByMonthError;
-  message: Scalars['String']['output'];
-};
-
-export type AddSpendingItemByMonthInput = {
-  month: Month;
-  spendingItem: SpendingItemInput;
-  year: Scalars['String']['input'];
-};
-
-export type AddSpendingItemByMonthResponse = AddSpendingItemByMonthErrorObject | SuccessResponse;
-
 export type AddTransactionResponseV2 = {
   __typename?: 'AddTransactionResponseV2';
   success: Scalars['Boolean']['output'];
@@ -67,40 +47,6 @@ export type AddTransactionV2Input = {
   year: Scalars['Int']['input'];
 };
 
-export type BudgetConfig = {
-  __typename?: 'BudgetConfig';
-  /** Maggie contribution amount. The frontend is responsible for computing this value */
-  maggieContributionAmount: Scalars['Float']['output'];
-  /** Maggie percentage allocation */
-  maggiePercentageAllocation: Scalars['Float']['output'];
-  /** Shawn contribution amount. The frontend is responsible for computing this value */
-  shawnContributionAmount: Scalars['Float']['output'];
-  /** Shawn percentage allocation */
-  shawnPercentageAllocation: Scalars['Float']['output'];
-  /** Total allocated budget */
-  totalAllocation: Scalars['Float']['output'];
-};
-
-export type BudgetConfigInput = {
-  /** Maggie contribution amount. The frontend is responsible for computing this value */
-  maggieContributionAmount: Scalars['Float']['input'];
-  /** Maggie percentage allocation */
-  maggiePercentageAllocation: Scalars['Float']['input'];
-  /** Shawn contribution amount. The frontend is responsible for computing this value */
-  shawnContributionAmount: Scalars['Float']['input'];
-  /** Shawn percentage allocation */
-  shawnPercentageAllocation: Scalars['Float']['input'];
-  /** Total allocated budget */
-  totalAllocation: Scalars['Float']['input'];
-};
-
-export type DeleteSpendingItemByIdInput = {
-  /** The ID of the spending item to delete */
-  id: Scalars['String']['input'];
-  month: Month;
-  year: Scalars['Int']['input'];
-};
-
 export type DeleteTransactionByIdV2Input = {
   transactionId: Scalars['UUID']['input'];
 };
@@ -108,37 +54,6 @@ export type DeleteTransactionByIdV2Input = {
 export type DeleteTransactionByIdV2Response = {
   __typename?: 'DeleteTransactionByIdV2Response';
   success: Scalars['Boolean']['output'];
-};
-
-/** Firefly related settings */
-export type FireflySettings = {
-  __typename?: 'FireflySettings';
-  /**
-   * Encrypted firefly API key, required if `enabled` = true
-   * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
-   */
-  apiKey?: Maybe<Scalars['String']['output']>;
-  /** If the user has enabled Firefly integration */
-  enabled: Scalars['Boolean']['output'];
-  /** Base64 encoded nounce used to encrypt / decrypt the API key */
-  encryptionNounce?: Maybe<Scalars['String']['output']>;
-  /** The source account to create the transaction in */
-  sourceAccount?: Maybe<Scalars['String']['output']>;
-};
-
-/** Firefly related settings */
-export type FireflySettingsInput = {
-  /**
-   * Encrypted firefly API key, required if `enabled` = true
-   * Must call `User.decrypt_firefly_api_key()` to get the decrypted version
-   */
-  apiKey?: InputMaybe<Scalars['String']['input']>;
-  /** If the user has enabled Firefly integration */
-  enabled: Scalars['Boolean']['input'];
-  /** Base64 encoded nounce used to encrypt / decrypt the API key */
-  encryptionNounce?: InputMaybe<Scalars['String']['input']>;
-  /** The source account to create the transaction in */
-  sourceAccount?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** Firefly related settings */
@@ -162,12 +77,6 @@ export type FireflySettingsV2Input = {
   sourceAccount?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type FireflySuccessResponse = {
-  __typename?: 'FireflySuccessResponse';
-  /** List of accounts this user has */
-  accounts?: Maybe<Array<Scalars['String']['output']>>;
-};
-
 export type FireflyV2SuccessResponse = {
   __typename?: 'FireflyV2SuccessResponse';
   /** List of accounts this user has */
@@ -181,23 +90,6 @@ export type FrontendConfig = {
   encryptionPublicKey: Scalars['String']['output'];
   /** Non base 64 encoded VAPID public key used for sending notifications */
   vapidPublicKey: Scalars['String']['output'];
-};
-
-/** GraphQL error codes */
-export enum GraphQlErrorCode {
-  /** Failed to fetch budget for some reason. Typically response 404 */
-  FailedToFetchBudget = 'FAILED_TO_FETCH_BUDGET',
-  /** Failed to create / update transactions in firefly */
-  FireflyUpdateFailed = 'FIREFLY_UPDATE_FAILED',
-  InvalidFireflyApiKey = 'INVALID_FIREFLY_API_KEY',
-  /** Something went wrong on the server side. Typically response 500 */
-  ServerError = 'SERVER_ERROR'
-}
-
-export type GraphQlErrorObject = {
-  __typename?: 'GraphQLErrorObject';
-  code: GraphQlErrorCode;
-  message: Scalars['String']['output'];
 };
 
 /** Data on the home screen */
@@ -235,47 +127,6 @@ export enum Month {
   September = 'September'
 }
 
-/** Budget details for single month */
-export type MonthlyBudget = {
-  __typename?: 'MonthlyBudget';
-  /** Budget details */
-  budget: BudgetConfig;
-  /**
-   * The month it was carried over from
-   * If the setting are not carried over from a previous month, this value will be empty
-   */
-  carriedOverFrom?: Maybe<Month>;
-  /** The month */
-  month: Month;
-  /** Amount over budget for the month. 0 means not over budget. */
-  overBudgetAmount: Scalars['Float']['output'];
-  /** List of spent items */
-  spending: Array<SpendingItem>;
-  /** Total spending for the month. Including any over budget amount */
-  totalSpending: Scalars['Float']['output'];
-};
-
-/** Budget details for single month */
-export type MonthlyBudgetInput = {
-  /** Budget details */
-  budget: BudgetConfigInput;
-  /**
-   * The month it was carried over from
-   * If the setting are not carried over from a previous month, this value will be empty
-   */
-  carriedOverFrom?: InputMaybe<Month>;
-  /** The month */
-  month: Month;
-  /** Amount over budget for the month. 0 means not over budget. */
-  overBudgetAmount: Scalars['Float']['input'];
-  /** List of spent items */
-  spending: Array<SpendingItemInput>;
-  /** Total spending for the month. Including any over budget amount */
-  totalSpending: Scalars['Float']['input'];
-};
-
-export type MonthlyBudgetResponse = GraphQlErrorObject | MonthlyBudget;
-
 export type MonthlySettingsResponse = {
   __typename?: 'MonthlySettingsResponse';
   settings: Settings;
@@ -283,50 +134,16 @@ export type MonthlySettingsResponse = {
 
 export type MutationRoot = {
   __typename?: 'MutationRoot';
-  /**
-   * Add a spending item to a month
-   * @deprecated use `add_transaction_v2` to save to the PostgresDB
-   */
-  addSpendingItemByMonth: AddSpendingItemByMonthResponse;
   /** Add a transaction */
   addTransactionV2: AddTransactionResponseV2;
-  /**
-   * Delete a spending item by ID. If the item doesnt exist, this handler will not do anything
-   * @deprecated use `delete_transaction_by_id_v2` to delete from the PostgresDB
-   */
-  deleteSpendingItemById: MonthlyBudgetResponse;
   /** Delete a transaction by ID from the PostgresDB */
   deleteTransactionByIdV2: DeleteTransactionByIdV2Response;
-  me: UpdateMeResponse;
-  /**
-   * Save a notification subscription for a user
-   * The user is extracted from the JWT
-   * @deprecated Save to the PostgresDB instead
-   */
-  saveSubscription: User;
   /** Save the user subscription to Postgres DB */
   saveSubscriptionV2: SaveSubscriptionV2Response;
   /** Update the settings for a specific month, in the Postgres DB */
   updateMonthSettingsV2: UpdateMonthSettingsResponse;
-  /**
-   * Update the budget for a specific month
-   * @deprecated Do not use this handler anymore. Prefer the more finegrained updates instead
-   */
-  updateMonthlyBudget: MonthlyBudgetResponse;
-  /**
-   * Update the budget configuration for a specific month
-   * @deprecated use `update_month_settings_v2` to save to the PostgresDB
-   */
-  updateMonthlyBudgetConfig: UpdateBudgetConfigResponse;
-  /** Update a spending item by ID */
-  updateSpendingItemById: UpdateSpendingItemByIdResponse;
   /** Update a transaction by ID */
   updateTransactionByIdV2: UpdateTransactionByIdV2Response;
-};
-
-
-export type MutationRootAddSpendingItemByMonthArgs = {
-  inputs: AddSpendingItemByMonthInput;
 };
 
 
@@ -335,23 +152,8 @@ export type MutationRootAddTransactionV2Args = {
 };
 
 
-export type MutationRootDeleteSpendingItemByIdArgs = {
-  inputs: DeleteSpendingItemByIdInput;
-};
-
-
 export type MutationRootDeleteTransactionByIdV2Args = {
   inputs: DeleteTransactionByIdV2Input;
-};
-
-
-export type MutationRootMeArgs = {
-  inputs: UpdateMe;
-};
-
-
-export type MutationRootSaveSubscriptionArgs = {
-  subscription: SubscriptionInput;
 };
 
 
@@ -365,49 +167,8 @@ export type MutationRootUpdateMonthSettingsV2Args = {
 };
 
 
-export type MutationRootUpdateMonthlyBudgetArgs = {
-  inputs: UpdateMonthlyBudgetInput;
-};
-
-
-export type MutationRootUpdateMonthlyBudgetConfigArgs = {
-  inputs: UpdateBudgetConfigInput;
-};
-
-
-export type MutationRootUpdateSpendingItemByIdArgs = {
-  inputs: UpdateSpendingItemByIdInput;
-};
-
-
 export type MutationRootUpdateTransactionByIdV2Args = {
   inputs: UpdateTransactionByIdV2Input;
-};
-
-export type NotificationKeys = {
-  __typename?: 'NotificationKeys';
-  auth: Scalars['String']['output'];
-  p256Dh: Scalars['String']['output'];
-};
-
-export type NotificationKeysInput = {
-  auth: Scalars['String']['input'];
-  p256Dh: Scalars['String']['input'];
-};
-
-/** Stuff the browser sends to do the notification handshake */
-export type NotificationSubscription = {
-  __typename?: 'NotificationSubscription';
-  endpoint: Scalars['String']['output'];
-  expirationTime?: Maybe<Scalars['String']['output']>;
-  keys: NotificationKeys;
-};
-
-/** Stuff the browser sends to do the notification handshake */
-export type NotificationSubscriptionInput = {
-  endpoint: Scalars['String']['input'];
-  expirationTime?: InputMaybe<Scalars['String']['input']>;
-  keys: NotificationKeysInput;
 };
 
 /** Root of the query */
@@ -415,13 +176,9 @@ export type QueryRoot = {
   __typename?: 'QueryRoot';
   /** Configuration for the frontend to consume */
   config: FrontendConfig;
-  /** Retrieve information from Firefly it self */
-  firefly: FireflySuccessResponse;
   fireflyV2?: Maybe<FireflyV2SuccessResponse>;
   /** Get data to display on the home page */
   homePageV2: HomePage;
-  /** @deprecated use `me_v2` to get user data from the PostgresDB instead */
-  me: User;
   /** Returns the content of the JWT */
   meV2: UserV2;
   /**
@@ -429,11 +186,6 @@ export type QueryRoot = {
    * If there are no settings for the month, check the previous month. If it exists, insert the previous month settings into the month being queried
    */
   monthSettingsV2: MonthlySettingsResponse;
-  /**
-   * Search for a spending item by time and ID
-   * @deprecated Use `search_transaction_v2` to search the PostgresDB instead
-   */
-  searchSpendingItem?: Maybe<SpendingItem>;
   /** Search for a transaction from the PostgresDB */
   searchTransactionV2: SearchTransactionV2Response;
 };
@@ -453,12 +205,6 @@ export type QueryRootMonthSettingsV2Args = {
 
 
 /** Root of the query */
-export type QueryRootSearchSpendingItemArgs = {
-  inputs: SearchSpendingItemInput;
-};
-
-
-/** Root of the query */
 export type QueryRootSearchTransactionV2Args = {
   inputs: SearchTransactionV2Inputs;
 };
@@ -473,12 +219,6 @@ export type SaveSubscriptionV2Input = {
 export type SaveSubscriptionV2Response = {
   __typename?: 'SaveSubscriptionV2Response';
   success: Scalars['Boolean']['output'];
-};
-
-export type SearchSpendingItemInput = {
-  id: Scalars['String']['input'];
-  month: Month;
-  year: Scalars['Int']['input'];
 };
 
 export type SearchTransactionV2Inputs = {
@@ -524,51 +264,6 @@ export type Settings = {
   totalAllocation: Scalars['Decimal']['output'];
 };
 
-/** A single transaction */
-export type SpendingItem = {
-  __typename?: 'SpendingItem';
-  /** The dollar amount */
-  amount: Scalars['Float']['output'];
-  /** The date */
-  date: Scalars['String']['output'];
-  /** Date in RFC3339 format, in Eastern timezone */
-  dateRfc3339?: Maybe<Scalars['String']['output']>;
-  /** Description of the purchase */
-  description: Scalars['String']['output'];
-  /** A unique identifier */
-  id: Scalars['String']['output'];
-  /** Additional notes */
-  notes?: Maybe<Scalars['String']['output']>;
-};
-
-/** A single transaction */
-export type SpendingItemInput = {
-  /** The dollar amount */
-  amount: Scalars['Float']['input'];
-  /** The date */
-  date: Scalars['String']['input'];
-  /** Date in RFC3339 format, in Eastern timezone */
-  dateRfc3339?: InputMaybe<Scalars['String']['input']>;
-  /** Description of the purchase */
-  description: Scalars['String']['input'];
-  /** A unique identifier */
-  id: Scalars['String']['input'];
-  /** Additional notes */
-  notes?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type SubscriptionInput = {
-  auth: Scalars['String']['input'];
-  endpoint: Scalars['String']['input'];
-  expirationTime?: InputMaybe<Scalars['String']['input']>;
-  p256Dh: Scalars['String']['input'];
-};
-
-export type SuccessResponse = {
-  __typename?: 'SuccessResponse';
-  success: Scalars['Boolean']['output'];
-};
-
 /** Represent a single transaction */
 export type Transaction = {
   __typename?: 'Transaction';
@@ -588,33 +283,6 @@ export type TransactionInput = {
   notes: Scalars['String']['input'];
 };
 
-export type UpdateBudgetConfigInput = {
-  /** The new budget config */
-  budgetConfig: BudgetConfigInput;
-  /** Firefly related settings for the current user */
-  firefly: FireflySettingsInput;
-  /** The month of the budget to update */
-  month: Month;
-  /** The year of the budget to update */
-  year: Scalars['Int']['input'];
-};
-
-export type UpdateBudgetConfigResponse = GraphQlErrorObject | UpdateBudgetResponse;
-
-export type UpdateBudgetResponse = {
-  __typename?: 'UpdateBudgetResponse';
-  success: Scalars['Boolean']['output'];
-};
-
-export type UpdateMe = {
-  user: UserInput;
-};
-
-export type UpdateMeResponse = {
-  __typename?: 'UpdateMeResponse';
-  success: Scalars['Boolean']['output'];
-};
-
 export type UpdateMonthSettingsInput = {
   /** The month of the budget to update */
   month: Month;
@@ -626,24 +294,6 @@ export type UpdateMonthSettingsInput = {
 
 export type UpdateMonthSettingsResponse = {
   __typename?: 'UpdateMonthSettingsResponse';
-  success: Scalars['Boolean']['output'];
-};
-
-export type UpdateMonthlyBudgetInput = {
-  budget: MonthlyBudgetInput;
-  month: Month;
-  year: Scalars['Int']['input'];
-};
-
-export type UpdateSpendingItemByIdInput = {
-  month: Month;
-  /** The new spending item to update */
-  spendingItem: SpendingItemInput;
-  year: Scalars['Int']['input'];
-};
-
-export type UpdateSpendingItemByIdResponse = {
-  __typename?: 'UpdateSpendingItemByIdResponse';
   success: Scalars['Boolean']['output'];
 };
 
@@ -660,27 +310,6 @@ export type UpdateTransactionByIdV2Response = {
   success: Scalars['Boolean']['output'];
 };
 
-/** Represents a user */
-export type User = {
-  __typename?: 'User';
-  firefly?: Maybe<FireflySettings>;
-  lastUpdated?: Maybe<Scalars['String']['output']>;
-  /** Notification subscription */
-  notificationSubscription: NotificationSubscription;
-  /** Username of the user */
-  username: Scalars['String']['output'];
-};
-
-/** Represents a user */
-export type UserInput = {
-  firefly?: InputMaybe<FireflySettingsInput>;
-  lastUpdated?: InputMaybe<Scalars['String']['input']>;
-  /** Notification subscription */
-  notificationSubscription: NotificationSubscriptionInput;
-  /** Username of the user */
-  username: Scalars['String']['input'];
-};
-
 export type UserV2 = {
   __typename?: 'UserV2';
   username: Scalars['String']['output'];
@@ -693,26 +322,12 @@ export type SaveSubscriptionMutationVariables = Exact<{
 
 export type SaveSubscriptionMutation = { __typename?: 'MutationRoot', saveSubscriptionV2: { __typename?: 'SaveSubscriptionV2Response', success: boolean } };
 
-export type UpdateMonthlyBudgetConfigMutationVariables = Exact<{
-  inputs: UpdateBudgetConfigInput;
-}>;
-
-
-export type UpdateMonthlyBudgetConfigMutation = { __typename?: 'MutationRoot', updateMonthlyBudgetConfig: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename?: 'UpdateBudgetResponse', success: boolean } };
-
 export type UpdateSettingsMutationVariables = Exact<{
   inputs: UpdateMonthSettingsInput;
 }>;
 
 
 export type UpdateSettingsMutation = { __typename?: 'MutationRoot', updateMonthSettingsV2: { __typename?: 'UpdateMonthSettingsResponse', success: boolean } };
-
-export type UpdateMonthlyBudgetMutationVariables = Exact<{
-  inputs: UpdateMonthlyBudgetInput;
-}>;
-
-
-export type UpdateMonthlyBudgetMutation = { __typename?: 'MutationRoot', updateMonthlyBudget: { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string } | { __typename: 'MonthlyBudget', month: Month, totalSpending: number, overBudgetAmount: number, carriedOverFrom?: Month | null, spending: Array<{ __typename?: 'SpendingItem', id: string, amount: number, date: string, description: string, notes?: string | null }>, budget: { __typename?: 'BudgetConfig', totalAllocation: number, maggiePercentageAllocation: number, maggieContributionAmount: number, shawnPercentageAllocation: number, shawnContributionAmount: number } } };
 
 export type DeleteTransactionByIdMutationVariables = Exact<{
   inputs: DeleteTransactionByIdV2Input;
@@ -721,13 +336,6 @@ export type DeleteTransactionByIdMutationVariables = Exact<{
 
 export type DeleteTransactionByIdMutation = { __typename?: 'MutationRoot', deleteTransactionByIdV2: { __typename?: 'DeleteTransactionByIdV2Response', success: boolean } };
 
-export type AddSpendingItemByMonthMutationVariables = Exact<{
-  inputs: AddSpendingItemByMonthInput;
-}>;
-
-
-export type AddSpendingItemByMonthMutation = { __typename?: 'MutationRoot', addSpendingItemByMonth: { __typename: 'AddSpendingItemByMonthErrorObject', code: AddSpendingItemByMonthError, message: string } | { __typename: 'SuccessResponse', success: boolean } };
-
 export type AddTransactionV2MutationVariables = Exact<{
   inputs: AddTransactionV2Input;
 }>;
@@ -735,23 +343,12 @@ export type AddTransactionV2MutationVariables = Exact<{
 
 export type AddTransactionV2Mutation = { __typename?: 'MutationRoot', addTransactionV2: { __typename?: 'AddTransactionResponseV2', success: boolean } };
 
-export type UpdateSpendingItemByIdMutationVariables = Exact<{
-  inputs: UpdateSpendingItemByIdInput;
-}>;
-
-
-export type UpdateSpendingItemByIdMutation = { __typename?: 'MutationRoot', updateSpendingItemById: { __typename?: 'UpdateSpendingItemByIdResponse', success: boolean } };
-
 export type UpdateTransactionByIdMutationVariables = Exact<{
   inputs: UpdateTransactionByIdV2Input;
 }>;
 
 
 export type UpdateTransactionByIdMutation = { __typename?: 'MutationRoot', updateTransactionByIdV2: { __typename?: 'UpdateTransactionByIdV2Response', success: boolean } };
-
-export type GraphQlErrorFieldsFragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
-
-export type GraphQlErrorFieldsV2Fragment = { __typename: 'GraphQLErrorObject', code: GraphQlErrorCode, message: string };
 
 export type SettingsPageDataV2QueryVariables = Exact<{
   year: Scalars['Int']['input'];
@@ -793,38 +390,11 @@ export type SearchTransactionByIdQueryVariables = Exact<{
 
 export type SearchTransactionByIdQuery = { __typename?: 'QueryRoot', searchTransactionV2: { __typename?: 'SearchTransactionV2Response', transaction?: { __typename?: 'Transaction', id: any, amount: Decimal, date: Date, description: string, notes: string } | null } };
 
-export const GraphQlErrorFieldsFragmentDoc = gql`
-    fragment GraphQLErrorFields on GraphQLErrorObject {
-  __typename
-  code
-  message
-}
-    `;
-export const GraphQlErrorFieldsV2FragmentDoc = gql`
-    fragment GraphQLErrorFieldsV2 on GraphQLErrorObject {
-  __typename
-  code
-  message
-}
-    `;
+
 export const SaveSubscriptionDocument = gql`
     mutation saveSubscription($subscription: SaveSubscriptionV2Input!) {
   saveSubscriptionV2(input: $subscription) {
     success
-  }
-}
-    `;
-export const UpdateMonthlyBudgetConfigDocument = gql`
-    mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
-  updateMonthlyBudgetConfig(inputs: $inputs) {
-    ... on UpdateBudgetResponse {
-      success
-    }
-    ... on GraphQLErrorObject {
-      __typename
-      code
-      message
-    }
   }
 }
     `;
@@ -835,38 +405,6 @@ export const UpdateSettingsDocument = gql`
   }
 }
     `;
-export const UpdateMonthlyBudgetDocument = gql`
-    mutation UpdateMonthlyBudget($inputs: UpdateMonthlyBudgetInput!) {
-  updateMonthlyBudget(inputs: $inputs) {
-    ... on MonthlyBudget {
-      __typename
-      month
-      totalSpending
-      overBudgetAmount
-      spending {
-        id
-        amount
-        date
-        description
-        notes
-      }
-      carriedOverFrom
-      budget {
-        totalAllocation
-        maggiePercentageAllocation
-        maggieContributionAmount
-        shawnPercentageAllocation
-        shawnContributionAmount
-      }
-    }
-    ... on GraphQLErrorObject {
-      __typename
-      code
-      message
-    }
-  }
-}
-    `;
 export const DeleteTransactionByIdDocument = gql`
     mutation DeleteTransactionByID($inputs: DeleteTransactionByIdV2Input!) {
   deleteTransactionByIdV2(inputs: $inputs) {
@@ -874,31 +412,9 @@ export const DeleteTransactionByIdDocument = gql`
   }
 }
     `;
-export const AddSpendingItemByMonthDocument = gql`
-    mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
-  addSpendingItemByMonth(inputs: $inputs) {
-    ... on SuccessResponse {
-      __typename
-      success
-    }
-    ... on AddSpendingItemByMonthErrorObject {
-      __typename
-      code
-      message
-    }
-  }
-}
-    `;
 export const AddTransactionV2Document = gql`
     mutation AddTransactionV2($inputs: AddTransactionV2Input!) {
   addTransactionV2(inputs: $inputs) {
-    success
-  }
-}
-    `;
-export const UpdateSpendingItemByIdDocument = gql`
-    mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
-  updateSpendingItemById(inputs: $inputs) {
     success
   }
 }
@@ -1006,26 +522,14 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     saveSubscription(variables: SaveSubscriptionMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SaveSubscriptionMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<SaveSubscriptionMutation>({ document: SaveSubscriptionDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'saveSubscription', 'mutation', variables);
     },
-    UpdateMonthlyBudgetConfig(variables: UpdateMonthlyBudgetConfigMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetConfigMutation> {
-      return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetConfigMutation>({ document: UpdateMonthlyBudgetConfigDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudgetConfig', 'mutation', variables);
-    },
     UpdateSettings(variables: UpdateSettingsMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateSettingsMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateSettingsMutation>({ document: UpdateSettingsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateSettings', 'mutation', variables);
-    },
-    UpdateMonthlyBudget(variables: UpdateMonthlyBudgetMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateMonthlyBudgetMutation> {
-      return withWrapper((wrappedRequestHeaders) => client.request<UpdateMonthlyBudgetMutation>({ document: UpdateMonthlyBudgetDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateMonthlyBudget', 'mutation', variables);
     },
     DeleteTransactionByID(variables: DeleteTransactionByIdMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<DeleteTransactionByIdMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<DeleteTransactionByIdMutation>({ document: DeleteTransactionByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DeleteTransactionByID', 'mutation', variables);
     },
-    AddSpendingItemByMonth(variables: AddSpendingItemByMonthMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddSpendingItemByMonthMutation> {
-      return withWrapper((wrappedRequestHeaders) => client.request<AddSpendingItemByMonthMutation>({ document: AddSpendingItemByMonthDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddSpendingItemByMonth', 'mutation', variables);
-    },
     AddTransactionV2(variables: AddTransactionV2MutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<AddTransactionV2Mutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<AddTransactionV2Mutation>({ document: AddTransactionV2Document, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AddTransactionV2', 'mutation', variables);
-    },
-    UpdateSpendingItemByID(variables: UpdateSpendingItemByIdMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateSpendingItemByIdMutation> {
-      return withWrapper((wrappedRequestHeaders) => client.request<UpdateSpendingItemByIdMutation>({ document: UpdateSpendingItemByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateSpendingItemByID', 'mutation', variables);
     },
     UpdateTransactionByID(variables: UpdateTransactionByIdMutationVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<UpdateTransactionByIdMutation> {
       return withWrapper((wrappedRequestHeaders) => client.request<UpdateTransactionByIdMutation>({ document: UpdateTransactionByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UpdateTransactionByID', 'mutation', variables);

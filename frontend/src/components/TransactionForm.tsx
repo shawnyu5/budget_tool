@@ -1,12 +1,5 @@
 import { action } from "@solidjs/router";
-import {
-  createEffect,
-  createSignal,
-  ErrorBoundary,
-  Resource,
-  Show,
-  Signal,
-} from "solid-js";
+import { createEffect, createSignal, Resource, Show, Signal } from "solid-js";
 import ErrorComponent from "./ErrorComponent";
 import { formatRfc3339DateObj } from "~/utils";
 import { Transaction } from "~/generated/graphql";

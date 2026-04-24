@@ -4,55 +4,10 @@ mutation saveSubscription($subscription: SaveSubscriptionV2Input!) {
   }
 }
 
-mutation UpdateMonthlyBudgetConfig($inputs: UpdateBudgetConfigInput!) {
-  updateMonthlyBudgetConfig(inputs: $inputs) {
-    ... on UpdateBudgetResponse {
-      success
-    }
-    ... on GraphQLErrorObject {
-      __typename
-      code
-      message
-    }
-  }
-}
-
 # V2 of UpdateMonthlyBudgetConfig, updates the postgres DB
 mutation UpdateSettings($inputs: UpdateMonthSettingsInput!) {
   updateMonthSettingsV2(inputs: $inputs) {
     success
-  }
-}
-
-mutation UpdateMonthlyBudget($inputs: UpdateMonthlyBudgetInput!) {
-  updateMonthlyBudget(inputs: $inputs) {
-    ... on MonthlyBudget {
-      __typename
-      month
-      totalSpending
-      overBudgetAmount
-      spending {
-        id
-        amount
-        date
-        description
-        notes
-      }
-      carriedOverFrom
-      budget {
-        totalAllocation
-        maggiePercentageAllocation
-        maggieContributionAmount
-        shawnPercentageAllocation
-        shawnContributionAmount
-      }
-    }
-
-    ... on GraphQLErrorObject {
-      __typename
-      code
-      message
-    }
   }
 }
 
@@ -63,29 +18,9 @@ mutation DeleteTransactionByID($inputs: DeleteTransactionByIdV2Input!) {
   }
 }
 
-mutation AddSpendingItemByMonth($inputs: AddSpendingItemByMonthInput!) {
-  addSpendingItemByMonth(inputs: $inputs) {
-    ... on SuccessResponse {
-      __typename
-      success
-    }
-    ... on AddSpendingItemByMonthErrorObject {
-      __typename
-      code
-      message
-    }
-  }
-}
-
 # Add a transaction to the Postgres DB
 mutation AddTransactionV2($inputs: AddTransactionV2Input!) {
   addTransactionV2(inputs: $inputs) {
-    success
-  }
-}
-
-mutation UpdateSpendingItemByID($inputs: UpdateSpendingItemByIdInput!) {
-  updateSpendingItemById(inputs: $inputs) {
     success
   }
 }

@@ -6,12 +6,7 @@ import { ClientError, GraphQLClient } from "graphql-request";
 import { Navigator } from "@solidjs/router";
 import { loadLocalConfig } from "./config";
 import { getLocalAuthToken } from "./utils";
-import {
-  getSdk,
-  GraphQlErrorCode,
-  GraphQlErrorObject,
-} from "./generated/graphql";
-import { match } from "ts-pattern";
+import { getSdk } from "./generated/graphql";
 
 /**
  * Construct a new GraphQL SDK that is ready to use
@@ -19,13 +14,6 @@ import { match } from "ts-pattern";
  */
 export function NewGraphQLSDK() {
   const url = `${loadLocalConfig().backendUrl}/graphql`;
-  // let url = "";
-  // if (import.meta.env.DEV) {
-  //   url = `${loadLocalConfig().backendUrl}/graphql`;
-  // } else {
-  //   url = `${window.location.origin}/${loadLocalConfig().backendUrl}/graphql`;
-  // }
-
   console.log(`Creating graphql client with ${url}`);
   const client = new GraphQLClient(url, {
     headers: {
@@ -53,36 +41,6 @@ export function handleGraphQLHttpError(
     return "Something went wrong...";
   }
   return null;
-}
-
-/**
- * Handles errors returned by graphql resolvers
- * @param err - the graphql error returned
- */
-export function handleGraphQLErrorObject(
-  err: GraphQlErrorObject,
-): string | null {
-  return match(err.code)
-    .with(GraphQlErrorCode.FailedToFetchBudget, () => {
-      throw new Error("Failed to fetch budget");
-    })
-    .with(GraphQlErrorCode.ServerError, () => {
-      throw new Error("Internal server error");
-    })
-    .with(GraphQlErrorCode.InvalidFireflyApiKey, () => {
-      return "Invalid firefly API key...";
-    })
-    .with(GraphQlErrorCode.FireflyUpdateFailed, () => {
-      return `Your transaction has been created, but transaction in firefly failed to create: ${err.message}`;
-    })
-    .exhaustive();
-  // if (err.code == GraphQlErrorCode.FailedToFetchBudget) {
-  //   return "Failed to fetch budget...";
-  // } else if (err.code == GraphQlErrorCode.ServerError) {
-  //   return "Something went wrong on the server...";
-  // } else if (err.code == GraphQlErrorCode.InvalidFireflyApiKey) {
-  //   return err.message;
-  // }
 }
 
 /**

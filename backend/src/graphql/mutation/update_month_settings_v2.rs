@@ -26,7 +26,7 @@ pub struct UpdateMonthSettingsResponse {
     pub success: bool,
 }
 
-pub async fn update_month_settings(
+pub async fn update_month_settings_v2(
     ctx: &Context<'_>,
     mut inputs: UpdateMonthSettingsInput,
 ) -> Result<UpdateMonthSettingsResponse> {

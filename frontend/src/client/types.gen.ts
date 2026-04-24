@@ -4,61 +4,11 @@ export type ClientOptions = {
     baseURL: `${string}://${string}` | (string & {});
 };
 
-export type BudgetConfig = {
-    /**
-     * Maggie contribution amount. The frontend is responsible for computing this value
-     */
-    maggieContributionAmount: number;
-    /**
-     * Maggie percentage allocation
-     */
-    maggiePercentageAllocation: number;
-    /**
-     * Shawn contribution amount. The frontend is responsible for computing this value
-     */
-    shawnContributionAmount: number;
-    /**
-     * Shawn percentage allocation
-     */
-    shawnPercentageAllocation: number;
-    /**
-     * Total allocated budget
-     */
-    totalAllocation: number;
-};
-
 export type HomeResponse = {
     version: string;
 };
 
 export type Month = 'January' | 'February' | 'March' | 'April' | 'May' | 'June' | 'July' | 'August' | 'September' | 'October' | 'November' | 'December';
-
-/**
- * Budget details for single month
- */
-export type MonthlyBudget = {
-    /**
-     * Budget details
-     */
-    budget: BudgetConfig;
-    carriedOverFrom?: null | Month;
-    /**
-     * The month
-     */
-    month: Month;
-    /**
-     * Amount over budget for the month. 0 means not over budget.
-     */
-    overBudgetAmount: number;
-    /**
-     * List of spent items
-     */
-    spending: Array<SpendingItem>;
-    /**
-     * Total spending for the month. Including any over budget amount
-     */
-    totalSpending: number;
-};
 
 export type NotificationBody = {
     body: string;
@@ -88,36 +38,6 @@ export type NotificationSubscription = {
     endpoint: string;
     expirationTime?: string | null;
     keys: NotificationKeys;
-};
-
-/**
- * A single transaction
- */
-export type SpendingItem = {
-    /**
-     * The dollar amount
-     */
-    amount: number;
-    /**
-     * The date
-     */
-    date: string;
-    /**
-     * Date in RFC3339 format, in Eastern timezone
-     */
-    dateRfc3339?: string | null;
-    /**
-     * Description of the purchase
-     */
-    description: string;
-    /**
-     * A unique identifier
-     */
-    id: string;
-    /**
-     * Additional notes
-     */
-    notes?: string | null;
 };
 
 export type AppVersionData = {
@@ -195,92 +115,6 @@ export type ValidateTokenV2Error = ValidateTokenV2Errors[keyof ValidateTokenV2Er
 export type ValidateTokenV2Responses = {
     /**
      * The JWT token is still valid
-     */
-    200: unknown;
-};
-
-export type GetMonthBudgetHandlerData = {
-    body?: never;
-    path: {
-        /**
-         * The year which to get the budget of
-         */
-        year: string;
-        /**
-         * The month's budget to get. The first letter of the month's name is expected to the captalized. ie `January`
-         */
-        month: Month;
-    };
-    query?: never;
-    url: '/budget/{year}/{month}';
-};
-
-export type GetMonthBudgetHandlerErrors = {
-    /**
-     * Authenication token expired. Please reauthenicate
-     */
-    401: string;
-    /**
-     * Authenication failed
-     */
-    403: string;
-    /**
-     * All months, the requested month and before does not contain any monthly budget
-     */
-    404: string;
-    /**
-     * Failed to get the requested month's budget
-     */
-    500: string;
-};
-
-export type GetMonthBudgetHandlerError = GetMonthBudgetHandlerErrors[keyof GetMonthBudgetHandlerErrors];
-
-export type GetMonthBudgetHandlerResponses = {
-    /**
-     * The requested month's budget. If the request month does not have any budget records, this route will iterate back till either no more months to check, a budget is encountered. The returned budget will have no spending, all the fields are correct, and matches the request
-     */
-    200: MonthlyBudget;
-};
-
-export type GetMonthBudgetHandlerResponse = GetMonthBudgetHandlerResponses[keyof GetMonthBudgetHandlerResponses];
-
-export type UpdateBudgetHandlerData = {
-    body: MonthlyBudget;
-    path: {
-        /**
-         * The year which to update the budget of
-         */
-        year: string;
-        /**
-         * The month's budget to update. The first letter of the month's name is expected to the captalized. ie `January`
-         */
-        month: Month;
-    };
-    query?: never;
-    url: '/budget/{year}/{month}';
-};
-
-export type UpdateBudgetHandlerErrors = {
-    /**
-     * Authenication token expired. Please reauthenicate
-     */
-    401: string;
-    /**
-     * Authenication failed
-     */
-    403: string;
-    /**
-     * Failed to update the month's budget
-     */
-    500: string;
-};
-
-export type UpdateBudgetHandlerError = UpdateBudgetHandlerErrors[keyof UpdateBudgetHandlerErrors];
-
-export type UpdateBudgetHandlerResponses = {
-    /**
-     * Successfully updated the month's budget
      */
     200: unknown;
 };
@@ -399,23 +233,6 @@ export type BasicAuthHandlerV2Responses = {
 
 export type BasicAuthHandlerV2Response = BasicAuthHandlerV2Responses[keyof BasicAuthHandlerV2Responses];
 
-export type SaveNotificationSubscriptionHandlerData = {
-    /**
-     * The notfication subscription generated by the browser
-     */
-    body: NotificationSubscription;
-    path?: never;
-    query?: never;
-    url: '/notification/save-subscription';
-};
-
-export type SaveNotificationSubscriptionHandlerResponses = {
-    /**
-     * Notification sent successfully
-     */
-    200: unknown;
-};
-
 export type SendNotificationHandlerData = {
     body: NotificationSendBody;
     path?: never;
@@ -426,96 +243,6 @@ export type SendNotificationHandlerData = {
 export type SendNotificationHandlerResponses = {
     /**
      * Notification sent successfully
-     */
-    200: unknown;
-};
-
-export type GetSpendingItemData = {
-    body?: never;
-    path: {
-        /**
-         * The year the spending item is in
-         */
-        year: string;
-        /**
-         * The month the spending item is in
-         */
-        month: Month;
-        /**
-         * The ID of the spending item
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/spending-item/{year}/{month}/{id}';
-};
-
-export type GetSpendingItemErrors = {
-    /**
-     * Authenication token expired. Please reauthenicate
-     */
-    401: string;
-    /**
-     * Authenication failed
-     */
-    403: string;
-    /**
-     * Failed to get the requested spending item
-     */
-    500: string;
-};
-
-export type GetSpendingItemError = GetSpendingItemErrors[keyof GetSpendingItemErrors];
-
-export type GetSpendingItemResponses = {
-    /**
-     * The request spending item
-     */
-    200: MonthlyBudget;
-};
-
-export type GetSpendingItemResponse = GetSpendingItemResponses[keyof GetSpendingItemResponses];
-
-export type UpdateSpendingItemData = {
-    body: MonthlyBudget;
-    path: {
-        /**
-         * The year the spending item is in
-         */
-        year: string;
-        /**
-         * The month the spending item is in
-         */
-        month: Month;
-        /**
-         * The ID of the spending item to update
-         */
-        id: string;
-    };
-    query?: never;
-    url: '/spending-item/{year}/{month}/{id}';
-};
-
-export type UpdateSpendingItemErrors = {
-    /**
-     * Authenication token expired. Please reauthenicate
-     */
-    401: string;
-    /**
-     * Authenication failed
-     */
-    403: string;
-    /**
-     * Failed to get update spending item
-     */
-    500: string;
-};
-
-export type UpdateSpendingItemError = UpdateSpendingItemErrors[keyof UpdateSpendingItemErrors];
-
-export type UpdateSpendingItemResponses = {
-    /**
-     * The request spending item was Successfully updated
      */
     200: unknown;
 };

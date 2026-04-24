@@ -170,7 +170,7 @@ impl PostgresDB {
         ",
             id,
         )
-        .execute(&self.pool)
+        .execute(executor)
         .await
         .map_err(|e| {
             error!("{e:#?}");

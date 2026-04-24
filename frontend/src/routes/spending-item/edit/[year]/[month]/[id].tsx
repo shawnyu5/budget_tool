@@ -1,18 +1,8 @@
 import { useNavigate, useParams } from "@solidjs/router";
-import axios, { isAxiosError } from "axios";
-import {
-  Accessor,
-  createResource,
-  createSignal,
-  onMount,
-  Setter,
-  Show,
-  Signal,
-} from "solid-js";
+import { createResource, createSignal, Show, Signal } from "solid-js";
 import ErrorComponent from "~/components/ErrorComponent";
 import { TransactionForm } from "~/components/TransactionForm";
-import { loadLocalConfig } from "~/config";
-import { Month, SpendingItem, Transaction } from "~/generated/graphql";
+import { Transaction } from "~/generated/graphql";
 import { handleGraphQLClientError, NewGraphQLSDK } from "~/graphql";
 import log from "~/logger";
 

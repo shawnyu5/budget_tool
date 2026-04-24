@@ -1,15 +1,3 @@
-fragment GraphQLErrorFields on GraphQLErrorObject {
-  __typename
-  code
-  message
-}
-
-fragment GraphQLErrorFieldsV2 on GraphQLErrorObject {
-  __typename
-  code
-  message
-}
-
 # Get settings page data from the PostgresDB
 query SettingsPageDataV2($year: Int!, $month: Month!) {
   monthSettingsV2(year: $year, month: $month) {
@@ -94,13 +82,3 @@ query SearchTransactionByID($inputs: SearchTransactionV2Inputs!) {
     }
   }
 }
-
-# # Data for the transaction form
-# query TransactionFOrm($year: Int!, $month: Month!) {
-#   monthSettingsV2(year: $year, month: $month) {
-#     settings {
-#       shawnPercentageAllocation
-#       maggiePercentageAllocation
-#     }
-#   }
-# }

@@ -1,10 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{
-    config::Config,
-    db::{MongoDB, postgres::PostgresDB, users::USER_TABLE_NAME},
-    routes::notification::NotificationBody,
-};
+use crate::{config::Config, db::postgres::PostgresDB, routes::notification::NotificationBody};
 use anyhow::{Context, Result};
 use chrono_tz::America::Toronto;
 use tokio_cron_scheduler::{Job, JobScheduler, job::job_data::Uuid};
