@@ -34,7 +34,6 @@ use crate::routes::auth::decode_jwt;
 use crate::routes::auth::{
     __path_basic_auth_handler, __path_basic_auth_handler_v2, basic_auth_handler,
 };
-use crate::routes::notification::{__path_send_notification_handler, send_notification_handler};
 pub mod auth;
 pub mod notification;
 
@@ -67,7 +66,6 @@ pub async fn app() -> Router {
         .routes(routes!(graphql_handler))
         .routes(routes!(basic_auth_handler))
         .routes(routes!(basic_auth_handler_v2))
-        .routes(routes!(send_notification_handler))
         .routes(routes!(app_version))
         .split_for_parts();
 

@@ -247,27 +247,6 @@
           }
         }
       }
-    },
-    "/notification/send": {
-      "post": {
-        "summary": "Send a notification",
-        "operationId": "send_notification_handler",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NotificationSendBody"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Notification sent successfully"
-          }
-        }
-      }
     }
   },
   "components": {
@@ -299,75 +278,6 @@
           "November",
           "December"
         ]
-      },
-      "NotificationBody": {
-        "type": "object",
-        "required": [
-          "title",
-          "body"
-        ],
-        "properties": {
-          "body": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          }
-        }
-      },
-      "NotificationKeys": {
-        "type": "object",
-        "required": [
-          "p256dh",
-          "auth"
-        ],
-        "properties": {
-          "auth": {
-            "type": "string"
-          },
-          "p256dh": {
-            "type": "string"
-          }
-        }
-      },
-      "NotificationSendBody": {
-        "type": "object",
-        "required": [
-          "subscription",
-          "body"
-        ],
-        "properties": {
-          "body": {
-            "$ref": "#/components/schemas/NotificationBody",
-            "description": "The body of the notification"
-          },
-          "subscription": {
-            "$ref": "#/components/schemas/NotificationSubscription",
-            "description": "Data sent by the browser to do the handshake for the notification"
-          }
-        }
-      },
-      "NotificationSubscription": {
-        "type": "object",
-        "description": "Stuff the browser sends to do the notification handshake",
-        "required": [
-          "endpoint",
-          "keys"
-        ],
-        "properties": {
-          "endpoint": {
-            "type": "string"
-          },
-          "expirationTime": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "keys": {
-            "$ref": "#/components/schemas/NotificationKeys"
-          }
-        }
       }
     }
   }
