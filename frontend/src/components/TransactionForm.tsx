@@ -119,16 +119,15 @@ export function TransactionForm(props: {
           </div>
         }
       >
-        {/* Amount Field */}
-        <Form.Group controlId="amount" class="mb-3">
-          <Form.Label>Amount ($)</Form.Label>
+        {/* Description Field */}
+        <Form.Group controlId="description" class="mb-3">
+          <Form.Label>Description</Form.Label>
           <Form.Control
-            name="amount"
-            type="number"
-            step="0.01"
+            name="description"
+            type="text"
             required
-            value={amount()}
-            onInput={(e) => setAmount(e.currentTarget.value)}
+            value={description()}
+            onInput={(e) => setDescription(e.currentTarget.value)}
           />
         </Form.Group>
 
@@ -149,15 +148,16 @@ export function TransactionForm(props: {
           </Row>
         </Form.Group>
 
-        {/* Description Field */}
-        <Form.Group controlId="description" class="mb-3">
-          <Form.Label>Description</Form.Label>
+        {/* Amount Field */}
+        <Form.Group controlId="amount" class="mb-3">
+          <Form.Label>Amount ($)</Form.Label>
           <Form.Control
-            name="description"
-            type="text"
+            name="amount"
+            type="number"
+            step="0.01"
             required
-            value={description()}
-            onInput={(e) => setDescription(e.currentTarget.value)}
+            value={amount()}
+            onInput={(e) => setAmount(e.currentTarget.value)}
           />
         </Form.Group>
 
