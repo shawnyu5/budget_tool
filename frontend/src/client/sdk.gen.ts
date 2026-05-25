@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AppVersionData, AppVersionErrors, AppVersionResponses, BasicAuthHandlerData, BasicAuthHandlerErrors, BasicAuthHandlerResponses, BasicAuthHandlerV2Data, BasicAuthHandlerV2Errors, BasicAuthHandlerV2Responses, ExportCsvHandlerData, ExportCsvHandlerErrors, ExportCsvHandlerResponses, GraphqlHandlerData, GraphqlHandlerResponses, SendNotificationHandlerData, SendNotificationHandlerResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponses, ValidateTokenV2Data, ValidateTokenV2Errors, ValidateTokenV2Responses } from './types.gen';
+import type { AppVersionData, AppVersionErrors, AppVersionResponses, BasicAuthHandlerData, BasicAuthHandlerErrors, BasicAuthHandlerResponses, BasicAuthHandlerV2Data, BasicAuthHandlerV2Errors, BasicAuthHandlerV2Responses, ExportCsvHandlerData, ExportCsvHandlerErrors, ExportCsvHandlerResponses, GraphqlHandlerData, GraphqlHandlerResponses, ValidateTokenData, ValidateTokenErrors, ValidateTokenResponses, ValidateTokenV2Data, ValidateTokenV2Errors, ValidateTokenV2Responses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -85,19 +85,5 @@ export const basicAuthHandlerV2 = <ThrowOnError extends boolean = false>(options
         responseType: 'text',
         url: '/login/basic/v2',
         ...options
-    });
-};
-
-/**
- * Send a notification
- */
-export const sendNotificationHandler = <ThrowOnError extends boolean = false>(options: Options<SendNotificationHandlerData, ThrowOnError>) => {
-    return (options.client ?? client).post<SendNotificationHandlerResponses, unknown, ThrowOnError>({
-        url: '/notification/send',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
     });
 };

@@ -1,6 +1,7 @@
 services:
   budget_tool_backend:
     container_name: budget_tool_backend
+    platform: linux/amd64
     build: ./backend
     image: ghcr.io/shawnyu5/budget_tool_backend:develop
     ports:

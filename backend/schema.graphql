@@ -82,6 +82,17 @@ type FrontendConfig {
 	vapidPublicKey: String!
 }
 
+input GetTransactionsInput {
+	"""
+	The number of results to return
+	"""
+	limit: Int!
+}
+
+type GetTransactionsResponse {
+	transactions: [Transaction!]!
+}
+
 """
 Data on the home screen
 """
@@ -184,6 +195,10 @@ type QueryRoot {
 	Search for a transaction from the PostgresDB
 	"""
 	searchTransactionV2(inputs: SearchTransactionV2Inputs!): SearchTransactionV2Response!
+	"""
+	Get a list of most recent transactions
+	"""
+	getTransactions(inputs: GetTransactionsInput!): GetTransactionsResponse!
 }
 
 input SaveSubscriptionV2Input {

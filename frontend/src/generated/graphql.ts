@@ -92,6 +92,16 @@ export type FrontendConfig = {
   vapidPublicKey: Scalars['String']['output'];
 };
 
+export type GetTransactionsInput = {
+  /** The number of results to return */
+  limit: Scalars['Int']['input'];
+};
+
+export type GetTransactionsResponse = {
+  __typename?: 'GetTransactionsResponse';
+  transactions: Array<Transaction>;
+};
+
 /** Data on the home screen */
 export type HomePage = {
   __typename?: 'HomePage';
@@ -178,6 +188,8 @@ export type QueryRoot = {
   config: FrontendConfig;
   /** Query information from the Firefly server */
   fireflyV2?: Maybe<FireflyV2SuccessResponse>;
+  /** Get a list of most recent transactions */
+  getTransactions: GetTransactionsResponse;
   /** Get data to display on the home page */
   homePageV2: HomePage;
   /** Returns the content of the JWT */
@@ -189,6 +201,12 @@ export type QueryRoot = {
   monthSettingsV2: MonthlySettingsResponse;
   /** Search for a transaction from the PostgresDB */
   searchTransactionV2: SearchTransactionV2Response;
+};
+
+
+/** Root of the query */
+export type QueryRootGetTransactionsArgs = {
+  inputs: GetTransactionsInput;
 };
 
 
@@ -391,6 +409,13 @@ export type SearchTransactionByIdQueryVariables = Exact<{
 
 export type SearchTransactionByIdQuery = { __typename?: 'QueryRoot', searchTransactionV2: { __typename?: 'SearchTransactionV2Response', transaction?: { __typename?: 'Transaction', id: any, amount: Decimal, date: Date, description: string, notes: string } | null } };
 
+export type GetTransactionDescriptionsQueryVariables = Exact<{
+  inputs: GetTransactionsInput;
+}>;
+
+
+export type GetTransactionDescriptionsQuery = { __typename?: 'QueryRoot', getTransactions: { __typename?: 'GetTransactionsResponse', transactions: Array<{ __typename?: 'Transaction', description: string }> } };
+
 
 export const SaveSubscriptionDocument = gql`
     mutation saveSubscription($subscription: SaveSubscriptionV2Input!) {
@@ -512,6 +537,15 @@ export const SearchTransactionByIdDocument = gql`
   }
 }
     `;
+export const GetTransactionDescriptionsDocument = gql`
+    query GetTransactionDescriptions($inputs: GetTransactionsInput!) {
+  getTransactions(inputs: $inputs) {
+    transactions {
+      description
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -552,6 +586,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     SearchTransactionByID(variables: SearchTransactionByIdQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<SearchTransactionByIdQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<SearchTransactionByIdQuery>({ document: SearchTransactionByIdDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'SearchTransactionByID', 'query', variables);
+    },
+    GetTransactionDescriptions(variables: GetTransactionDescriptionsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<GetTransactionDescriptionsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<GetTransactionDescriptionsQuery>({ document: GetTransactionDescriptionsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'GetTransactionDescriptions', 'query', variables);
     }
   };
 }

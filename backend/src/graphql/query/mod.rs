@@ -1,5 +1,8 @@
 use crate::{
-    graphql::query::firefly_v2::{FireflyV2SuccessResponse, firefly_v2},
+    graphql::query::{
+        firefly_v2::{FireflyV2SuccessResponse, firefly_v2},
+        get_all_transactions::{GetTransactionsInput, GetTransactionsResponse, get_transactions},
+    },
     models::User as UserModel,
 };
 use anyhow::Result;
@@ -26,6 +29,7 @@ use crate::{
 
 mod config;
 mod firefly_v2;
+mod get_all_transactions;
 mod home_page;
 mod me_v2;
 mod monthly_settings_v2;
@@ -92,20 +96,14 @@ impl QueryRoot {
         search_transaction_v2(ctx, inputs).await
     }
 
-    // /// Send notifications to certain users
-    // #[instrument(skip(self, ctx))]
-    // #[graphql(guard = "AuthGuard")]
-    // async fn send_notification(
-    //     &self,
-    //     ctx: &Context<'_>,
-    //     inputs: SendNotificationInput,
-    // ) -> Result<SendNotificationResponse> {
-    //     send_notification(ctx, inputs).await
-    // }
-    //
-    // /// Get a list of the core users of the system
-    // #[graphql(guard = "AuthGuard")]
-    // async fn get_core_users(&self, ctx: &Context<'_>) -> Result<CoreUsersResponse> {
-    //     core_users(ctx).await
-    // }
+    /// Get a list of most recent transactions
+    #[instrument(skip(self, ctx))]
+    #[graphql(guard = "AuthGuard")]
+    async fn get_transactions(
+        &self,
+        ctx: &Context<'_>,
+        inputs: GetTransactionsInput,
+    ) -> Result<GetTransactionsResponse> {
+        get_transactions(ctx, inputs).await
+    }
 }

@@ -56,7 +56,7 @@ impl PostgresDB {
     }
 
     /// Get transactions from in a specific time frame. Sort the transactions by date
-    pub async fn get_transactions(
+    pub async fn get_transactions_by_time_frame(
         &self,
         executor: &mut PgConnection,
         year: Year,
@@ -117,6 +117,41 @@ impl PostgresDB {
         })?;
 
         return Ok(transaction);
+    }
+
+    /// Get all transactions, sorted by the date, newest first
+    ///
+    /// * `limit`: # of rows to return
+    pub async fn get_transactions(
+        &self,
+        executor: &mut PgConnection,
+        limit: i64,
+    ) -> Result<Vec<TransactionRow>> {
+        let result = query_as!(
+            TransactionRow,
+            r#"
+            SELECT
+                t.id,
+                t.month_id,
+                t.amount,
+                t.date,
+                t.description,
+                t.notes,
+                t.split_mode as "split_mode: SplitMode"
+            FROM transactions t
+            ORDER BY t.date DESC
+            LIMIT $1
+            "#,
+            limit
+        )
+        .fetch_all(executor)
+        .await
+        .map_err(|e| {
+            error!("{e:#?}");
+            e
+        })?;
+
+        Ok(result)
     }
 
     /// Update a transaction by ID

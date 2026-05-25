@@ -223,7 +223,7 @@ async fn export_csv_handler(Path((year, month)): Path<(Year, Month)>) -> Result<
     let db = PostgresDB::new().await;
     let mut tx = db.transaction().await?;
     let transactions = db
-        .get_transactions(&mut tx, year, month)
+        .get_transactions_by_time_frame(&mut tx, year, month)
         .await
         .context("Failed to get transactions")?;
 

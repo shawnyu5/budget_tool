@@ -410,7 +410,7 @@ mutation ($inputs: AddTransactionV2Input!) {
 
         let mut tx = db.transaction().await?;
         let transaction = db
-            .get_transactions(&mut tx, year, month)
+            .get_transactions_by_time_frame(&mut tx, year, month)
             .await
             .context("Failed to get transaction from DB post test")?;
 
@@ -512,7 +512,9 @@ mutation ($inputs: AddTransactionV2Input!) {
         assert!(res.errors.is_empty(), "{:#?}", res.errors);
 
         let mut tx = db.transaction().await?;
-        let transactions = db.get_transactions(&mut tx, year, month).await?;
+        let transactions = db
+            .get_transactions_by_time_frame(&mut tx, year, month)
+            .await?;
         assert_eq!(transactions.len(), 2, "There should only be 2 transactions");
 
         let transaction: Vec<&TransactionRow> = transactions

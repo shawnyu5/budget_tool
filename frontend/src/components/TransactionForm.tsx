@@ -1,15 +1,27 @@
 import { action } from "@solidjs/router";
-import { createEffect, createSignal, Resource, Show, Signal } from "solid-js";
+import { normalizeProps, useMachine } from "@zag-js/solid";
+import {
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  createUniqueId,
+  Resource,
+  Show,
+  Signal,
+} from "solid-js";
 import ErrorComponent from "./ErrorComponent";
 import { formatRfc3339DateObj } from "~/utils";
 import { Transaction } from "~/generated/graphql";
 import { clientOnly } from "@solidjs/start";
+import * as combobox from "@zag-js/combobox";
 const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
 import "@rnwonder/solid-date-picker/dist/style.css";
 import { PickerValue, TimeValue } from "@rnwonder/solid-date-picker";
 import Decimal from "decimal.js";
 import TimePicker from "@rnwonder/solid-date-picker/timePicker";
 import { Button, Col, Form, Row, Spinner } from "solid-bootstrap";
+import { NewGraphQLSDK } from "~/graphql";
 
 /**
  * A form that displays a transaction
@@ -23,6 +35,7 @@ export function TransactionForm(props: {
 }) {
   const [amount, setAmount] = createSignal<string>();
   const [description, setDescription] = createSignal("");
+  const [descriptionAutoComplete, setDescriptionAutoComplete] = createSignal();
   const [notes, setNotes] = createSignal("");
   const [datePicker, setDatePicker] = createSignal<PickerValue>({
     label: "",
@@ -32,6 +45,46 @@ export function TransactionForm(props: {
     value: {},
     label: "",
   });
+
+  const [descriptionAutoCompleteCandidates] = createResource(
+    description,
+    async () => {
+      const graphql = NewGraphQLSDK();
+      const t = await graphql.GetTransactionDescriptions({
+        inputs: {
+          limit: 100,
+        },
+      });
+
+      return t.getTransactions.transactions;
+    },
+  );
+
+  const collection = createMemo(() =>
+    combobox.collection({
+      items: descriptionAutoCompleteCandidates() ?? [],
+      itemToValue: (item) => item.description,
+      itemToString: (item) => item.description,
+    }),
+  );
+
+  const service = useMachine(combobox.machine, {
+    id: createUniqueId(),
+    get collection() {
+      return collection();
+    },
+    onOpenChange() {
+      setDescriptionAutoComplete(descriptionAutoCompleteCandidates());
+    },
+    onInputValueChange({ inputValue }) {
+      const filtered = descriptionAutoCompleteCandidates()?.filter((item) =>
+        item.description.toLowerCase().includes(inputValue.toLowerCase()),
+      );
+      setDescriptionAutoComplete(filtered);
+    },
+  });
+
+  const api = createMemo(() => combobox.connect(service, normalizeProps));
 
   const errorMessageSignal = createSignal<string | null>(null);
   // Tracks if the form has been submitted or not
@@ -196,4 +249,35 @@ export function TransactionForm(props: {
       </Show>
     </Form>
   );
+}
+
+export function RemoteAutoComplete() {
+  const [query, setQuery] = createSignal("");
+
+  function fetchUsers() {
+    return ["foo", "bar"];
+  }
+  const [transactionDescriptions] = createResource(query, async () => {
+    const graphql = NewGraphQLSDK();
+    return graphql.GetTransactionDescriptions({
+      inputs: {
+        limit: 100,
+      },
+    });
+  });
+  const transactions = createMemo(() => {
+    combobox.collection({
+      items: transactionDescriptions()?.getTransactions.transactions ?? [],
+    });
+  });
+
+  const service = useMachine(combobox.machine, {
+    id: createUniqueId(),
+  });
+  createMemo(() => {
+    const data = transactionDescriptions;
+    if (data) api().collection.setItems(data);
+  });
+
+  const api = createMemo(() => combobox.connect(service, normalizeProps));
 }
