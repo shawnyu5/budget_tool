@@ -1,5 +1,7 @@
 # public.notification_subscription
 
+## Description
+
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
@@ -22,12 +24,14 @@
 | notification_subscription_user_id_not_null | n | NOT NULL user_id |
 | fk_user_id | FOREIGN KEY | FOREIGN KEY (user_id) REFERENCES users(id) |
 | notification_subscription_pkey | PRIMARY KEY | PRIMARY KEY (id) |
+| unique_use_id | UNIQUE | UNIQUE (user_id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
 | notification_subscription_pkey | CREATE UNIQUE INDEX notification_subscription_pkey ON public.notification_subscription USING btree (id) |
+| unique_use_id | CREATE UNIQUE INDEX unique_use_id ON public.notification_subscription USING btree (user_id) |
 
 ## Relations
 

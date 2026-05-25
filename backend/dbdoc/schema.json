@@ -319,7 +319,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (month_id) REFERENCES months(id)",
           "table": "public.budget_allocations",
-          "referenced_table": "public.months",
+          "referenced_table": "months",
           "columns": [
             "month_id"
           ],
@@ -446,7 +446,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (month_id) REFERENCES months(id)",
           "table": "public.transactions",
-          "referenced_table": "public.months",
+          "referenced_table": "months",
           "columns": [
             "month_id"
           ],
@@ -606,7 +606,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.firefly",
-          "referenced_table": "public.users",
+          "referenced_table": "users",
           "columns": [
             "user_id"
           ],
@@ -687,7 +687,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.notification_keys",
-          "referenced_table": "public.users",
+          "referenced_table": "users",
           "columns": [
             "user_id"
           ],
@@ -750,6 +750,14 @@
           "columns": [
             "id"
           ]
+        },
+        {
+          "name": "unique_use_id",
+          "def": "CREATE UNIQUE INDEX unique_use_id ON public.notification_subscription USING btree (user_id)",
+          "table": "public.notification_subscription",
+          "columns": [
+            "user_id"
+          ]
         }
       ],
       "constraints": [
@@ -808,7 +816,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.notification_subscription",
-          "referenced_table": "public.users",
+          "referenced_table": "users",
           "columns": [
             "user_id"
           ],
@@ -824,6 +832,16 @@
           "referenced_table": "",
           "columns": [
             "id"
+          ]
+        },
+        {
+          "name": "unique_use_id",
+          "type": "UNIQUE",
+          "def": "UNIQUE (user_id)",
+          "table": "public.notification_subscription",
+          "referenced_table": "",
+          "columns": [
+            "user_id"
           ]
         }
       ]
@@ -915,7 +933,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (transaction_id) REFERENCES transactions(id) ON DELETE CASCADE",
           "table": "public.firefly_transactions",
-          "referenced_table": "public.transactions",
+          "referenced_table": "transactions",
           "columns": [
             "transaction_id"
           ],
@@ -928,7 +946,7 @@
           "type": "FOREIGN KEY",
           "def": "FOREIGN KEY (user_id) REFERENCES users(id)",
           "table": "public.firefly_transactions",
-          "referenced_table": "public.users",
+          "referenced_table": "users",
           "columns": [
             "user_id"
           ],
@@ -1007,7 +1025,7 @@
       "columns": [
         "user_id"
       ],
-      "cardinality": "zero_or_more",
+      "cardinality": "zero_or_one",
       "parent_table": "public.users",
       "parent_columns": [
         "id"
@@ -1277,7 +1295,7 @@
   ],
   "driver": {
     "name": "postgres",
-    "database_version": "PostgreSQL 18.3 (Debian 18.3-1.pgdg13+1) on aarch64-unknown-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
+    "database_version": "PostgreSQL 18.3 (Debian 18.3-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit",
     "meta": {
       "current_schema": "public",
       "search_paths": [
