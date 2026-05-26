@@ -70,26 +70,26 @@ export function TransactionForm(props: {
   const service = useMachine(combobox.machine, {
     id: createUniqueId(),
     get collection() {
-      console.log("Getter for collection");
       return collection();
     },
-    onOpenChange() {
-      console.log("Zag open change");
-      setDescriptionAutoCompleteOptions(descriptionAutoCompleteCandidates());
+    // Allow input that is not selected from the drop down
+    // Otherwise if the user do not select from the drop down, zag will clear the form input
+    allowCustomValue: true,
+    onOpenChange({ open }) {
+      if (open)
+        setDescriptionAutoCompleteOptions(descriptionAutoCompleteCandidates());
     },
     onInputValueChange({ inputValue }) {
-      console.log(`Zag input value change: ${inputValue}`);
       setDescription(inputValue);
       const filtered = descriptionAutoCompleteCandidates()?.filter((item) =>
         item.toLowerCase().includes(inputValue.toLowerCase()),
       );
-      console.log(`Filtered result: ${filtered}`);
       setDescriptionAutoCompleteOptions(filtered ?? []);
     },
 
-    onValueChange({ value: values }) {
+    onValueChange({ value: value }) {
       console.log("On zag value change");
-      if (values.length > 0) setDescription(values[0]);
+      if (value.length > 0) setDescription(value[0]);
     },
   });
 
@@ -192,7 +192,6 @@ export function TransactionForm(props: {
                 required
                 value={description()}
                 {...api().getInputProps()}
-                // onInput={(e) => setDescription(e.currentTarget.value)}
               />
             </div>
           </Form.Group>
