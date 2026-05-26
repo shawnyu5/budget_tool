@@ -1,7 +1,10 @@
 use crate::{
     graphql::query::{
         firefly_v2::{FireflyV2SuccessResponse, firefly_v2},
-        get_all_transactions::{GetTransactionsInput, GetTransactionsResponse, get_transactions},
+        get_all_transactions::{
+            GetTransactionDescriptionsInput, GetTransactionDescriptionsResponse,
+            get_transaction_descriptions,
+        },
     },
     models::User as UserModel,
 };
@@ -96,14 +99,14 @@ impl QueryRoot {
         search_transaction_v2(ctx, inputs).await
     }
 
-    /// Get a list of most recent transactions
+    /// Get a list of recent transaction descriptions, for auto completing transaction descriptions
     #[instrument(skip(self, ctx))]
     #[graphql(guard = "AuthGuard")]
-    async fn get_transactions(
+    async fn get_transaction_descriptions(
         &self,
         ctx: &Context<'_>,
-        inputs: GetTransactionsInput,
-    ) -> Result<GetTransactionsResponse> {
-        get_transactions(ctx, inputs).await
+        inputs: GetTransactionDescriptionsInput,
+    ) -> Result<GetTransactionDescriptionsResponse> {
+        get_transaction_descriptions(ctx, inputs).await
     }
 }

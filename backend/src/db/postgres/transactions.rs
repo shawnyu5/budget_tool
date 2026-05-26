@@ -119,27 +119,20 @@ impl PostgresDB {
         return Ok(transaction);
     }
 
-    /// Get all transactions, sorted by the date, newest first
+    /// Get a list of unique transaction descriptions
     ///
     /// * `limit`: # of rows to return
-    pub async fn get_transactions(
+    pub async fn get_transactions_descriptions(
         &self,
         executor: &mut PgConnection,
         limit: i64,
-    ) -> Result<Vec<TransactionRow>> {
-        let result = query_as!(
-            TransactionRow,
+    ) -> Result<Vec<String>> {
+        let result = query!(
             r#"
-            SELECT
-                t.id,
-                t.month_id,
-                t.amount,
-                t.date,
-                t.description,
-                t.notes,
-                t.split_mode as "split_mode: SplitMode"
+            SELECT t.description
             FROM transactions t
-            ORDER BY t.date DESC
+            GROUP BY t.description
+            ORDER BY MAX(t.date) DESC
             LIMIT $1
             "#,
             limit
@@ -149,7 +142,10 @@ impl PostgresDB {
         .map_err(|e| {
             error!("{e:#?}");
             e
-        })?;
+        })?
+        .into_iter()
+        .map(|r| r.description.unwrap_or_default())
+        .collect();
 
         Ok(result)
     }

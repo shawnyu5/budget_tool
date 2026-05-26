@@ -1,10 +1,10 @@
 use anyhow::{Context as _, Result};
 use async_graphql::{Context, InputObject, SimpleObject};
 
-use crate::{graphql::utils::extract_db_client, models::Transaction};
+use crate::graphql::utils::extract_db_client;
 
 #[derive(InputObject, Debug)]
-pub struct GetTransactionsInput {
+pub struct GetTransactionDescriptionsInput {
     /// Filter by description that contains this string
     // TODO: explore using Postgres pg_trgm extension
     // Current implementation uses rust to filter for now
@@ -14,27 +14,25 @@ pub struct GetTransactionsInput {
 }
 
 #[derive(SimpleObject)]
-pub struct GetTransactionsResponse {
-    transactions: Vec<Transaction>,
+pub struct GetTransactionDescriptionsResponse {
+    descriptions: Vec<String>,
 }
 
-pub async fn get_transactions(
+pub async fn get_transaction_descriptions(
     ctx: &Context<'_>,
-    inputs: GetTransactionsInput,
-) -> Result<GetTransactionsResponse> {
+    inputs: GetTransactionDescriptionsInput,
+) -> Result<GetTransactionDescriptionsResponse> {
     let db = extract_db_client(ctx);
     let mut tx = db.transaction().await?;
     let transactions = db
-        .get_transactions(&mut tx, inputs.limit)
+        .get_transactions_descriptions(&mut tx, inputs.limit)
         .await
         .context("Failed to get transactions from DB")?
         .into_iter()
-        .map(Transaction::from)
-        .filter(|t| {
-            t.description
-                .contains(&inputs.contains.clone().unwrap_or_default())
-        })
+        .filter(|desc| desc.contains(&inputs.contains.clone().unwrap_or_default()))
         .collect();
 
-    Ok(GetTransactionsResponse { transactions })
+    Ok(GetTransactionDescriptionsResponse {
+        descriptions: transactions,
+    })
 }

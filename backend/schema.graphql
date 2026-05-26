@@ -82,7 +82,7 @@ type FrontendConfig {
 	vapidPublicKey: String!
 }
 
-input GetTransactionsInput {
+input GetTransactionDescriptionsInput {
 	"""
 	Filter by description that contains this string
 	"""
@@ -93,8 +93,8 @@ input GetTransactionsInput {
 	limit: Int!
 }
 
-type GetTransactionsResponse {
-	transactions: [Transaction!]!
+type GetTransactionDescriptionsResponse {
+	descriptions: [String!]!
 }
 
 """
@@ -200,9 +200,9 @@ type QueryRoot {
 	"""
 	searchTransactionV2(inputs: SearchTransactionV2Inputs!): SearchTransactionV2Response!
 	"""
-	Get a list of most recent transactions
+	Get a list of recent transaction descriptions, for auto completing transaction descriptions
 	"""
-	getTransactions(inputs: GetTransactionsInput!): GetTransactionsResponse!
+	getTransactionDescriptions(inputs: GetTransactionDescriptionsInput!): GetTransactionDescriptionsResponse!
 }
 
 input SaveSubscriptionV2Input {

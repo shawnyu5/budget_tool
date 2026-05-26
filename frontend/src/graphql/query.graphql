@@ -84,10 +84,8 @@ query SearchTransactionByID($inputs: SearchTransactionV2Inputs!) {
 }
 
 # Get the descriptions of most recent transactions
-query GetTransactionDescriptions($inputs: GetTransactionsInput!) {
-  getTransactions(inputs: $inputs) {
-    transactions {
-      description
-    }
+query GetTransactionDescriptions($inputs: GetTransactionDescriptionsInput!) {
+  getTransactionDescriptions(inputs: $inputs) {
+    descriptions
   }
 }

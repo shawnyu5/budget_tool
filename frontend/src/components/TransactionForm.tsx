@@ -6,6 +6,7 @@ import {
   createResource,
   createSignal,
   createUniqueId,
+  For,
   Resource,
   Show,
   Signal,
@@ -35,7 +36,8 @@ export function TransactionForm(props: {
 }) {
   const [amount, setAmount] = createSignal<string>();
   const [description, setDescription] = createSignal("");
-  const [descriptionAutoComplete, setDescriptionAutoComplete] = createSignal();
+  const [descriptionAutoCompleteOptions, setDescriptionAutoCompleteOptions] =
+    createSignal<string[]>();
   const [notes, setNotes] = createSignal("");
   const [datePicker, setDatePicker] = createSignal<PickerValue>({
     label: "",
@@ -46,41 +48,48 @@ export function TransactionForm(props: {
     label: "",
   });
 
-  const [descriptionAutoCompleteCandidates] = createResource(
-    description,
-    async () => {
-      const graphql = NewGraphQLSDK();
-      const t = await graphql.GetTransactionDescriptions({
-        inputs: {
-          limit: 100,
-        },
-      });
+  const [descriptionAutoCompleteCandidates] = createResource(async () => {
+    const graphql = NewGraphQLSDK();
+    const t = await graphql.GetTransactionDescriptions({
+      inputs: {
+        limit: 100,
+      },
+    });
 
-      return t.getTransactions.transactions;
-    },
-  );
+    return t.getTransactionDescriptions.descriptions;
+  });
 
   const collection = createMemo(() =>
     combobox.collection({
       items: descriptionAutoCompleteCandidates() ?? [],
-      itemToValue: (item) => item.description,
-      itemToString: (item) => item.description,
+      itemToValue: (item) => item,
+      itemToString: (item) => item,
     }),
   );
 
   const service = useMachine(combobox.machine, {
     id: createUniqueId(),
     get collection() {
+      console.log("Getter for collection");
       return collection();
     },
     onOpenChange() {
-      setDescriptionAutoComplete(descriptionAutoCompleteCandidates());
+      console.log("Zag open change");
+      setDescriptionAutoCompleteOptions(descriptionAutoCompleteCandidates());
     },
     onInputValueChange({ inputValue }) {
+      console.log(`Zag input value change: ${inputValue}`);
+      setDescription(inputValue);
       const filtered = descriptionAutoCompleteCandidates()?.filter((item) =>
-        item.description.toLowerCase().includes(inputValue.toLowerCase()),
+        item.toLowerCase().includes(inputValue.toLowerCase()),
       );
-      setDescriptionAutoComplete(filtered);
+      console.log(`Filtered result: ${filtered}`);
+      setDescriptionAutoCompleteOptions(filtered ?? []);
+    },
+
+    onValueChange({ value: values }) {
+      console.log("On zag value change");
+      if (values.length > 0) setDescription(values[0]);
     },
   });
 
@@ -173,16 +182,47 @@ export function TransactionForm(props: {
         }
       >
         {/* Description Field */}
-        <Form.Group controlId="description" class="mb-3">
-          <Form.Label>Description</Form.Label>
-          <Form.Control
-            name="description"
-            type="text"
-            required
-            value={description()}
-            onInput={(e) => setDescription(e.currentTarget.value)}
-          />
-        </Form.Group>
+        <div {...api().getRootProps()}>
+          <Form.Group controlId="description" class="mb-3">
+            <Form.Label {...api().getLabelProps()}>Description</Form.Label>
+            <div {...api().getControlProps()}>
+              <Form.Control
+                name="description"
+                type="text"
+                required
+                value={description()}
+                {...api().getInputProps()}
+                // onInput={(e) => setDescription(e.currentTarget.value)}
+              />
+            </div>
+          </Form.Group>
+        </div>
+
+        {/* Auto-Complete Dropdown Menu overlay matching Bootstrap styles */}
+        <ul
+          {...api().getContentProps()}
+          class="dropdown-menu show w-100 mt-1 shadow"
+          style={{
+            display:
+              api().open && descriptionAutoCompleteOptions() ? "block" : "none",
+            "z-index": 1050,
+          }}
+        >
+          <For each={descriptionAutoCompleteOptions()}>
+            {(item: string) => (
+              <li
+                {...api().getItemProps({ item })}
+                class="dropdown-item"
+                classList={{
+                  active: api().highlightedValue == item,
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                {item}
+              </li>
+            )}
+          </For>
+        </ul>
 
         {/* Date and Time Pickers */}
         <Form.Group class="mb-3">

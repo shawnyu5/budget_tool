@@ -373,11 +373,23 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "GetTransactionsInput",
+        "name": "GetTransactionDescriptionsInput",
         "description": null,
         "isOneOf": false,
         "fields": null,
         "inputFields": [
+          {
+            "name": "contains",
+            "description": "Filter by description that contains this string",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
           {
             "name": "limit",
             "description": "The number of results to return",
@@ -401,12 +413,12 @@
       },
       {
         "kind": "OBJECT",
-        "name": "GetTransactionsResponse",
+        "name": "GetTransactionDescriptionsResponse",
         "description": null,
         "isOneOf": null,
         "fields": [
           {
-            "name": "transactions",
+            "name": "descriptions",
             "description": null,
             "args": [],
             "type": {
@@ -419,8 +431,8 @@
                   "kind": "NON_NULL",
                   "name": null,
                   "ofType": {
-                    "kind": "OBJECT",
-                    "name": "Transaction",
+                    "kind": "SCALAR",
+                    "name": "String",
                     "ofType": null
                   }
                 }
@@ -914,8 +926,8 @@
             "deprecationReason": null
           },
           {
-            "name": "getTransactions",
-            "description": "Get a list of most recent transactions",
+            "name": "getTransactionDescriptions",
+            "description": "Get a list of recent transaction descriptions, for auto completing transaction descriptions",
             "args": [
               {
                 "name": "inputs",
@@ -925,7 +937,7 @@
                   "name": null,
                   "ofType": {
                     "kind": "INPUT_OBJECT",
-                    "name": "GetTransactionsInput",
+                    "name": "GetTransactionDescriptionsInput",
                     "ofType": null
                   }
                 },
@@ -939,7 +951,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "GetTransactionsResponse",
+                "name": "GetTransactionDescriptionsResponse",
                 "ofType": null
               }
             },

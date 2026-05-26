@@ -92,14 +92,16 @@ export type FrontendConfig = {
   vapidPublicKey: Scalars['String']['output'];
 };
 
-export type GetTransactionsInput = {
+export type GetTransactionDescriptionsInput = {
+  /** Filter by description that contains this string */
+  contains?: InputMaybe<Scalars['String']['input']>;
   /** The number of results to return */
   limit: Scalars['Int']['input'];
 };
 
-export type GetTransactionsResponse = {
-  __typename?: 'GetTransactionsResponse';
-  transactions: Array<Transaction>;
+export type GetTransactionDescriptionsResponse = {
+  __typename?: 'GetTransactionDescriptionsResponse';
+  descriptions: Array<Scalars['String']['output']>;
 };
 
 /** Data on the home screen */
@@ -188,8 +190,8 @@ export type QueryRoot = {
   config: FrontendConfig;
   /** Query information from the Firefly server */
   fireflyV2?: Maybe<FireflyV2SuccessResponse>;
-  /** Get a list of most recent transactions */
-  getTransactions: GetTransactionsResponse;
+  /** Get a list of recent transaction descriptions, for auto completing transaction descriptions */
+  getTransactionDescriptions: GetTransactionDescriptionsResponse;
   /** Get data to display on the home page */
   homePageV2: HomePage;
   /** Returns the content of the JWT */
@@ -205,8 +207,8 @@ export type QueryRoot = {
 
 
 /** Root of the query */
-export type QueryRootGetTransactionsArgs = {
-  inputs: GetTransactionsInput;
+export type QueryRootGetTransactionDescriptionsArgs = {
+  inputs: GetTransactionDescriptionsInput;
 };
 
 
@@ -410,11 +412,11 @@ export type SearchTransactionByIdQueryVariables = Exact<{
 export type SearchTransactionByIdQuery = { __typename?: 'QueryRoot', searchTransactionV2: { __typename?: 'SearchTransactionV2Response', transaction?: { __typename?: 'Transaction', id: any, amount: Decimal, date: Date, description: string, notes: string } | null } };
 
 export type GetTransactionDescriptionsQueryVariables = Exact<{
-  inputs: GetTransactionsInput;
+  inputs: GetTransactionDescriptionsInput;
 }>;
 
 
-export type GetTransactionDescriptionsQuery = { __typename?: 'QueryRoot', getTransactions: { __typename?: 'GetTransactionsResponse', transactions: Array<{ __typename?: 'Transaction', description: string }> } };
+export type GetTransactionDescriptionsQuery = { __typename?: 'QueryRoot', getTransactionDescriptions: { __typename?: 'GetTransactionDescriptionsResponse', descriptions: Array<string> } };
 
 
 export const SaveSubscriptionDocument = gql`
@@ -538,11 +540,9 @@ export const SearchTransactionByIdDocument = gql`
 }
     `;
 export const GetTransactionDescriptionsDocument = gql`
-    query GetTransactionDescriptions($inputs: GetTransactionsInput!) {
-  getTransactions(inputs: $inputs) {
-    transactions {
-      description
-    }
+    query GetTransactionDescriptions($inputs: GetTransactionDescriptionsInput!) {
+  getTransactionDescriptions(inputs: $inputs) {
+    descriptions
   }
 }
     `;
