@@ -93,7 +93,9 @@ export function TransactionForm(props: {
     },
   });
 
-  const api = createMemo(() => combobox.connect(service, normalizeProps));
+  const descriptionAutoComplete = createMemo(() =>
+    combobox.connect(service, normalizeProps),
+  );
 
   const errorMessageSignal = createSignal<string | null>(null);
   // Tracks if the form has been submitted or not
@@ -182,16 +184,18 @@ export function TransactionForm(props: {
         }
       >
         {/* Description Field */}
-        <div {...api().getRootProps()}>
+        <div {...descriptionAutoComplete().getRootProps()}>
           <Form.Group controlId="description" class="mb-3">
-            <Form.Label {...api().getLabelProps()}>Description</Form.Label>
-            <div {...api().getControlProps()}>
+            <Form.Label {...descriptionAutoComplete().getLabelProps()}>
+              Description
+            </Form.Label>
+            <div {...descriptionAutoComplete().getControlProps()}>
               <Form.Control
                 name="description"
                 type="text"
                 required
                 value={description()}
-                {...api().getInputProps()}
+                {...descriptionAutoComplete().getInputProps()}
               />
             </div>
           </Form.Group>
@@ -199,21 +203,23 @@ export function TransactionForm(props: {
 
         {/* Auto-Complete Dropdown Menu overlay matching Bootstrap styles */}
         <ul
-          {...api().getContentProps()}
+          {...descriptionAutoComplete().getContentProps()}
           class="dropdown-menu show w-100 mt-1 shadow"
           style={{
             display:
-              api().open && descriptionAutoCompleteOptions() ? "block" : "none",
+              descriptionAutoComplete().open && descriptionAutoCompleteOptions()
+                ? "block"
+                : "none",
             "z-index": 1050,
           }}
         >
           <For each={descriptionAutoCompleteOptions()}>
             {(item: string) => (
               <li
-                {...api().getItemProps({ item })}
+                {...descriptionAutoComplete().getItemProps({ item })}
                 class="dropdown-item"
                 classList={{
-                  active: api().highlightedValue == item,
+                  active: descriptionAutoComplete().highlightedValue == item,
                 }}
                 style={{ cursor: "pointer" }}
               >
