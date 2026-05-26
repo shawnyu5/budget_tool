@@ -56,7 +56,7 @@ impl PostgresDB {
     }
 
     /// Get transactions from in a specific time frame. Sort the transactions by date
-    pub async fn get_transactions(
+    pub async fn get_transactions_by_time_frame(
         &self,
         executor: &mut PgConnection,
         year: Year,
@@ -117,6 +117,37 @@ impl PostgresDB {
         })?;
 
         return Ok(transaction);
+    }
+
+    /// Get a list of unique transaction descriptions
+    ///
+    /// * `limit`: # of rows to return
+    pub async fn get_transactions_descriptions(
+        &self,
+        executor: &mut PgConnection,
+        limit: i64,
+    ) -> Result<Vec<String>> {
+        let result = query!(
+            r#"
+            SELECT t.description
+            FROM transactions t
+            GROUP BY t.description
+            ORDER BY MAX(t.date) DESC
+            LIMIT $1
+            "#,
+            limit
+        )
+        .fetch_all(executor)
+        .await
+        .map_err(|e| {
+            error!("{e:#?}");
+            e
+        })?
+        .into_iter()
+        .map(|r| r.description.unwrap_or_default())
+        .collect();
+
+        Ok(result)
     }
 
     /// Update a transaction by ID

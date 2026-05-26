@@ -82,6 +82,21 @@ type FrontendConfig {
 	vapidPublicKey: String!
 }
 
+input GetTransactionDescriptionsInput {
+	"""
+	Filter by description that contains this string
+	"""
+	contains: String
+	"""
+	The number of results to return
+	"""
+	limit: Int!
+}
+
+type GetTransactionDescriptionsResponse {
+	descriptions: [String!]!
+}
+
 """
 Data on the home screen
 """
@@ -184,6 +199,10 @@ type QueryRoot {
 	Search for a transaction from the PostgresDB
 	"""
 	searchTransactionV2(inputs: SearchTransactionV2Inputs!): SearchTransactionV2Response!
+	"""
+	Get a list of recent transaction descriptions, for auto completing transaction descriptions
+	"""
+	getTransactionDescriptions(inputs: GetTransactionDescriptionsInput!): GetTransactionDescriptionsResponse!
 }
 
 input SaveSubscriptionV2Input {

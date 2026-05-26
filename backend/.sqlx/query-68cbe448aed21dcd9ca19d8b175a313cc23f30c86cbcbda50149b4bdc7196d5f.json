@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT t.description\n            FROM transactions t\n            GROUP BY t.description\n            ORDER BY MAX(t.date) DESC\n            LIMIT $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "description",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "68cbe448aed21dcd9ca19d8b175a313cc23f30c86cbcbda50149b4bdc7196d5f"
+}

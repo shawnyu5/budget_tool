@@ -1,5 +1,7 @@
 # public.notification_keys
 
+## Description
+
 ## Columns
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |

@@ -1,15 +1,28 @@
 import { action } from "@solidjs/router";
-import { createEffect, createSignal, Resource, Show, Signal } from "solid-js";
+import { normalizeProps, useMachine } from "@zag-js/solid";
+import {
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  createUniqueId,
+  For,
+  Resource,
+  Show,
+  Signal,
+} from "solid-js";
 import ErrorComponent from "./ErrorComponent";
 import { formatRfc3339DateObj } from "~/utils";
 import { Transaction } from "~/generated/graphql";
 import { clientOnly } from "@solidjs/start";
+import * as combobox from "@zag-js/combobox";
 const DatePicker = clientOnly(() => import("@rnwonder/solid-date-picker"));
 import "@rnwonder/solid-date-picker/dist/style.css";
 import { PickerValue, TimeValue } from "@rnwonder/solid-date-picker";
 import Decimal from "decimal.js";
 import TimePicker from "@rnwonder/solid-date-picker/timePicker";
 import { Button, Col, Form, Row, Spinner } from "solid-bootstrap";
+import { NewGraphQLSDK } from "~/graphql";
 
 /**
  * A form that displays a transaction
@@ -23,6 +36,8 @@ export function TransactionForm(props: {
 }) {
   const [amount, setAmount] = createSignal<string>();
   const [description, setDescription] = createSignal("");
+  const [descriptionAutoCompleteOptions, setDescriptionAutoCompleteOptions] =
+    createSignal<string[]>();
   const [notes, setNotes] = createSignal("");
   const [datePicker, setDatePicker] = createSignal<PickerValue>({
     label: "",
@@ -32,6 +47,53 @@ export function TransactionForm(props: {
     value: {},
     label: "",
   });
+
+  const [descriptionAutoCompleteCandidates] = createResource(async () => {
+    const graphql = NewGraphQLSDK();
+    const t = await graphql.GetTransactionDescriptions({
+      inputs: {
+        limit: 100,
+      },
+    });
+
+    return t.getTransactionDescriptions.descriptions;
+  });
+
+  const collection = createMemo(() =>
+    combobox.collection({
+      items: descriptionAutoCompleteCandidates() ?? [],
+      itemToValue: (item) => item,
+      itemToString: (item) => item,
+    }),
+  );
+
+  const service = useMachine(combobox.machine, {
+    id: createUniqueId(),
+    get collection() {
+      return collection();
+    },
+    // Allow input that is not selected from the drop down
+    // Otherwise if the user do not select from the drop down, zag will clear the form input
+    allowCustomValue: true,
+    onOpenChange({ open }) {
+      if (open)
+        setDescriptionAutoCompleteOptions(descriptionAutoCompleteCandidates());
+    },
+    onInputValueChange({ inputValue }) {
+      setDescription(inputValue);
+      const filtered = descriptionAutoCompleteCandidates()?.filter((item) =>
+        item.toLowerCase().includes(inputValue.toLowerCase()),
+      );
+      setDescriptionAutoCompleteOptions(filtered ?? []);
+    },
+
+    onValueChange({ value: value }) {
+      console.log("On zag value change");
+      if (value.length > 0) setDescription(value[0]);
+    },
+  });
+
+  const api = createMemo(() => combobox.connect(service, normalizeProps));
 
   const errorMessageSignal = createSignal<string | null>(null);
   // Tracks if the form has been submitted or not
@@ -120,16 +182,46 @@ export function TransactionForm(props: {
         }
       >
         {/* Description Field */}
-        <Form.Group controlId="description" class="mb-3">
-          <Form.Label>Description</Form.Label>
-          <Form.Control
-            name="description"
-            type="text"
-            required
-            value={description()}
-            onInput={(e) => setDescription(e.currentTarget.value)}
-          />
-        </Form.Group>
+        <div {...api().getRootProps()}>
+          <Form.Group controlId="description" class="mb-3">
+            <Form.Label {...api().getLabelProps()}>Description</Form.Label>
+            <div {...api().getControlProps()}>
+              <Form.Control
+                name="description"
+                type="text"
+                required
+                value={description()}
+                {...api().getInputProps()}
+              />
+            </div>
+          </Form.Group>
+        </div>
+
+        {/* Auto-Complete Dropdown Menu overlay matching Bootstrap styles */}
+        <ul
+          {...api().getContentProps()}
+          class="dropdown-menu show w-100 mt-1 shadow"
+          style={{
+            display:
+              api().open && descriptionAutoCompleteOptions() ? "block" : "none",
+            "z-index": 1050,
+          }}
+        >
+          <For each={descriptionAutoCompleteOptions()}>
+            {(item: string) => (
+              <li
+                {...api().getItemProps({ item })}
+                class="dropdown-item"
+                classList={{
+                  active: api().highlightedValue == item,
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                {item}
+              </li>
+            )}
+          </For>
+        </ul>
 
         {/* Date and Time Pickers */}
         <Form.Group class="mb-3">
@@ -196,4 +288,35 @@ export function TransactionForm(props: {
       </Show>
     </Form>
   );
+}
+
+export function RemoteAutoComplete() {
+  const [query, setQuery] = createSignal("");
+
+  function fetchUsers() {
+    return ["foo", "bar"];
+  }
+  const [transactionDescriptions] = createResource(query, async () => {
+    const graphql = NewGraphQLSDK();
+    return graphql.GetTransactionDescriptions({
+      inputs: {
+        limit: 100,
+      },
+    });
+  });
+  const transactions = createMemo(() => {
+    combobox.collection({
+      items: transactionDescriptions()?.getTransactions.transactions ?? [],
+    });
+  });
+
+  const service = useMachine(combobox.machine, {
+    id: createUniqueId(),
+  });
+  createMemo(() => {
+    const data = transactionDescriptions;
+    if (data) api().collection.setItems(data);
+  });
+
+  const api = createMemo(() => combobox.connect(service, normalizeProps));
 }

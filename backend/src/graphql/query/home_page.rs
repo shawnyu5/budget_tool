@@ -2,7 +2,7 @@ use anyhow::{Context as _, Result};
 use async_graphql::{Context, InputObject};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rust_decimal::dec;
-use tracing::{error, info};
+use tracing::{error, info, instrument};
 
 use crate::{
     db::postgres::models::Year,
@@ -57,7 +57,7 @@ pub async fn home_page_v2(ctx: &Context<'_>, inputs: HomePageV2Input) -> Result<
         month = inputs.month
     );
     let transactions = db
-        .get_transactions(&mut tx, inputs.year, inputs.month)
+        .get_transactions_by_time_frame(&mut tx, inputs.year, inputs.month)
         .await?
         .par_iter()
         .map(|t| Transaction {

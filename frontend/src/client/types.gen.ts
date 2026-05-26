@@ -10,36 +10,6 @@ export type HomeResponse = {
 
 export type Month = 'January' | 'February' | 'March' | 'April' | 'May' | 'June' | 'July' | 'August' | 'September' | 'October' | 'November' | 'December';
 
-export type NotificationBody = {
-    body: string;
-    title: string;
-};
-
-export type NotificationKeys = {
-    auth: string;
-    p256dh: string;
-};
-
-export type NotificationSendBody = {
-    /**
-     * The body of the notification
-     */
-    body: NotificationBody;
-    /**
-     * Data sent by the browser to do the handshake for the notification
-     */
-    subscription: NotificationSubscription;
-};
-
-/**
- * Stuff the browser sends to do the notification handshake
- */
-export type NotificationSubscription = {
-    endpoint: string;
-    expirationTime?: string | null;
-    keys: NotificationKeys;
-};
-
 export type AppVersionData = {
     body?: never;
     path?: never;
@@ -232,17 +202,3 @@ export type BasicAuthHandlerV2Responses = {
 };
 
 export type BasicAuthHandlerV2Response = BasicAuthHandlerV2Responses[keyof BasicAuthHandlerV2Responses];
-
-export type SendNotificationHandlerData = {
-    body: NotificationSendBody;
-    path?: never;
-    query?: never;
-    url: '/notification/send';
-};
-
-export type SendNotificationHandlerResponses = {
-    /**
-     * Notification sent successfully
-     */
-    200: unknown;
-};

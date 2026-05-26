@@ -5,6 +5,8 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::db::postgres::models::transaction::TransactionRow;
+
 /// Data on the settings page
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize, SimpleObject, InputObject)]
 #[graphql(input_name = "SettingInput")]
@@ -44,6 +46,18 @@ pub struct Transaction {
     pub date: DateTime<FixedOffset>,
     pub description: String,
     pub notes: String,
+}
+
+impl From<TransactionRow> for Transaction {
+    fn from(value: TransactionRow) -> Self {
+        Self {
+            id: value.id,
+            amount: value.amount,
+            date: value.date,
+            description: value.description.unwrap_or_default(),
+            notes: value.notes.unwrap_or_default(),
+        }
+    }
 }
 
 /// Data on the home screen
